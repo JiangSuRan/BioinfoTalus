@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "id": "scenicplus-eregulon-inference",
+  "title": "SCENIC+ 与 pycisTarget 单细胞多组学（scRNA + scATAC）增强子驱动调控网络（eRegulon）推断",
+  "kind": "method",
+  "method_type": "转录因子与调控网络",
+  "language": "Python",
+  "tags": [
+    "SCENIC+",
+    "pycisTarget",
+    "eRegulon",
+    "scATAC-seq",
+    "多组学调控网络",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "GRN/Run_SCENICplus.py（CIMA 图谱 SCENIC+ 主流程，提取 1–79 行对象构建段与后续 run_scenicplus 调用；menr 读取逻辑同仓 Run_pycisTarget.py）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "GRN/Run_SCENICplus.py",
+      "sha256": "95ce4aebdab0a693778476aaea1533e0bae7a2579f4c620a9d47555c8bd4fa97",
+      "lines": [
+        1,
+        79
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/rna_metacell.h5ad",
+      "object": "AnnData（Metacell/伪多组学级 scRNA）",
+      "requirements": "X 为计数或可加表达；obs 含分组列（variable 指向如 GEX_cell_type）；行名 HGNC 符号",
+      "evidence": "源码 rna = sc.read_h5ad(Pseudo_multiomics h5ad) 与 variable=['GEX_cell_type_l4'] 推断"
+    },
+    {
+      "path": "Data/cistopic_obj.pkl",
+      "object": "cisTopic 对象（pycisTopic 产物）",
+      "requirements": "已完成主题建模与区域可及性 imputation，barcode 与 RNA 侧可经 bc_transform_func 对齐",
+      "evidence": "源码 dill.load(cisTopic_obj.pkl) 与 create_SCENICPLUS_object(cisTopic_obj=...) 推断"
+    },
+    {
+      "path": "Data/motifs_menr.pkl",
+      "object": "motif 富集字典（cistarget/DEM 结果）",
+      "requirements": "pycisTarget 运行产物，键为富集区域集，值为 motif enrichment 对象",
+      "evidence": "源码 motif_enrichment_dict 逐 pkl 装载与 menr 参数推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scenicplus",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pycistarget",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游 pycisTopic（主题建模）与 pycisTarget（motif 富集）已完成；TF 列表与 hg38 基因组注释随包装配。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scplus_obj.pkl",
+      "content": "SCENIC+ 对象：含 eRegulon（TF + 增强子靶区 + 靶基因）、区域/基因 AUC 矩阵与直接/间接靶点注释"
+    },
+    {
+      "path": "results/eRegulon_metadata.csv",
+      "content": "eRegulon 元数据表：TF 名、正/负调控模式、靶增强子与靶基因数量、motif 与共表达一致性分数"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "ncRNA（^[A-Z][A-Z][0-9].*\\.[0-9]）与 LINC/LOC 基因剔除",
+      "basis": "来源代码设定；避免非编码基因进入共表达与 TF 匹配"
+    },
+    {
+      "setting": "upstream/downstream = [1000, 150000]",
+      "basis": "来源代码设定；TF 搜索窗覆盖近端启动子与远端增强子，窗宽随数据染色质构象调整"
+    },
+    {
+      "setting": "calculate_TF_eGRN_correlation = False, calculate_DEGs_DARs = False",
+      "basis": "来源代码设定（在大图谱上关闭高耗时可选步）；需要 TF-靶相关时应重开"
+    },
+    {
+      "setting": "biomart_host 固定 sep2019 归档",
+      "basis": "来源代码经版本重叠扫描后选定；基因符号与 Ensembl 版本错位时需重扫"
+    }
+  ],
+  "adaptation": [
+    "移除 ray 集群对象存储配置、stderr 静默重定向、try/except 失败兜底保存、ensembl 版本逐一试探循环（固定经扫描选定的 sep2019 主机）与 print 诊断。",
+    "motif 富集目录逐 pkl 装载改为单一 menr.pkl 输入；X_EXP 稠密化保留。",
+    "新增 eRegulon_metadata.csv 落盘；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "eRegulon 推断依赖 cisTopic 主题质量与 motif 数据库覆盖；增强子-基因链接为距离先验（150kb 窗），未用 Hi-C 等构象证据时远端链接有假阳性。",
+    "计算与内存开销大（源码 96 核 ray 集群），模板 32 线程单机运行需按硬件缩减或恢复集群配置。"
+  ],
+  "code_sha256": {
+    "analysis.py": "50af2566f5951bec8033a3535a70359d3fd706528f3ef782cc28605bfc41c61b"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

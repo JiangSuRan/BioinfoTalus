@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "id": "cellchat-multicondition-comparison",
+  "title": "CellChat 多条件对象合并、通讯数量/强度比较与信号通路 rankNet 差异分析",
+  "kind": "method",
+  "method_type": "细胞通讯",
+  "language": "R",
+  "tags": [
+    "CellChat",
+    "多条件比较",
+    "rankNet",
+    "信息流",
+    "mergeCellChat"
+  ],
+  "paper": {
+    "repository": "Iliopoulou_et_Al_Wt_Dare12wk_sc_analysis（DARE12 小鼠 IBD 模型单细胞分析）",
+    "figure": "Step9_CellToCellCommunicationAnalysis/D_comparativeAnalysis.R（WT12 vs DARE12 通讯比较，全文件 38 行；对象构建同仓 B_cellChat_analysis_dare12.R）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Iliopoulou_et_Al_Wt_Dare12wk_sc_analysis",
+      "path": "Step9_CellToCellCommunicationAnalysis/D_comparativeAnalysis.R",
+      "sha256": "2fc52aa7de238f58a294b15fc175198121e5aa122a7ac721462fee87e16040cc",
+      "lines": [
+        1,
+        38
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cellchat_<cond>_final.RDS",
+      "object": "CellChat 对象（每条件一个）",
+      "requirements": "已各自完成 computeCommunProb/computeCommunProbPathway/aggregateNet（对应同仓 B/C 脚本产物）；两条件细胞类型标签可比",
+      "evidence": "updateCellChat + mergeCellChat(object.list) 调用推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "CellChat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "各条件对象的数据库名/版本一致（mergeCellChat 要求信号基因注释对齐）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cellchat_comparison.pdf",
+      "content": "两页图：通讯数量/强度条形图（compareInteractions）与通路信息流堆叠/非堆叠 rankNet（含组间 Wilcoxon 检验）"
+    },
+    {
+      "path": "results/cellchatCombined_conditions.RDS",
+      "content": "合并后的 CellChat 对象（可继续 netVisual_diffInteraction 等下游）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "mergeCellChat(add.names = names(object.list))",
+      "basis": "来源代码设定；条件名即图例标识"
+    },
+    {
+      "setting": "compareInteractions group = c(1,2)，measure 缺省计数 + 'weight' 强度",
+      "basis": "来源代码设定；两指标互补（数量与总强度）"
+    },
+    {
+      "setting": "rankNet stacked TRUE/FALSE + do.stat = TRUE",
+      "basis": "来源代码设定；堆叠图为绝对信息流、非堆叠图给出差异方向的显著性"
+    }
+  ],
+  "adaptation": [
+    "保留 merge/compare/rankNet 逐字逻辑；源码的 gg1+gg2 交互显示改为 pdf(print) 落盘。",
+    "对象构建（createCellChat → identifyOverExpressedGenes → computeCommunProb 链）按同仓 B/C 脚本移至上游（模板输入为现成对象）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "rankNet 的通路差异检验假设条件独立，未建模供体重复；配对设计应分组后手工检验。",
+    "细胞类型标签不一致时 merge 会按交集对齐，稀有类型丢失需在合并前统一层级。"
+  ],
+  "code_sha256": {
+    "analysis.R": "37fd18822c781457cd08a0f4b64169f4a71788c86f1e925a68a9415a9486a57e"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

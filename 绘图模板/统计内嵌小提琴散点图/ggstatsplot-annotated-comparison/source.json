@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "id": "ggstatsplot-annotated-comparison",
+  "title": "ggstatsplot grouped_ggbetweenstats 自动统计标注的分组比较图",
+  "kind": "plot",
+  "plot_type": "统计内嵌小提琴散点图",
+  "language": "R",
+  "tags": [
+    "ggstatsplot",
+    "组间比较",
+    "效应量",
+    "FDR校正",
+    "小提琴图"
+  ],
+  "paper": {
+    "repository": "TCM（T 细胞图谱研究）",
+    "figure": "fig3/TissueLevelTest.R（组织类型间 NK/T 亚群丰度比较，135–160 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "TCM",
+      "path": "fig3/TissueLevelTest.R",
+      "sha256": "7b3028b4c175534596a2c4ffe1819860bd1baf12e1c696ac343e9936cd0a1b1b",
+      "lines": [
+        135,
+        160
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sample_fractions.csv",
+      "object": "data.frame（长表）",
+      "requirements": "列含 TissueType（H/U/P/M 分组）、frac（丰度）、g_seurat_clusters（分组变量）",
+      "evidence": "源码 grouped_ggbetweenstats(x=TissueType, y=frac, grouping.var=g_seurat_clusters) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ggstatsplot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "每组样本数 ≥ 3（自动 t 检验/ANOVA + 效应量标注）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ggstatsplot_grouped_comparison.pdf",
+      "content": "分组小提琴+均值点图：每分组子图内嵌统计结果（检验类型、p 值、效应量）与显著两两比较连线"
+    }
+  ],
+  "adaptation": [
+    "源码 tempName 循环逐细胞类型出图；模板单类型化（循环复用）；pairwise.display 由 'all' 收紧为 'significant'（源码注释亦提示该取向）。",
+    "ggtheme 由 theme_classic 改包默认 theme_ggstatsplot（含 subtitle 排版）；ggsave 补全五参数并降尺寸。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "code_sha256": {
+    "plot.R": "3445b9a1e5f828fc97255f6a852cabf9092418b7707da38a89b6a18dd57bb824"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

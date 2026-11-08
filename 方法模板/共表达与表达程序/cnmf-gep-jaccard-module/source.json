@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "cnmf-gep-jaccard-module",
+  "title": "cNMF 基因表达程序（GEP）汇总与已知共表达模块 Jaccard 相似性比对",
+  "kind": "method",
+  "method_type": "共表达与表达程序",
+  "language": "R",
+  "tags": [
+    "cNMF",
+    "表达程序",
+    "基因模块",
+    "Jaccard相似度"
+  ],
+  "paper": {
+    "repository": "https://github.com/cboix/admultiregion_analysis",
+    "figure": "modules/compare_cNMF_01_collate_GEPs.R（cNMF GEP 与参考共表达模块比对模块，提取 41–113 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "admultiregion_analysis",
+      "path": "modules/compare_cNMF_01_collate_GEPs.R",
+      "sha256": "facaae30bff0c2a3ed411431b7ea87985ec58ce2ef667082ac0c8ed44b907177",
+      "lines": [
+        41,
+        113
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/GEPs/*.csv",
+      "object": "cNMF 导出的 GEP 基因列表表（每文件一个细胞类）",
+      "requirements": "文件名以细胞类前缀 + 下划线命名（如 Ast_geps.csv）；首列为基因名，其余每列为一个 GEP 的基因列表；列名唯一",
+      "evidence": "list.files(pattern = \"*.csv\") 扫描与 sub(\"_.*\", \"\", fn) 前缀解析、df <- df[, -1] 去掉首列的步骤推断"
+    },
+    {
+      "path": "Data/modules_resource_coremap.rds",
+      "object": "命名列表；每元素为 gene -> module 编号的命名向量",
+      "requirements": "列表名覆盖目标细胞类（如 Ast），或使用 \"All\" 键汇总全部模块；向量名与 GEP 基因名同一注释体系",
+      "evidence": "coremap.list[[ccpref]] 取映射后按 module 编号翻转分组的步骤推断"
+    }
+  ],
+  "packages": [],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游 cNMF 已完成因子分解并导出各细胞类的 GEP 基因列表 CSV；参考共表达模块映射已构建。"
+  ],
+  "outputs": [
+    {
+      "path": "results/collated_GEPlists.rds",
+      "content": "按细胞类前缀组织的 GEP 基因列表嵌套列表（geplist），供后续比对复用"
+    },
+    {
+      "path": "results/gep_module_similarity.rds",
+      "content": "list(intersect, jaccard)：GEP × 参考模块的交集基因计数矩阵 imat 与 Jaccard 相似度矩阵 jmat（行名为 GEP、列名为模块编号）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "指定比对细胞类 pref = \"Ast\" / ccpref = \"Ast\"",
+      "basis": "来源代码调试赋值中保留的一组；迁移时替换为目标细胞类，ccpref = \"All\" 时汇总全部细胞类的参考模块逐一比对"
+    },
+    {
+      "setting": "Jaccard = |GEP ∩ module| / |GEP ∪ module|",
+      "basis": "来源代码设定；以基因集重叠度量 GEP 与已知共表达模块的对应关系，不使用权重信息"
+    }
+  ],
+  "adaptation": [
+    "移除 library(cbrbase)、set_proj(...) 私有项目环境依赖、system(\"mkdir -p ...\") 目录创建与连续覆盖的 pref 调试赋值（Ast/Inh/Exc/Brain 中仅保留 Ast 一组）。",
+    "循环内文件前缀变量更名为 file.pref，与后续细胞类选择变量 pref 区分。",
+    "删除 lapply(geplist, length) 诊断输出与后续 pheatmap 绘图段；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Jaccard 仅度量基因集重叠，不反映 cNMF 权重方向与强度；GEP 与模块规模差异悬殊时相似度被稀释，宜结合 imat 交集计数解读。",
+    "cNMF 的因子数选择与噪声成分剔除在上游完成，本模板不涉及；GEP 基因列表的截断阈值影响比对结果。"
+  ],
+  "code_sha256": {
+    "analysis.R": "0e3932431013e3206b3ac2ef95b859d94df17354de6c119db24fa5eac8bf3ebc"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

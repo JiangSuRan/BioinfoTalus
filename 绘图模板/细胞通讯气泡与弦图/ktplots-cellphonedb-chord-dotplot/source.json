@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "id": "ktplots-cellphonedb-chord-dotplot",
+  "title": "ktplots CellPhoneDB 配受体互作显著性点图（红框显著标注）",
+  "kind": "plot",
+  "plot_type": "细胞通讯气泡与弦图",
+  "language": "R",
+  "tags": [
+    "ktplots",
+    "CellPhoneDB",
+    "配受体点图",
+    "显著性标注"
+  ],
+  "paper": {
+    "repository": "SC-AgeSpePCa（年龄相关前列腺癌单细胞研究）",
+    "figure": "5.1.CellCommunication.R 的 plot_cpdb 段（830–845 行，MP1_On/Off × Treg 对比）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "SC-AgeSpePCa",
+      "path": "5.1.CellCommunication.R",
+      "sha256": "8ab0e419497d181397e5e9441b227e4679319224290ef97f877e011c5a1cc6f2",
+      "lines": [
+        830,
+        845
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cellphonedb_means.txt 与 cellphonedb_pvalues.txt",
+      "object": "CellPhoneDB 输出表（means/pvalues）",
+      "requirements": "列名含 | 分隔的 发送方|接收方 细胞对；前 11 列为元数据",
+      "evidence": "源码 grep('.*MP.*Treg', colnames(means)) 与 cbind(pvals[,1:11], ...) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ktplots",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "CellPhoneDB 分析已完成并导出 means/pvalues。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ktplots_cpdb_dotplot.pdf",
+      "content": "配受体点图：点径 = 互作均值，显著互作带红色边框，按 split.by 条件分面"
+    }
+  ],
+  "adaptation": [
+    "源码以 return_table = TRUE 取回表格再自拼 p 值宽表；模板保留直接绘图分支（同一 API），On/Off 双条件重复段精简为单次调用。",
+    "scdata = NULL（纯表输入模式）；ggsave 补全五参数。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "code_sha256": {
+    "plot.R": "e3565a79778511c4e63ab569d048cf76211709ff18cd16a46193ff1b3c93b354"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

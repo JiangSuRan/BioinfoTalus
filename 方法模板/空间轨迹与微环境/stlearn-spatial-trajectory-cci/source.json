@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "id": "stlearn-spatial-trajectory-cci",
+  "title": "stLearn SME 空间归一化、配受体 CCI 检验与细胞类型水平通讯网络",
+  "kind": "method",
+  "method_type": "空间轨迹与微环境",
+  "language": "Python",
+  "tags": [
+    "stlearn",
+    "CCI",
+    "配体受体",
+    "Visium",
+    "SME"
+  ],
+  "paper": {
+    "repository": "https://github.com/BiomedicalMachineLearning/stLearn (上游)；应用来源为 LianLab_CRCLM 仓库 functions/stLearn_analysis.py",
+    "figure": "functions/stLearn_analysis.py（CRC 肝转移 stLearn CCI 分析，全文件 57 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "LianLab_CRCLM",
+      "path": "functions/stLearn_analysis.py",
+      "sha256": "57bc58101a1ece4ba9bd93ce181da6bd5615f54025e4417e7f06e04cc9784816",
+      "lines": [
+        1,
+        57
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_sample/outs",
+      "object": "10x Visium 输出目录",
+      "requirements": "spaceranger outs 结构；HE 图像路径有效（hires png）",
+      "evidence": "st.Read10X + st.add.image 调用推断"
+    },
+    {
+      "path": "Data/spotlight_deconvolution_weights.csv",
+      "object": "spot 反卷积权重表（首列 spot 条码）",
+      "requirements": "含 spotlight.cluster 主导标签列与各类型权重列；行名与空间对象条码对齐",
+      "evidence": "源码 pd.read_csv 后 obs['cell_type'] 与 uns['cell_type'] 双写入推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "stlearn",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游已完成空间反卷积（如 SPOTlight）并导出权重表；data.uns['cell_type'] 键与 obs 同名。"
+  ],
+  "outputs": [
+    {
+      "path": "results/stlearn_cci.h5ad",
+      "content": "含 uns['lr_summary']（LR 对统计）、uns['cci']（细胞类型网络）、置换 p 值与邻域检验结果的磁盘托管 AnnData"
+    },
+    {
+      "path": "results/stlearn_cci_network.png",
+      "content": "细胞类型水平显著通讯网络图（边宽/节点大小映射互作量）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "min_spots = 20, n_pairs = 1000（LR 邻域检验）",
+      "basis": "来源代码设定；n_pairs 为随机 spot 对置换数（正式建议 ~10000）"
+    },
+    {
+      "setting": "adj_pvals correct_axis = 'spot', pval_adj_cutoff = 0.05",
+      "basis": "来源代码设定；按 spot 维 FDR 校正"
+    },
+    {
+      "setting": "run_cci min_spots = 3, spot_mixtures = True, cell_prop_cutoff = 0.2, sig_spots = True, n_perms = 100",
+      "basis": "来源代码设定；使用反卷积组成矩阵按比例加权统计细胞类型互作"
+    },
+    {
+      "setting": "配受体库 connectomeDB2020_lit（NATMI 文献子集）",
+      "basis": "来源代码设定；可换 'connectomeDB2020' 全库"
+    }
+  ],
+  "adaptation": [
+    "移除 plt.show 交互、lr_cci_map 与 cluster_plot 的逐图保存段（保留一张网络图）与 print(isbacked) 诊断。",
+    "反卷积权重文件改为 Data/ 相对路径输入；n_cpus 由 128 缩至 8。",
+    "data.filename 磁盘托管保留（大规模 spot 数据内存友好）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "CCI 依赖反卷积组成质量；spot 邻接（distance=None 即紧邻）忽略长程互作；置换数 100 时 p 值分辨率有限。",
+    "cell_prop_cutoff 0.2 使组成低于 20% 的类型不参与该 spot 的互作，稀有类型信号被压缩。"
+  ],
+  "code_sha256": {
+    "analysis.py": "20f2c98882364c2de3c09ec1e6102966e4db9006895271f7a27fce3e782e43cd"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

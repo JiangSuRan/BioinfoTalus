@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "id": "ucell-qusage-signature-scoring",
+  "title": "UCell Mann-Whitney U 排名基因集打分与 qusage GMT 签名读入",
+  "kind": "method",
+  "method_type": "基因集与通路活性",
+  "language": "R",
+  "tags": [
+    "UCell",
+    "qusage",
+    "基因集打分",
+    "排名统计",
+    "GMT"
+  ],
+  "paper": {
+    "repository": "neutrophil（中性粒细胞状态图谱研究代码）",
+    "figure": "Fig. 6.R 的 UCell+qusage 段（35–45 行）与 Fig. 1.R 的发布签名打分段（208–223 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "neutrophil",
+      "path": "Fig. 6.R",
+      "sha256": "2592e355a31d8cabee23733fb169689077102be0da532c50aae411d50102cc93",
+      "lines": [
+        30,
+        60
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/neutrophil_seurat.rds",
+      "object": "Seurat 对象",
+      "requirements": "RNA data 层已归一化；基因符号大小写与 GMT 一致（模板统一大写处理）",
+      "evidence": "源码 input.mat = All_obj_time1@assays$RNA@data 与 toupper(row.names) 推断"
+    },
+    {
+      "path": "Data/NI_signature_NEU_220504.gmt",
+      "object": "GMT 签名文件",
+      "requirements": "每行 签名名\\t描述\\t基因...；基因符号体系与对象一致",
+      "evidence": "qusage::read.gmt 调用推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "UCell",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "qusage",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "签名基因数应显著小于 maxRank（UCell 官方建议 maxRank ≥ 5-10 倍签名长度）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ucell_annotated.rds",
+      "content": "metadata 追加各签名打分列的 Seurat 对象"
+    },
+    {
+      "path": "results/ucell_scores.csv",
+      "content": "细胞 × 签名打分矩阵"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "ScoreSignatures_UCell(maxRank = 3000)",
+      "basis": "来源代码设定；仅统计排名前 3000 基因，抑制零值/dropout 对 U 统计量的稀释"
+    },
+    {
+      "setting": "行名 toupper 统一",
+      "basis": "来源代码设定；小鼠/人源混合命名时按需调整"
+    },
+    {
+      "setting": "打分输入为 data 层（log 归一化）",
+      "basis": "来源代码设定；UCell 基于排名对绝对尺度不敏感"
+    }
+  ],
+  "adaptation": [
+    "保留 read.gmt → ScoreSignatures_UCell → cbind 回写主链；移除 FeaturePlot 可视化段与源码中第二套内置 Ecotyper/hNeutro 硬编码签名列表（Fig. 1.R 208-223 行）。",
+    "新增打分 csv 与对象 rds 落盘；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "UCell 打分对签名内基因排名分布敏感：跨数据集比较时应在相同归一化流程下计算；maxRank 过小会使长签名截断失真。",
+    "qusage 仅用于 GMT 读入；其概率密度活性统计（qusage 主函数）适用于 bulk 配对比较，未在模板中调用。"
+  ],
+  "code_sha256": {
+    "analysis.R": "8bbc6dcb52ce471420842e91826fa2f64272898de851847ed28b0cab68a7184a"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

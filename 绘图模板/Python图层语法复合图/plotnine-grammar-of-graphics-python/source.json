@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "id": "plotnine-grammar-of-graphics-python",
+  "title": "plotnine Python 图层语法复合图（比例条形 + 参考线 + 标签层）",
+  "kind": "plot",
+  "plot_type": "Python图层语法复合图",
+  "language": "Python",
+  "tags": [
+    "plotnine",
+    "ggplot语法",
+    "条形图",
+    "分面统计",
+    "Python出版图"
+  ],
+  "paper": {
+    "repository": "pritykinlab-multimodal_tcells-4da0614（多模态 T 细胞研究）",
+    "figure": "figure 1.ipynb（Fig1d 峰-细胞注释比例条形图，单元 22）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "pritykinlab-multimodal_tcells-4da0614",
+      "path": "figure 1.ipynb",
+      "sha256": "e80e865e8574e8cc3bc33b9a4501e153e6918351a75fe4b18b0b6ecdd8c42edb",
+      "lines": [
+        1,
+        248
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/peak_obs.csv",
+      "object": "pd.DataFrame（obs 导出）",
+      "requirements": "列含 final annotation（分面 x）、type（填充）、可选 sample 颜色映射",
+      "evidence": "源码 ggplot(peak_ad.obs, aes(x='final annotation', fill='type')) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "plotnine",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。"
+  ],
+  "outputs": [
+    {
+      "path": "results/plotnine_barplot.pdf",
+      "content": "翻转比例条形图：type 填充、_cl13 占比虚线参考、顶部样本标签层"
+    }
+  ],
+  "adaptation": [
+    "源码 scale_fill_manual(peak_ad.uns['type_colors'])（AnnData uns 颜色）改为从 obs 唯一值构造；size=30 的标签字号修正为可读值。",
+    "print(p1) 交互删除；ggsave 五参数中 filename 为位置参数 + 落盘 results/。",
+    "theme_tufte 与 dpi/figure_size 保留源码设定。"
+  ],
+  "code_sha256": {
+    "plot.py": "2242984a5ac63e8085f04b2b24771c070f2aca44109b6a5a929266809ad08e70"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

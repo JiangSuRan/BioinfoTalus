@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "id": "sctranslator-rna-to-protein-transformer",
+  "title": "scTranslator Performer 架构 RNA→蛋白丰度跨模态翻译推理",
+  "kind": "method",
+  "method_type": "多组学整合与迁移",
+  "language": "Python",
+  "tags": [
+    "scTranslator",
+    "Performer",
+    "跨模态翻译",
+    "CITE-seq",
+    "蛋白预测"
+  ],
+  "paper": {
+    "repository": "https://github.com/ProRubick/scTranslator (上游)；应用来源为 scTranslator 仓库推理脚本",
+    "figure": "code/main_scripts/stage3_inference_without_finetune.py（零微调推理全文件 115 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "scTranslator",
+      "path": "code/main_scripts/stage3_inference_without_finetune.py",
+      "sha256": "e6684664e2104413dad88e1688e18ea4557d609a89ee156847e86417e5a230ef",
+      "lines": [
+        1,
+        115
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/checkpoint/stage2_single-cell_scTranslator.pt",
+      "object": "scTranslator 预训练权重",
+      "requirements": "stage2 单细胞 RNA→蛋白训练产物；encoder 2 万基因 / decoder 1 千蛋白序列长度",
+      "evidence": "源码 args 默认 pretrain_checkpoint 与 enc/dec_max_seq_len 推断"
+    },
+    {
+      "path": "Data/GSM5008737_RNA_finetune_withcelltype.h5ad 与 GSM5008738_protein_finetune_withcelltype.h5ad",
+      "object": "配对 RNA/蛋白 AnnData（测试对）",
+      "requirements": "同条码配对；RNA 为 log 归一化表达、蛋白为 CLR 归一化 CITE-seq 丰度",
+      "evidence": "test_rna.obs.index 对齐 test_protein 的步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "performer-enc-dec",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "GPU 必需（2 万基因序列注意力）；utils/test 函数来自同仓 code/model。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sctranslator_y_pred.csv 与 y_truth.csv",
+      "content": "预测蛋白丰度矩阵与真实值对照（细胞 × 蛋白）"
+    },
+    {
+      "path": "results/sctranslator_performance.csv",
+      "content": "测试损失与 CCC（一致性相关系数）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "enc_max_seq_len = 20000, dec_max_seq_len = 1000",
+      "basis": "来源代码默认；全基因组 RNA 输入与panel 级蛋白输出"
+    },
+    {
+      "setting": "fix_SCDataset（对齐模式）",
+      "basis": "来源代码 args.fix_set 默认 True；RNA 与蛋白按细胞一一对应"
+    },
+    {
+      "setting": "test_batch_size = 4",
+      "basis": "来源代码默认；受 2 万长度注意力显存限制"
+    }
+  ],
+  "adaptation": [
+    "将 main() 的 argparse 配置改为字面量并线性化；移除 dataset_flag 分支/args 文本导出/重复实验循环与 print 诊断。",
+    "推理核心（torch.load 权重 + fix_SCDataset + test）保留；结果改 results/ 相对路径落盘。",
+    "样本切片 [:100] 保留（源码演示行为，正式分析移除）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "蛋白预测受 CITE-seq panel 覆盖限制（仅可翻译训练时见过的蛋白）；跨组织/疾病偏移下 CCC 会下降。",
+    "Performer 线性注意力近似可能在高表达基因上引入偏差，建议对关键蛋白与实验流式值交叉验证。"
+  ],
+  "code_sha256": {
+    "analysis.py": "ee2943446f9e48a677830f26315bc6ea9c85f7a09c56aca61fa550c8db443720"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

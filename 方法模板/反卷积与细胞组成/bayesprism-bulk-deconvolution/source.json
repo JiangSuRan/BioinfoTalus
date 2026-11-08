@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "id": "bayesprism-bulk-deconvolution",
+  "title": "BayesPrism 基于单细胞参考图谱的 Bulk RNA-seq 贝叶斯反卷积",
+  "kind": "method",
+  "method_type": "反卷积与细胞组成",
+  "language": "R",
+  "tags": [
+    "BayesPrism",
+    "反卷积",
+    "细胞比例推断",
+    "Bulk转录组",
+    "单细胞参考"
+  ],
+  "paper": {
+    "repository": "https://github.com/ma-jq/B.git",
+    "figure": "Fig5/BayesPrism_function.R（B 细胞图谱 Fig5 反卷积函数，全文件 1–44 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "B_cell_atlas_ma_jq",
+      "path": "Fig5/BayesPrism_function.R",
+      "sha256": "0520fbd8990c535c67f5f032a3e2324528d3c3261d4d4f00b326afbf7684cb02",
+      "lines": [
+        1,
+        44
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sc_raw_counts.rds",
+      "object": "稀疏/普通矩阵（基因 × 单细胞，原始 counts）",
+      "requirements": "行名为基因符号（或 ENSEMBL，需与 bulk 一致）；未取对数",
+      "evidence": "cleanup.genes(input.type = \"count.matrix\") 与 new.prism(input.type = \"count.matrix\") 的接口要求推断"
+    },
+    {
+      "path": "Data/sc_metadata.rds",
+      "object": "data.frame（每细胞一行）",
+      "requirements": "含 cell_type（主要类型）与 cell_state（亚群/状态）两列，与表达矩阵细胞同序对齐",
+      "evidence": "函数参数 cell.type.labels / cell.state.labels 的对应关系推断"
+    },
+    {
+      "path": "Data/bulk_counts.rds",
+      "object": "矩阵（基因 × Bulk 样本，原始 counts）",
+      "requirements": "行名基因符号体系与单细胞参考一致",
+      "evidence": "new.prism(mixture = bk.dat, input.type = \"count.matrix\") 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "BayesPrism",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "单细胞参考已质控并覆盖 Bulk 样本预期细胞类型；人与小鼠注释由 species 参数区分（当前为 hs）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/bayesprism_res.rds",
+      "content": "run.prism 结果对象：细胞类型与细胞状态两级后验比例（theta）、变分推断 ELBO 轨迹与 Z 表达矩阵"
+    },
+    {
+      "path": "results/bayesprism_fraction.csv",
+      "content": "theta final 矩阵：行=单细胞状态，列=Bulk 样本的细胞比例估计（含不确定度可由结果对象进一步提取）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "cleanup.genes gene.group = c(\"Rb\", \"Mrp\", \"mito\", \"rep\")，物种 hs",
+      "basis": "BayesPrism 标准流程；剔除核糖体/线粒体/重复序列基因，避免其高表达主导后验拟合"
+    },
+    {
+      "setting": "select.gene.type type = \"protein_coding\"",
+      "basis": "源码引用 sc.dat.filtered.pc 变量表明上游做了蛋白编码过滤，模板补全该步骤"
+    },
+    {
+      "setting": "new.prism outlier.cut = 0.01, outlier.fraction = 0.1",
+      "basis": "来源代码设定；控制参考中异常高表达基因的剔除强度"
+    },
+    {
+      "setting": "run.prism n.cores = 8（原函数默认 ncore = 50）",
+      "basis": "任务规范设定；线程数按本机核数缩减，Gibbs 采样链数与迭代用包默认"
+    },
+    {
+      "setting": "set.seed(12345)",
+      "basis": "来源代码设定；固定随机种子保证贝叶斯采样可复现"
+    }
+  ],
+  "adaptation": [
+    "将 BayesPrism_func 函数拆包为从读取数据到导出比例的线性脚本；函数内引用但未定义的 sc.dat.filtered / sc.dat.filtered.pc 补全为 cleanup.genes 与 select.gene.type 两步。",
+    "移除 plot.bulk.outlier / plot.bulk.vs.sc 诊断绘图调用与未使用的 ggplot2/reshape2/Seurat 依赖。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/），新增 theta 比例表导出。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "反卷积精度依赖单细胞参考对 Bulk 组织细胞类型的覆盖度与注释质量；未覆盖类型会以比例偏差形式泄漏到相近类型。",
+    "BayesPrism 假设 Bulk 表达为细胞状态表达的线性混合，不建模肿瘤新异表达与批次效应，跨平台数据需先校正。"
+  ],
+  "code_sha256": {
+    "analysis.R": "2d7b19821ebbf47986d479e18a7321d4478e04244f50527302eac10227dad69c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

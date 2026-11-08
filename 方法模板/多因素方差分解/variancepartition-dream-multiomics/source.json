@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "variancepartition-dream-multiomics",
+  "title": "variancePartition (dream) 队列级 Pseudobulk 多组学表型（年龄/性别/个体/细胞类型）方差解释率分解",
+  "kind": "method",
+  "method_type": "多因素方差分解",
+  "language": "R",
+  "tags": [
+    "variancePartition",
+    "dream",
+    "edgeR",
+    "方差分解",
+    "Pseudobulk",
+    "R"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "Multiomics_anaylsis/variancePartition_analysis.py（CIMA 图谱 Pseudobulk 方差分解 notebook 的 R 单元，提取 98–181 行输入准备与 275–341 行 varPart 主链）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "Multiomics_anaylsis/variancePartition_analysis.py",
+      "sha256": "59f7f0a93f3f3220219421d495c8d8d8c1533eca05986e40cb66a81ab9b02634",
+      "lines": [
+        98,
+        181
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/pseudobulk_counts.csv",
+      "object": "计数矩阵（基因 × 伪多组学样本）",
+      "requirements": "原始整数计数；列为 个体×细胞类型 组合的 pseudobulk 样本且与 metadata 行对齐",
+      "evidence": "源码 DGEList(counts = pbmc@assays$RNA@counts) 与 Read10X/metadata 读取段推断"
+    },
+    {
+      "path": "Data/sample_meta.csv",
+      "object": "data.frame（每 pseudobulk 样本一行）",
+      "requirements": "含 Age（数值）、sex、celltype、sample（个体）列",
+      "evidence": "任务规范指定的 form 各项与源码 meta.data 列（individual/celltype/sex/age）对应推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "variancePartition",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "edgeR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "BiocParallel",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "Pseudobulk 已按 个体 × 细胞类型 聚合且低表达基因过滤完成（源码另做 >10% 样本检出过滤）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/variance_partition_results.csv",
+      "content": "基因 × 方差来源（Age/sex/celltype/sample/Residual）的方差解释比例表"
+    },
+    {
+      "path": "results/variance_partition_violin.pdf",
+      "content": "各方差来源跨基因分布的小提琴图（中位数排序）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "form = ~ Age + (1|sex) + (1|celltype) + (1|sample)",
+      "basis": "任务规范指定（源码为 ~ age + (1|individual) + (1|celltype) + (1|sex)）；固定/随机分派应随设计假设调整"
+    },
+    {
+      "setting": "voomWithDreamWeights + fitExtractVarPartModel",
+      "basis": "variancePartition 官方推荐：dream 观测权重对异方差 pseudobulk 更稳"
+    },
+    {
+      "setting": "SnowParam(8) 并行",
+      "basis": "任务规范设定；按核数调整"
+    }
+  ],
+  "adaptation": [
+    "源 notebook（jupyter R 单元）经 Seurat Read10X/mtx 中转读取并做多轮细胞类型与基因过滤、VlnPlot 预览；模板输入改为整理好的 csv+metadata 直读。",
+    "保留 DGEList -> calcNormFactors -> voomWithDreamWeights -> fitExtractVarPartModel -> sortCols -> plotVarPart 主链；varPart 结果改走 read.csv 回读的调试段删除。",
+    "移除 sessionInfo、VlnPlot 与多轮中间 rds 落盘。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "方差分解为观测层面的归因，不等于因果效应；协变量共线（如年龄与个体嵌套）时比例不可加解释。",
+    "小样本来源（如某细胞类型仅几个个体）的随机效应方差估计不稳定，应报告每来源样本数。"
+  ],
+  "code_sha256": {
+    "analysis.R": "8bdab76156770dcb60d5640f1b5b6d5b6490a51565f9819b2040da2c74bba0ff"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

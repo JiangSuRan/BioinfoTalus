@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "sccoda-bayesian-compositional-analysis",
+  "title": "scCODA 层次贝叶斯 Dirichlet-multinomial 细胞组成分析（HMC 采样与参考类型循环）",
+  "kind": "method",
+  "method_type": "组成与丰度差异",
+  "language": "Python",
+  "tags": [
+    "scCODA",
+    "组成分析",
+    "贝叶斯HMC",
+    "Dirichlet",
+    "细胞比例"
+  ],
+  "paper": {
+    "repository": "https://github.com/theislab/scCODA (上游)；应用来源为 Cortex-Atlas-Code 仓库 fig1d4_neuron.ipynb",
+    "figure": "src/fig1/fig1d4_neuron.ipynb（皮层图谱区域间神经元亚类组成变化，run_scCODA 单元）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Cortex-Atlas-Code",
+      "path": "src/fig1/fig1d4_neuron.ipynb",
+      "sha256": "79fa59caf159ec28534a1f5068e5d34be6abbe437cb39ecb487412fc95f24797",
+      "lines": [
+        1,
+        520
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/whole_meta.csv",
+      "object": "data.frame（每细胞一行）",
+      "requirements": "列含 class（拆分键）、library_prep（样本标识）、sex/donor/region（协变量）与细胞类型列（如 cross_area_subclass）",
+      "evidence": "源码 dat.from_scanpy(cell_type_identifier=..., sample_identifier=...) 与 covariates 列表推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scCODA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "组成表为样本 × 细胞类型计数（from_scanpy 自动聚合）；样本数建议 ≥ 10 组。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sccoda_effects_summary.csv",
+      "content": "各参考类型轮换下的效应汇总表：协变量 × 细胞类型的效应后验均值、HPD 区间与可信（credible）标记"
+    },
+    {
+      "path": "results/sccoda_last_model.pkl",
+      "content": "最后一个收敛模型的 pickle（含后验样本）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "formula = 'sex + region'（随机效应/library_prep 作样本标识）",
+      "basis": "来源代码 covariates 与 formula 拼接方式推断；library_prep 在源码作为样本键（scCODA 无独立随机效应项）"
+    },
+    {
+      "setting": "sample_hmc + 接受率阈值 0.6",
+      "basis": "来源代码设定；接受率不足时换参考类型重跑（源码 while 循环）"
+    },
+    {
+      "setting": "参考类型逐一轮换（reference_cell_type 循环）",
+      "basis": "来源代码设定；默认单参考可能偏置效应估计，轮换汇总更稳健"
+    }
+  ],
+  "adaptation": [
+    "将 run_scCODA 函数拆包为线性脚本：保留 from_scanpy 组成构建、协变量表对齐、CompositionalAnalysis+sample_hmc、summary_prepare 效应表拼接。",
+    "移除 Spearman 协变量相关诊断热图、boxplots 可视化与 pickle 缓存守卫（源码 if exists 分支）、while 重试的目录管理（模板只跑一轮/类型）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "scCODA 参考类型选择影响不显著集合的判定；HMC 采样随机性需固定 pyro 种子并核对接受率与 R-hat。",
+    "组成数据只能回答相对变化（某型升必伴他型降），绝对丰度变化需外部计数因子。"
+  ],
+  "code_sha256": {
+    "analysis.py": "c49f02cd90fc1d746ba7051d3f9c3a1f261694f9a8ae6823957f1d812f9cfa30"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

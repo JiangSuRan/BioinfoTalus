@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "id": "celloracle-grn-ko-simulation",
+  "title": "CellOracle 基因调控网络（GRN）拟合与转录因子虚拟敲除（In-silico KO）分化轨迹模拟",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "CellOracle",
+    "虚拟敲除",
+    "基因调控网络",
+    "轨迹扰动",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/morris-lab/CellOracle.git",
+    "figure": "docs/notebooks/05_simulation/Gata1_KO_simulation_with_Paul_etal_2015_data.ipynb（官方 Gata1 敲除模拟教程，前 80 行代码单元）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CellOracle",
+      "path": "docs/notebooks/05_simulation/Gata1_KO_simulation_with_Paul_etal_2015_data.ipynb",
+      "sha256": "673ff593d2ad71b5caba892d4f7f078ed391a7b91bf4665fbc05ac7f5e6a5d21",
+      "lines": [
+        1,
+        80
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/oracle_object.celloracle",
+      "object": "Oracle 对象（含 imputed_count 层、聚类与降维）",
+      "requirements": "已完成基序扫描与 TF-靶点初始化（notebook 04 产物）；嵌入为 draw_graph/umap 等",
+      "evidence": "notebook co.load_hdf5 加载 Oracle 对象与 fit_GRN_for_simulation 前置条件推断"
+    },
+    {
+      "path": "Data/links_object.celloracle",
+      "object": "Links 对象（GRN 推断结果）",
+      "requirements": "含各簇的 TF-基因连接与显著性检验结果",
+      "evidence": "notebook links.filter_links() 与 get_cluster_specific_TFdict_from_Links 步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "celloracle",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游 Oracle/Links 对象已构建（celloracle >= 0.10.8）；目标 TF 在网络中有出边。"
+  ],
+  "outputs": [
+    {
+      "path": "results/oracle_gata1_ko.celloracle",
+      "content": "含 KO 模拟结果的 Oracle 对象：扰动后表达（simulated_count 类推）、细胞转移概率与嵌入偏移向量，供 quiver/流场图与拟时序比较下游使用"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "fit_GRN_for_simulation alpha = 10, use_cluster_specific_TFdict = TRUE",
+      "basis": "来源代码设定；岭回归正则强度控制模拟灵敏度，簇特异字典区分细胞类型的调控逻辑"
+    },
+    {
+      "setting": "simulate_shift n_propagation = 3",
+      "basis": "来源代码设定；信号传播步数决定间接靶响应深度，过深易饱和"
+    },
+    {
+      "setting": "estimate_transition_prob n_neighbors = 200, knn_random = True, sampled_fraction = 1",
+      "basis": "来源代码设定；随机图对照用于显著性背景"
+    },
+    {
+      "setting": "calculate_embedding_shift sigma_corr = 0.05",
+      "basis": "来源代码设定；嵌入偏移向量的核宽参数"
+    }
+  ],
+  "adaptation": [
+    "将 notebook 单元串接为线性脚本（load -> filter_links -> fit -> simulate_shift -> transition_prob -> embedding_shift）。",
+    "移除演示对象加载分支、基因表达检查图、quiver/网格流场与 PS 拟时序对比可视化段（notebook 4-5 节）。",
+    "新增 oracle.to_hdf5 保存模拟结果对象。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "模拟结果依赖上游 GRN 质量（基序数据库覆盖与 ATAC/RNA 一致性）；对网络外间接调控不可见。",
+    "扰动值上限为自然表达范围两倍，超出物理意义的设定会返回非典型分布警告；转移概率对 n_neighbors 敏感。"
+  ],
+  "code_sha256": {
+    "analysis.py": "c02a4adbc621b769c9c3454794af63b577cba911a6a68d1a0c23cea25012c244"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

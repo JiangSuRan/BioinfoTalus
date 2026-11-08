@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "cellrank-fate-probability-drivers",
+  "title": "CellRank 速度核与表达相似性核组合的转移矩阵、宏观状态与命运概率推断",
+  "kind": "method",
+  "method_type": "轨迹与拟时序",
+  "language": "Python",
+  "tags": [
+    "CellRank",
+    "GPCCA",
+    "命运概率",
+    "转移矩阵",
+    "scVelo"
+  ],
+  "paper": {
+    "repository": "https://github.com/theislab/cellrank (上游)；应用来源为 panVC 仓库 TrajectoryCellrankRun.py",
+    "figure": "TrajectoryCellrankRun.py（panVC 单细胞轨迹 CellRank 段，全文件 45 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "panVC",
+      "path": "TrajectoryCellrankRun.py",
+      "sha256": "69ee6b684947bbda4d4b28251d2839b9f552c8a3586a34c3c2ede92f18664b22",
+      "lines": [
+        1,
+        45
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/velocity_annotated.h5ad",
+      "object": "AnnData（含 spliced/unspliced 层）",
+      "requirements": "layers 含 spliced/unspliced；obs 含 celltype；已有 UMAP 嵌入",
+      "evidence": "scv.pp.filter_and_normalize/moments 与 vk.plot_projection(basis='umap', color='celltype') 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "cellrank",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scvelo",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "GPU 可选（动力学恢复耗时）；终态数需按数据生物学先验设定。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cellrank_fates.h5ad",
+      "content": "含 fate_probabilities（obsm，各终态吸收概率）与 macrostates 标注的 AnnData"
+    },
+    {
+      "path": "results/cellrank_velocity_projection.svg 与 fate_probs 图",
+      "content": "速率场流图与命运概率可视化"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "combined_kernel = 0.8 * VelocityKernel + 0.2 * ConnectivityKernel",
+      "basis": "来源代码设定；速度方向主导、表达相似性兜底，权重按数据可调"
+    },
+    {
+      "setting": "GPCCA compute_schur(n_components=10) + compute_macrostates(n_states=3)",
+      "basis": "CellRank GPCCA 标准流程（源码仅到 plot_projection， fate 段按任务规范补全 GPCCA 链）"
+    },
+    {
+      "setting": "set_terminal_states_from_macrostates 命名终态",
+      "basis": "模板设定；终态名可由 macrostates 成员聚类自动标注"
+    }
+  ],
+  "adaptation": [
+    "保留源码速度核/连通性核组合与 plot_projection 逐字逻辑；移除文件列表工具函数与 print(combined_kernel)。",
+    "按任务规范补全 GPCCA 宏观状态 → 终态 → 命运概率链（源码未执行到该步）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "命运概率依赖转移矩阵质量：速度不可靠区域（稀疏剪接）概率噪声大；n_states 选择影响宏观状态划分，需看 Schur 分解谱隙。",
+    "GPCCA 吸收概率是随机游走意义下的终态归属，不等于确定性谱系。"
+  ],
+  "code_sha256": {
+    "analysis.py": "679d62d264f44935f6987cb6f06424ad5acfdb8c255c3846c213ac328a59833c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

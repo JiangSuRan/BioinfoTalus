@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "id": "rapids-singlecell-gpu-preprocessing",
+  "title": "rapids-singlecell 与 Scanpy 百万级单细胞 GPU 加速质控、黑名单高变基因过滤与 Harmony 整合",
+  "kind": "method",
+  "method_type": "百万级单细胞加速分析",
+  "language": "Python",
+  "tags": [
+    "rapids-singlecell",
+    "Scanpy",
+    "GPU加速",
+    "Scrublet",
+    "高变基因过滤",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "scRNA-seq/CIMA_scRNA_Preprocessing.py（CIMA 千万级 scRNA 预处理，提取 60–195 行 GPU 配置/质控/HVG/Harmony 段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "scRNA-seq/CIMA_scRNA_Preprocessing.py",
+      "sha256": "eb4259842541ff948863993b700a97bb96492689b0988d5f054a66f88ca3f82e",
+      "lines": [
+        60,
+        195
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cima_raw.h5ad",
+      "object": "AnnData（合并后的原始计数）",
+      "requirements": "X 为原始 counts；obs 含 predicted_doublets（上游 Scrublet 预测列）与 sample 列",
+      "evidence": "源码 adata.obs['predicted_doublets'] 布尔过滤与 sample 批次列推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "rapids-singlecell",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "rmm",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "cupy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "NVIDIA GPU 与 RAPIDS 环境可用；上游 Scrublet 双细胞预测已完成。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cima_gpu_integrated.h5ad",
+      "content": "质控整合后的 AnnData：counts/log 层、纯净 HVG 标记、X_pca 与 X_pca_harmony、邻域图、UMAP 与 leiden 标签"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "质控阈值：pct_counts_mt < 15、基因 500-6000、counts 1000-25000、min_cells=3",
+      "basis": "来源代码设定（千万级图谱实测阈值）；迁移时按分布重评"
+    },
+    {
+      "setting": "HVG seurat_v3 top 2500 后剔除 MT/RP/ncRNA/LINC",
+      "basis": "来源代码设定；技术与非编码基因不入特征集，避免其高方差主导整合空间"
+    },
+    {
+      "setting": "neighbors n_pcs = 19, leiden resolution = 1.5, n_iterations = 2",
+      "basis": "来源代码设定（n_pcs=19 为 elbow 后取值）；大图谱降迭代加速"
+    },
+    {
+      "setting": "rmm 托管内存 + GPU Harmony",
+      "basis": "来源代码设定；百万级 PCA/邻域运算在 GPU 完成，托管内存允许显存超额"
+    }
+  ],
+  "adaptation": [
+    "移除多进程 h5ad 目录扫描合并（输入改为合并后单文件）、逐级过滤的细胞数打印、HVG 列表 Excel 导出、多轮中间文件落盘与 PCA 方差图。",
+    "PCA 绘图调用与聚类配色段删除；hvg_remove/hvg_keep 双列表精简为布尔掩码一次运算。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "百万级矩阵内存需求高（GPU 显存 + 系统内存），无 RAPIDS 环境时需退回 CPU 分片方案。",
+    "固定阈值与 HVG 黑名单剔除为图谱级设定，小数据集直接套用会过度过滤；Str 批次-生物学混叠时 Harmony 可能移除真实差异。"
+  ],
+  "code_sha256": {
+    "analysis.py": "01dc5236a73f62df6b2d99dc27ae9142e879fbbbb76dc8e63facacc40b235baa"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "id": "spatialdata-multiplatform-omics",
+  "title": "SpatialData 跨平台空间组学（Shapes/Points/Images/Tables）统一数据结构构建与导出",
+  "kind": "method",
+  "method_type": "空间多组学预处理",
+  "language": "Python",
+  "tags": [
+    "SpatialData",
+    "Xenium",
+    "zarr",
+    "空间组学容器",
+    "跨平台"
+  ],
+  "paper": {
+    "repository": "https://github.com/scverse/spatialdata (上游)；应用来源为 Pan-cancer_Lodietal 仓库 Xenium/codes/XeniumAnalysis_create_obj.ipynb",
+    "figure": "XeniumAnalysis_create_obj.ipynb（NSCLC Xenium SpatialData 对象构建与导出，单元 2–9）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Pan-cancer_Lodietal",
+      "path": "Xenium/codes/XeniumAnalysis_create_obj.ipynb",
+      "sha256": "12dfacf357809b9761217e0b922c92e8a211cbbbd47c344bec21676a1fc55e49",
+      "lines": [
+        1,
+        29
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/xenium_outs/",
+      "object": "10x Xenium 输出目录",
+      "requirements": "标准 outs 结构（cell_feature_matrix、cells、morphology 图像等）",
+      "evidence": "spatialdata_io.xenium(...) 读取推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "spatialdata",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "spatialdata-io",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "spatialdata-plot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "zarr 写出需充足磁盘；Visium/Merscope/CosMX 等平台对应 spatialdata_io 各 reader。"
+  ],
+  "outputs": [
+    {
+      "path": "results/xenium_spatialdata.zarr",
+      "content": "SpatialData zarr 容器：细胞多边形 Shapes、转录本 Points、形态学 Images 与单细胞 Tables"
+    },
+    {
+      "path": "results/xenium_matrix.mtx 与 metadata.csv 与 gene_names.txt",
+      "content": "计数矩阵/元数据/基因名三件套，供 Seurat/Scanpy 下游导入"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "tables['table'] 提取单细胞 AnnData",
+      "basis": "来源代码设定；Xenium reader 的 table 键固定，其他平台键名可查 sdata.tables.keys()"
+    },
+    {
+      "setting": "坐标写入 obs['x'/'y'] 并导出 mtx 三件套",
+      "basis": "来源代码设定；与 Seurat V4 生态（未支持 SpatialData 时）交换的标准做法"
+    }
+  ],
+  "adaptation": [
+    "源 notebook 为绝对集群路径导出；模板改 results/ 相对路径并新增 sdata.write zarr 落盘（源码未保存容器）。",
+    "移除 IPython 显示语句；counts 层副本保留。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "zarr 容器对版本敏感（spatialdata schema 演进），跨版本读取需核对兼容矩阵；Points 转录本层在数亿分子时磁盘开销大。"
+  ],
+  "code_sha256": {
+    "analysis.py": "204f0b311ce87f9a57176e593af6db526b4e78a00a506ac4fddf62bd1e1b556b"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

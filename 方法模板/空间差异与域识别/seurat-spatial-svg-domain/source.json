@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "id": "seurat-spatial-svg-domain",
+  "title": "Seurat 空间转录组分区特征打分与空间域差异表达分析",
+  "kind": "method",
+  "method_type": "空间差异与域识别",
+  "language": "R",
+  "tags": [
+    "Seurat",
+    "空间差异分析",
+    "空间转录组",
+    "模块打分"
+  ],
+  "paper": {
+    "repository": "https://github.com/naomihabiblab/BEYOND_DLPFC.git",
+    "figure": "3. Other analyses/utils/spatial.utils.R（DLPFC 空间分析工具函数，全文件 1–81 行的预处理与特征汇总函数）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "BEYOND_DLPFC",
+      "path": "3. Other analyses/utils/spatial.utils.R",
+      "sha256": "0aefbcd840232900266ca8ec6d0f6e45d11833fdcb935a5b2c89f6c04d69c2af",
+      "lines": [
+        1,
+        81
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/spatial_seurat.rds",
+      "object": "Seurat 对象（Visium 切片）",
+      "requirements": "Spatial assay 已归一化（FindAllMarkers 需 data 层）；meta.data 含 region 列（空间分区/域标签，可来自空间域聚类或解剖学注记）",
+      "evidence": "源码 preprocess 函数的 Load10X_Spatial + 质控流程与任务规范要求的 region 差异检验组合推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "空间域标签（region 列）已由上游空间聚类或注释产生；数据已归一化。"
+  ],
+  "outputs": [
+    {
+      "path": "results/spatial_region_markers.csv",
+      "content": "各空间分区 one-vs-rest 标记基因表：gene、cluster（分区）、avg_log2FC、pct.1/pct.2、p_val_adj，簇内按 avg_log2FC 降序排列"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "线粒体过滤阈值 = max(min(median+2MAD, Q3+1.5IQR), 30%)",
+      "basis": "来源代码设定的双稳健准则；MAD 与 IQR 自适应分布，30% 上限为安全兜底（源码默认 max_mito_pct = 30）"
+    },
+    {
+      "setting": "UMI 与基因数下限 nCount >= 500、nFeature > 500",
+      "basis": "来源函数默认参数（umi_min = 500, nfeatures_min = 500）；迁移时按切片深度分布重评"
+    },
+    {
+      "setting": "FindAllMarkers(test.use = \"wilcox\", only.pos = TRUE)",
+      "basis": "任务规范指定的区域差异检验实现（Seurat 默认秩检验）；空间域标记惯例取正向富集基因"
+    }
+  ],
+  "adaptation": [
+    "将 preprocess_visium_h5 函数拆包为线性脚本：修正源码 percent.my / subst 两处笔误为 percent.mt / subset，质控 pdf 诊断图段删除。",
+    "Load10X_Spatial 与 AddMetaData 输入准备改为直接读取已就绪的 Seurat 对象。",
+    "按任务规范补充 region 列 FindAllMarkers 区域差异检验与结果排序输出；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Wilcoxon one-vs-rest 忽略 spot 间空间自相关，p 值偏乐观，显著性解释宜结合效应量（avg_log2FC）。",
+    "分区标签质量决定标记基因意义；域边界混合区域的标记会平均化两侧信号。"
+  ],
+  "code_sha256": {
+    "analysis.R": "eaf9b87e15923b8e161e7c6b432bab0f2b9aac0d0b4a61d046c27189b1c6ae2a"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "id": "alphagenome-regulatory-variant-prediction",
+  "title": "AlphaGenome 基因组序列大模型调控效应预测（多组学 track 与变异打分）",
+  "kind": "method",
+  "method_type": "基因组序列大模型与变异预测",
+  "language": "Python",
+  "tags": [
+    "AlphaGenome",
+    "基因组序列模型",
+    "变异效应",
+    "调控预测",
+    "JAX"
+  ],
+  "paper": {
+    "repository": "https://github.com/google-deepmind/alphagenome_research",
+    "figure": "colabs/quick_start.ipynb（官方快速上手：模型加载、区间多组学预测与 predict_variant 变异打分，单元 3–16）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "alphagenome_research",
+      "path": "colabs/quick_start.ipynb",
+      "sha256": "2973b3f04ace55606f90fdc4054ca183e767ed589ca7f8d40a9f0219068b44e2",
+      "lines": [
+        1,
+        427
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Kaggle 模型凭据",
+      "object": "Kaggle API 凭据（kagglehub）",
+      "requirements": "需接受 AlphaGenome 模型许可；模型权重约数 GB",
+      "evidence": "dna_model.create_from_kaggle('all_folds') 推断"
+    },
+    {
+      "path": "GENCODE v46 GTF（feather）",
+      "object": "远程注释文件",
+      "requirements": "hg38；用于转录本注释与变异效应解读",
+      "evidence": "pd.read_feather(storage.googleapis.com/alphagenome/reference/...) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "alphagenome",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "jax",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "GPU 显存充裕（XLA 内存占比 0.9 为源码设定）；变异打分窗口 1Mb（2**20）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/alphagenome_variant_effect.csv",
+      "content": "变异对 RNA-seq 各 track 的预测差（ref vs alt delta）"
+    },
+    {
+      "path": "predictions 对象（内存）",
+      "content": "区间预测含 rna_seq/atac/dnase/chip_tf/chip_histone/contact_maps 各 track（可对接 plot_components 可视化）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "create_from_kaggle('all_folds')",
+      "basis": "来源代码设定；多折集成预测更稳但计算量 x 折数"
+    },
+    {
+      "setting": "predict_interval ontology_terms = ['EFO:0001187']（ Ontology 条件化输出）",
+      "basis": "来源代码示例（染单细胞 EFO 项）；按目标细胞类型选 EFO 项"
+    },
+    {
+      "setting": "变异窗口 resize(2**20)（1Mb）",
+      "basis": "来源代码设定；模型输入窗长固定"
+    }
+  ],
+  "adaptation": [
+    "移除 pip 安装单元、clear_output、track 元数据枚举打印与 plot_components 可视化段（可视化属绘图模板范畴）。",
+    "保留环境变量确定性 flag、模型加载、GTF 提取器、predict_interval 与 predict_variant 主链；变异效应汇总为 csv（源码未落盘）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "模型对训练分布外的物种/组织外推有限；变异打分为表达/可及性变化方向性预测，临床解读需实验验证。",
+    "all_folds 集成显存需求高，单折模型可作快速筛选。"
+  ],
+  "code_sha256": {
+    "analysis.py": "31661d67e3ac5cca2ecf34e47a914840d03c6ec428b82d881d8c8c87fd7320b4"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

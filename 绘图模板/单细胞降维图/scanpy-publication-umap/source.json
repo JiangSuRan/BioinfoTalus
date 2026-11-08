@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "id": "scanpy-publication-umap",
+  "title": "Scanpy 出版级高密度单细胞 UMAP 嵌入散点图（matplotlib / scanpy）",
+  "kind": "plot",
+  "plot_type": "单细胞降维图",
+  "language": "Python",
+  "tags": [
+    "scanpy",
+    "matplotlib",
+    "UMAP",
+    "单细胞可视化",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/cantinilab/scPRINT.git",
+    "figure": "figures/niceumap.py（scPRINT 出版级 UMAP 绘图脚本，全文件 1–39 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "scPRINT",
+      "path": "figures/niceumap.py",
+      "sha256": "8041d2e1c8012326535276bf55b794d0c669288d059227e2e4ccfb9a31cd9a1a",
+      "lines": [
+        1,
+        39
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/umap_input.h5ad",
+      "object": "AnnData",
+      "requirements": "obsm 含 X_umap 嵌入（或先运行 sc.tl.umap）；obs 含 cell_type 分类标签列",
+      "evidence": "源码 adata.obsm[\"X_umap\"] 与 conv_pred_cell_type_ontology_term_id 标签列用法推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "matplotlib",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "UMAP 嵌入已计算（源码以 umap.UMAP(n_neighbors=15, min_dist=0.1, spread=1.4, metric=\"cosine\") 拟合）。"
+  ],
+  "outputs": [
+    {
+      "path": "result/publication_umap.pdf",
+      "content": "无边框出版级 UMAP 散点图：小点径半透明点云按 cell_type 着色，300 dpi 紧凑边框导出"
+    }
+  ],
+  "adaptation": [
+    "移除 h5ad 分片目录扫描与 concat_on_disk 合并、UMAP 重拟合与回写（输入改为已含嵌入的单文件）。",
+    "源码被注释掉的 datamapplot 绘图按任务规范改写为 scanpy sc.pl.embedding 标准出版级散点并显式 fig.savefig(dpi=300, bbox_inches=\"tight\")。"
+  ],
+  "code_sha256": {
+    "plot.py": "5b4bbe25f22b86a4ceaab6f83dbc63ab3eea6c14c41bd9c35d607237e5e4726a"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

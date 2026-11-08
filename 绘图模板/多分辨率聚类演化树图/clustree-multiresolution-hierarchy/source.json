@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "clustree-multiresolution-hierarchy",
+  "title": "clustree 多分辨率聚类层级演化树图（metadata 列与 CHOIR 层级树）",
+  "kind": "plot",
+  "plot_type": "多分辨率聚类演化树图",
+  "language": "R",
+  "tags": [
+    "clustree",
+    "分辨率扫描",
+    "聚类稳定性",
+    "CHOIR",
+    "层级树"
+  ],
+  "paper": {
+    "repository": "https://github.com/corceslab/2025_Sant_CHOIR.git",
+    "figure": "additional_analysis_scripts/real_datasets/Wang_2022_10x_Multiome_human_retina.R（CHOIR 层级树 clustree 可视化，48–58 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "2025_Sant_CHOIR",
+      "path": "additional_analysis_scripts/real_datasets/Wang_2022_10x_Multiome_human_retina.R",
+      "sha256": "ab479b53d08971f743540026b03558b0b763e1e5765405b11c0ed5af1f233897",
+      "lines": [
+        48,
+        58
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/choir_multires_seurat.rds",
+      "object": "Seurat 对象（或带多分辨率列的 metadata）",
+      "requirements": "metadata 含共享前缀的多分辨率聚类列（如 L0/L1/L2 或 RNA_snn_res.0.4/0.8/1.0）",
+      "evidence": "源码 clustree(choir_data$clusters$full_tree, prefix = 'L') 与 DiffSided_CRC_SCseq 的 clustree(scRNA@meta.data, prefix='RNA_snn_res.') 同族用法推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "clustree",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "多分辨率聚类列已在 metadata（Res 分辨率扫描或 CHOIR 层级标签）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/clustree_resolution_hierarchy.pdf",
+      "content": "多分辨率聚类演化树：节点大小 = 簇内细胞数，边标注交叉（分裂/合并）比例"
+    },
+    {
+      "path": "results/clustree_choir_fulltree.pdf",
+      "content": "CHOIR full_tree 层级树版本"
+    }
+  ],
+  "adaptation": [
+    "源码 ggsave 仅有 width/height，按 CORE 补全 filename/plot/units；交互显示删除。",
+    "补充 metadata 列模式调用（源码另见 DiffSided_CRC_SCseq 的 RNA_snn_res. 前缀用法）作为通用分支。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "code_sha256": {
+    "plot.R": "0a55c83ec1aedb8aed1a54520c7f2a82747aa11383c9e97cb95de5edeb08aaee"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "infercnv-hmm-cnv",
+  "title": "inferCNV 单细胞/空间转录组拷贝数变异推断（HMM 降噪模式）",
+  "kind": "method",
+  "method_type": "拷贝数变异推断",
+  "language": "R",
+  "tags": [
+    "infercnv",
+    "拷贝数变异",
+    "CNV",
+    "HMM",
+    "恶性细胞鉴定"
+  ],
+  "paper": {
+    "repository": "https://github.com/sgtc-stanford/GIM-spatial",
+    "figure": "Code/Visium/InferCNV_run.R（GIM-spatial Visium 空间转录组 CNV 推断流程，提取 31–55 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "GIM-spatial",
+      "path": "Code/Visium/InferCNV_run.R",
+      "sha256": "e817c695fe10823494cdabdb7c02848c86e227d90ed86ec25fe82a90e1305607",
+      "lines": [
+        31,
+        55
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/raw_counts_matrix.rds",
+      "object": "计数矩阵（基因 × 细胞/spot）",
+      "requirements": "未取对数的原始计数；行名为基因符号且与 gene_order 文件的基因名一致",
+      "evidence": "readRDS 后直接作为 CreateInfercnvObject(raw_counts_matrix = counts) 输入推断"
+    },
+    {
+      "path": "Data/gene_order.tsv",
+      "object": "基因坐标表（制表符分隔）",
+      "requirements": "列依次为基因名、染色体、起始位置、终止位置；需覆盖大部分表达基因以按基因组位置排序",
+      "evidence": "CreateInfercnvObject(gene_order_file = ..., delim = \"\\t\") 接口要求推断"
+    },
+    {
+      "path": "Data/cell_annotations.tsv",
+      "object": "细胞/spot 注释表（制表符分隔）",
+      "requirements": "首列为条码、第二列为注释群标签；标签需包含 ref_group_names 指定的正常参考群（来源研究为 Base 与 Pit）",
+      "evidence": "CreateInfercnvObject(annotations_file = ..., ref_group_names = c(\"Base\", \"Pit\")) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "infercnv",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "已完成细胞/spot 聚类注释并确定正常参考群；计数矩阵与注释条码一一对应。"
+  ],
+  "outputs": [
+    {
+      "path": "results/infercnv_out",
+      "content": "inferCNV 标准输出目录：含表达校正矩阵、去噪后 CNV 热图矩阵（infercnv.12/14 系列文件）、HMM 预测的 CNV 状态矩阵与预测概率、肿瘤亚聚类及可视化文件"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "cutoff = 0.1",
+      "basis": "来源代码设定；0.1 为 10x UMI 数据的典型 cutoff，Smart-seq2（read 计数）数据需改为 1"
+    },
+    {
+      "setting": "HMM = TRUE, denoise = TRUE, noise_filter = 0.2",
+      "basis": "来源代码设定；HMM 将校正表达离散化为 CNV 状态，降噪阈值滤除标准差 0.2 以内的小幅波动"
+    },
+    {
+      "setting": "cluster_by_groups = FALSE, scale_data = TRUE, num_threads = 8",
+      "basis": "来源代码 cluster/scale 设定；线程数由 40 按常规核数缩减，全细胞统一聚类便于跨群 CNV 模式比较"
+    },
+    {
+      "setting": "ref_group_names = c(\"Base\", \"Pit\")",
+      "basis": "来源代码按垂体组织学定义的正常参考群；迁移时替换为实际数据中的正常细胞群标签"
+    }
+  ],
+  "adaptation": [
+    "移除 optparse 命令行参数解析、future 并行配置（options / plan）、sessionInfo() 与 print 日志。",
+    "输入输出路径就地写为项目根相对路径（Data/ 与 results/infercnv_out），不再经由命令行参数传入。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "inferCNV 对低测序深度或低质量细胞功效不足；HMM 预测在概率边界附近的 CNV 状态假阳性较高，宜结合 posterior 概率过滤。",
+    "参考群选择决定推断基线：参考群混入隐匿 CNV 细胞或注释污染会系统性偏移全基因组拷贝估计；CNV 推断分辨率受基因排序覆盖度限制。"
+  ],
+  "code_sha256": {
+    "analysis.R": "1a33cff7146457214743e0b88e67c1e4bbf9f6b9ee6c4d3fe78c203fc02528a6"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

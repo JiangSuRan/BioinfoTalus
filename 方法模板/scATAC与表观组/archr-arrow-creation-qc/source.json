@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "id": "archr-arrow-creation-qc",
+  "title": "ArchR 单细胞 ATAC-seq Arrow 文件创建、TSS 富集与片段数质控",
+  "kind": "method",
+  "method_type": "scATAC与表观组",
+  "language": "R",
+  "tags": [
+    "ArchR",
+    "scATAC-seq",
+    "ArrowFiles",
+    "TSS富集",
+    "质控"
+  ],
+  "paper": {
+    "repository": "https://github.com/corceslab/2025_Sant_CHOIR.git",
+    "figure": "preprocessing_scripts/ArrowFilesATAC.R（CHOIR 基准 ATAC 预处理之 Arrow 创建，全文件 1–39 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "2025_Sant_CHOIR",
+      "path": "preprocessing_scripts/ArrowFilesATAC.R",
+      "sha256": "75e6a5deb7148505c34d76d564627aed372b3fb3252fff95917d8a23273aff85",
+      "lines": [
+        1,
+        39
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/fragments_sample*.tsv.gz",
+      "object": "10x fragments 文件（每样本一个）",
+      "requirements": "cellranger-atac 输出的 fragments.tsv.gz（含 .tbi 索引）；基因组为 hg38（小鼠改为 addArchRGenome(\"mm10\")）",
+      "evidence": "源码 getInputFiles(input_dir/aligned_reads/sample_ids) 与 addArchRGenome 物种分支推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ArchR",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "比对与去重已完成并产出 fragments 文件；ArchR 注释数据（geneAnnotation/blacklist）已随包或本地配置。"
+  ],
+  "outputs": [
+    {
+      "path": "results/archr_project.rds",
+      "content": "ArchRProject 对象：含各样本 Arrow 文件引用、cellColData（TSSEnrichment、nFrags、Sample 与 Batch 列）及 Tile/GeneScore 矩阵句柄"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "minTSS = 1, minFrags = 1000",
+      "basis": "来源代码设定（宽松建库阈值，后续 PreProcess 再按 TSSEnrichment>2 & nFrags>2500 精筛）；迁移时按组织与文库质量调整"
+    },
+    {
+      "setting": "addTileMat = TRUE, addGeneScoreMat = TRUE",
+      "basis": "来源代码设定；Tile 矩阵供迭代 LSI，基因得分矩阵供跨模态注释"
+    },
+    {
+      "setting": "copyArrows = FALSE, threads = 4（原脚本 1 线程）",
+      "basis": "来源代码建 ArchRProject 用 copyArrows=FALSE（就地引用）；线程数按本机核数放宽"
+    }
+  ],
+  "adaptation": [
+    "移除 commandArgs 命令行参数解析、setwd 与 print 诊断；fragments 路径改为项目根相对路径字面量。",
+    "并入源码 PreProcessArchR.R 的 ArchRProject 构建与 CellID/Batch 列补齐段（任务规范要求单模板自含项目创建）。",
+    "输出统一为 saveRDS 项目对象（原脚本另存 arrow_files.rds 中间文件）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Arrow 文件按样本单独写入，磁盘占用约为 fragments 的数倍；本建库阈值为宽松档，未过滤的低质量细胞需在下游精筛。",
+    "Batch 列默认复制 Sample，真实批次注记需在建项目前以细胞级 metadata 并入。"
+  ],
+  "code_sha256": {
+    "analysis.R": "bd24c52584590bef4df8dbb36934012be3df15e209145d65cef79240824d6565"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

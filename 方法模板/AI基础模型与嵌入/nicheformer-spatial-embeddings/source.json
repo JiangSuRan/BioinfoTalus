@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "nicheformer-spatial-embeddings",
+  "title": "Nicheformer 空间与解离单细胞基础模型零样本特征嵌入提取",
+  "kind": "method",
+  "method_type": "AI基础模型与嵌入",
+  "language": "Python",
+  "tags": [
+    "Nicheformer",
+    "空间转录组",
+    "单细胞基础模型",
+    "特征嵌入",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/theislab/nicheformer.git",
+    "figure": "src/nicheformer/get_embeddings.py（Nicheformer 嵌像提取入口，全文件 1–18 行；推理实现对应同仓 _embeddings.py 与 models/_nicheformer.py）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "nicheformer",
+      "path": "src/nicheformer/get_embeddings.py",
+      "sha256": "af8e7d3f0557eb249ca17834c7824c89d0ea738e7bf6c303fa3cb74a7b297799",
+      "lines": [
+        1,
+        120
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/spatial_dissociated.h5ad",
+      "object": "AnnData",
+      "requirements": "X 为原始计数（基因 × 细胞转置后的细胞 × 基因）；基因集与模型 4096 token 词表对应（按 nicheformer 预处理模板对齐）",
+      "evidence": "tokenize_data(x, median_counts_per_gene) 输入约定与 _embeddings.py 的 X/idx 标签键推断"
+    },
+    {
+      "path": "Data/nicheformer_checkpoint.ckpt",
+      "object": "Nicheformer 预训练检查点（spatialcorpus-110M 等）",
+      "requirements": "与源码仓库版本匹配的 Lightning 检查点",
+      "evidence": "_embeddings.py 的 Nicheformer.load_from_checkpoint(checkpoint_path=...) 加载方式推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "nicheformer",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "数据已按 nicheformer 预处理约定（token 词表、计数中位数）准备；GPU 可加速推理。"
+  ],
+  "outputs": [
+    {
+      "path": "results/nicheformer_emb.h5ad",
+      "content": "含 obsm['X_nicheformer'] 的 AnnData：transformer 输出均值池化的 512 维细胞嵌入"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "median_counts_per_gene 以每基因正值中位数近似",
+      "basis": "源码从预计算 technology_mean 传入；模板以经验中位数近似，正式运行应使用官方预计算统计量"
+    },
+    {
+      "setting": "均值池化 transformer 输出（512 维），批量 256",
+      "basis": "任务规范的 obsm 2D 要求；源码以 transformer_output 逐细胞收集（512 维表征）"
+    }
+  ],
+  "adaptation": [
+    "源入口脚本仅是 config 驱动的集群任务（get_embeddings_organ(config)），核心实现在 _embeddings.py（Merlin 分布式数据 + Lightning trainer）；模板改写为单机线性版：直接 token 化 h5ad、load_from_checkpoint、torch.no_grad 分批前向。",
+    "移除 wandb sweep 配置、Merlin 数据模块、集群路径常量与 tqdm 输出；输出为 obsm['X_nicheformer'] 落盘 h5ad。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "以每基因中位数近似 technology mean 与官方 token 化统计量有差异，嵌入数值与官方复现不完全一致。",
+    "模型词表限 4096 基因，未覆盖基因信息丢失；空间数据未携带 niche token 时不利用其空间预训练分支。"
+  ],
+  "code_sha256": {
+    "analysis.py": "a75ab34d257b5f2385cfdc1200772f54a5e3cc5cb0fe11314c588441ac4f759b"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

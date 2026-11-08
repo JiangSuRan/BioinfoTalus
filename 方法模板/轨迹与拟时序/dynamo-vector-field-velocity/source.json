@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "id": "dynamo-vector-field-velocity",
+  "title": "dynamo 随机动力学 RNA 速率估计、连续向量场重建与细胞水平置信度过滤",
+  "kind": "method",
+  "method_type": "轨迹与拟时序",
+  "language": "Python",
+  "tags": [
+    "dynamo",
+    "向量场",
+    "RNA速率",
+    "随机动力学",
+    "置信度"
+  ],
+  "paper": {
+    "repository": "https://github.com/aristoteleo/dynamo-release (上游)；应用来源为 panVC 仓库 TrajectoryDynamoRun.py",
+    "figure": "TrajectoryDynamoRun.py（panVC dynamo 向量场段，全文件 23 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "panVC",
+      "path": "TrajectoryDynamoRun.py",
+      "sha256": "e830d1c4b44b7bd8ecab9ecee6ba55ca9620f38a98bcabd4c499b000e3087d27",
+      "lines": [
+        1,
+        23
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/velocity_annotated.h5ad",
+      "object": "AnnData（含 spliced/unspliced 层）",
+      "requirements": "layers 含 spliced/unspliced；obs 含 celltype 与 UMAP 嵌入",
+      "evidence": "dyn.pp.Preprocessor 与 cell_velocities/umap 基础流图推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dynamo",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scvelo",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "dynamo 版本 >= 1.x；多核 dynamics 推断耗时。"
+  ],
+  "outputs": [
+    {
+      "path": "results/dynamo_vectorfield.h5ad",
+      "content": "含 dynamics 参数（adata.uns['dynamics']）、cell_velocities、cell_wise_confidence 与 confident velocity 层的 AnnData"
+    },
+    {
+      "path": "results/dynamo_velocity_stream.svg",
+      "content": "UMAP 速率流线图"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "dyn.tl.dynamics(model = 'stochastic', cores = 3)",
+      "basis": "来源代码设定；随机模型放宽稳态假设，比 scVelo deterministic 更稳健"
+    },
+    {
+      "setting": "cell_velocities method = 'pearson', transform = 'sqrt'",
+      "basis": "来源代码设定；sqrt 变换降低高表达基因对投影的支配"
+    },
+    {
+      "setting": "confident_cell_velocities(group = 'celltype')",
+      "basis": "来源代码设定；组内置信度筛选抑制跨类型噪声向量"
+    },
+    {
+      "setting": "Preprocessor cell_cycle_score_enable = True",
+      "basis": "来源代码设定；周期基因单独标注避免其主导动力学"
+    }
+  ],
+  "adaptation": [
+    "修正源码笔误 mport scanpy 为 import（保留导入）；移除 warnings 全局抑制。",
+    "保留 dynamics → reduceDimension → cell_velocities → confidence 链；scv 流图输出路径改 results/。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "dynamo 的雅可比/曲率等微分几何分析（VectorField 高维重建）未包含；全基因组向量场重建计算量大需 GPU/并行。",
+    "置信度过滤可能系统性删除边界态向量，轨迹末端解读需谨慎。"
+  ],
+  "code_sha256": {
+    "analysis.py": "15374052ed61ed903b35a4c72a49834c9f98bd86c1f511ec67be18979a558037"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

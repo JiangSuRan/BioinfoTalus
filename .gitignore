@@ -1,0 +1,6 @@
+# 本地分析与编辑器产物。
+.Rhistory
+.Rproj.user/
+.posit/
+.zcode/
+_tmp/

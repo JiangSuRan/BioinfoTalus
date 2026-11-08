@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "aucell-signature-scoring",
+  "title": "AUCell 单细胞基因集排名构建、AUC 活性打分与阈值划分",
+  "kind": "method",
+  "method_type": "基因集与通路活性",
+  "language": "R",
+  "tags": [
+    "AUCell",
+    "SingleCellExperiment",
+    "基因集打分",
+    "细胞状态鉴定"
+  ],
+  "paper": {
+    "repository": "Pan-cancer T cell atlas (Zheng et al., Science 2021)",
+    "figure": "Figure S11 血液 Temra 状态打分（code/w.step2.FigureS11.blood_Temra.R 73–110 行 AUCell 核心打分与患者水平频率汇总段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "code",
+      "path": "code/w.step2.FigureS11.blood_Temra.R",
+      "sha256": "af523bb5e756b25ece3723ab777db39cb56ab6817f61c2ccbbbc4f18a9c22f01",
+      "lines": [
+        73,
+        110
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/blood_tcells_sce.rds",
+      "object": "SingleCellExperiment",
+      "requirements": "含 norm_exprs assay（标准化表达，基因 × 细胞）；colData 需含 patient.uid、loc（组织部位）、patient、dataset、cancerType 列",
+      "evidence": "AUCell_buildRankings(assay(sce, \"norm_exprs\")) 与按 patient.uid × loc 分组汇总的步骤推断"
+    },
+    {
+      "path": "Data/signature_genes.tsv",
+      "object": "单列基因符号表（无表头）",
+      "requirements": "基因符号与 sce 行名同属一套注释体系",
+      "evidence": "read.delim(header = FALSE, stringsAsFactors = FALSE) 后直接取第 1 列构建 geneSets 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "AUCell",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SummarizedExperiment",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "目标基因集已从文献或上游分析确定；基因符号已与表达对象对齐（必要时先做别名映射）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sce_with_aucell.rds",
+      "content": "追加 AUC_signature 打分列与 AUC_signature.pred（Positive/Other）阳性分类列的 SingleCellExperiment"
+    },
+    {
+      "path": "results/aucell_patient_freq.tsv",
+      "content": "患者 × 组织部位汇总表：patient、dataset、cancerType、freq（阳性细胞比例）与 N.all（细胞总数）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "aucMaxRank = nrow(cells_rankings) * 0.05",
+      "basis": "来源代码设定；仅对排名前 5% 基因累计 AUC，符合开/关激活假设，基因集较大或表达谱平缓时可放宽"
+    },
+    {
+      "setting": "AUCell_exploreThresholds(plotHist = FALSE, nCores = 1, assign = TRUE)",
+      "basis": "来源代码改 plotHist = FALSE；自动阈值法在 AUC 分布上寻找拐点划分阳性细胞，必要时人工核对直方图"
+    },
+    {
+      "setting": "按 patient.uid × loc 汇总阳性频率",
+      "basis": "来源代码 ddply 分组结构；分组变量随研究设计（患者、组织、癌种）调整"
+    }
+  ],
+  "adaptation": [
+    "移除外层 for (stype in c(\"CD4\",\"CD8\")) 循环、signature 文件按 Temra/stype 的子集筛选（模板直接读单列基因表）与 CD4 特定的 rm_datasets 数据集排除。",
+    "ddply(.parallel = TRUE) 并行汇总改为 dplyr group_by/summarise 等价实现，去除 foreach/doParallel 依赖。",
+    "AUC 提取由 cells_AUC@assays@data$AUC 槽直访改为 SummarizedExperiment::assay(cells_AUC, \"AUC\") 标准访问器；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "自动阈值划分对 AUC 分布形态敏感，双峰不明显时阳性分类任意性增大；aucMaxRank 前 5% 假设基因集基因位于高表达尾部。",
+    "频率汇总假设患者内细胞采样无偏，各数据集细胞数差异大时组间比较需考虑加权或分层。"
+  ],
+  "code_sha256": {
+    "analysis.R": "a76941ad0f161cf5e69db324546994697ecee478313546ec48cc3ceb25823dcc"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

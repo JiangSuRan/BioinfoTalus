@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "cicero-coaccessibility-network",
+  "title": "Cicero 聚合单细胞 ATAC 顺式共可及性（cis-co-accessibility）网络推断",
+  "kind": "method",
+  "method_type": "单细胞表观组学",
+  "language": "R",
+  "tags": [
+    "cicero",
+    "共可及性",
+    "启动子增强子",
+    "monocle3",
+    "图Lasso"
+  ],
+  "paper": {
+    "repository": "https://github.com/cole-trapnell-lab/cicero-release (上游)；应用来源为 CellOracle 仓库 ATAC 预处理教程",
+    "figure": "docs/notebooks/01_ATAC-seq_data_processing/option1_scATAC-seq_data_analysis_with_cicero/01_atacdata_analysis_with_cicero_and_monocle3.ipynb（数据预处理/染色体长度/run_cicero 单元 12/14/16）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CellOracle",
+      "path": "docs/notebooks/01_ATAC-seq_data_processing/option1_scATAC-seq_data_analysis_with_cicero/01_atacdata_analysis_with_cicero_and_monocle3.ipynb",
+      "sha256": "dc7081e7c117c83abb204a9a5af3c0ecc8a8a41201b66322ec80dfb129031f07",
+      "lines": [
+        1,
+        400
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/atac_cds.rds",
+      "object": "monocle3 cell_data_set（ATAC 聚合矩阵）",
+      "requirements": "assay 为聚合后的峰 × 细胞（或伪细胞）计数；rowRanges 含峰坐标",
+      "evidence": "源码 detect_genes/estimate_size_factors/preprocess_cds(LSI) 的 cds 接口推断"
+    },
+    {
+      "path": "Data/mm10_chromosome_length.txt",
+      "object": "染色体长度表",
+      "requirements": "与比对基因组一致（CellOracle demo 提供 mm10 文件）",
+      "evidence": "源码 read.table(mm10_chromosome_length.txt) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "cicero",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "monocle3",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "峰矩阵已构建（源码上游为从 peaks fragment 计数构建 cds）；内存充足（make_cicero_cds 聚合开销大）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cicero_connections.csv",
+      "content": "共可及性连接表：Peak1/Peak2/coaccess（距离惩罚后），供启动子-增强子配对与 CellOracle 基序分析输入"
+    },
+    {
+      "path": "results/cicero_conns.rds",
+      "content": "conns data.frame 的 R 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "preprocess_cds(method = 'LSI') + UMAP 降维",
+      "basis": "来源代码设定；ATAC 计数的 LSI 表征与流形聚合坐标"
+    },
+    {
+      "setting": "make_cicero_cds(reduced_coordinates = umap_coords)",
+      "basis": "来源代码设定；kNN 聚合产生伪细胞以增大计数密度"
+    },
+    {
+      "setting": "run_cicero(chromosome_length)",
+      "basis": "来源代码设定；图 Lasso + 距离惩罚函数按染色体分别拟合"
+    }
+  ],
+  "adaptation": [
+    "提取 notebook 单元 12/14/16 线性化；上游 peaks fragment 构建 cds 段与下游 generate_cis_pairs/monocle3 基因活动段移除。",
+    "cds 输入改为直接 readRDS；保存注释行精简为实际落盘。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "共可及性 ≠ 调控关系：同一增强子模块内的峰对即使无调控意义也会共变；建议与 ABC/eQTL 证据交集。",
+    "make_cicero_cds 的聚合近邻数与 UMAP 形状影响连接稳定性，跨数据集比较需统一参数。"
+  ],
+  "code_sha256": {
+    "analysis.R": "42aaf1c144004d6af5b4deb482864dc78936e85e4b2e99ef6d89c970f13182e3"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

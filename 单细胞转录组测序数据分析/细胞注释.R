@@ -1,3 +1,4 @@
+source("00_config.R")
 library(Seurat)
 library(ggplot2)
 library(patchwork)
@@ -7,6 +8,7 @@ library(scRNAtoolVis)
 library(SCpubr)
 library(ggsci)
 library(randomcoloR)
+set.seed(GLOBAL_SEED)   # 固定种子，使 distinctColorPalette 生成的配色可复现
 load("Data/pbmc.Rda")
 
 ####自动注释####
@@ -78,6 +80,13 @@ do_DotPlot(sample = pbmc, features = marker, dot.scale = 10,
 #另一种颜色气泡图
 DotPlot(pbmc, features = unique(as.vector(unlist(marker))), scale = FALSE, cols = "RdYlBu")+RotatedAxis()
 
+# 精修气泡图（统一样式见 00_config.R）：YlGnBu 渐变 + 按细胞类型分组的虚线分隔
+# marker 各组无跨组重复基因，lengths(marker) 与去重后 features 等长，分隔线对位安全
+p_dot_markers <- plot_dot_styled(pbmc, features = unique(as.vector(unlist(marker))),
+                                 group_sizes = lengths(marker))
+p_dot_markers
+ggsave(file.path(DIR$figures, "dotplot_markers_annotation.png"), p_dot_markers, width = 8, height = 5)
+
 # 如果不好注释，可调整聚类分辨率重新聚类（仅需要运行下面的代码即可）
 # 例如某个簇同时表达两种细胞类型的marker，则可以尝试提高聚类分辨率，看能否将其聚为不同的两类再进行注释
 DefaultAssay(pbmc) = "SCT"
@@ -115,6 +124,14 @@ DimPlot(pbmc, reduction = "umap", label = T, label.size = 3.5)+theme_classic()+t
                                                                                      legend.position = "right")
 DimPlot(pbmc, reduction = "tsne", label = T, label.size = 3.5)+theme_classic()+theme(panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"),legend.position = "right")
 
+
+# 成果图（统一样式见 00_config.R）：细胞类型按细胞数降序重排图例顺序
+# 仅调整展示顺序（factor levels），不改变注释本身的取值
+pbmc$celltype <- factor(pbmc$celltype, levels = names(sort(table(pbmc$celltype), decreasing = TRUE)))
+Idents(pbmc) <- "celltype"
+p_umap_celltype <- plot_dim_styled(pbmc, group.by = "celltype", reduction = "umap", label = TRUE)
+p_umap_celltype
+ggsave(file.path(DIR$figures, "umap_celltype.png"), p_umap_celltype, width = 7, height = 7)
 
 cors <- pal_igv()(30) # 也可以自定义颜色
 DimPlot(pbmc,reduction = "tsne",label = T,group.by="seurat_clusters",cols = cors)

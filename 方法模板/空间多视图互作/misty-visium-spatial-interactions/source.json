@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "id": "misty-visium-spatial-interactions",
+  "title": "MISTy 10x Visium 空间转录组多视图（Intraview / Paraview）互作建模",
+  "kind": "method",
+  "method_type": "空间多视图互作",
+  "language": "R",
+  "tags": [
+    "mistyR",
+    "Visium",
+    "空间转录组",
+    "多视图建模",
+    "微环境互作"
+  ],
+  "paper": {
+    "repository": "https://github.com/saezlab/misty_pipelines.git",
+    "figure": "visium/2_run_misty_ppline.R（Visium 切片 MISTy 管线，全文件 1–159 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "misty_pipelines",
+      "path": "visium/2_run_misty_ppline.R",
+      "sha256": "e3330890177d03860e1a125c1bd29b5ef4ba9c807fcebd26e3183dd13c631992",
+      "lines": [
+        1,
+        159
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_seurat.rds",
+      "object": "Seurat 对象（Visium 切片）",
+      "requirements": "含 SCT assay 的归一化 data 层；保留空间坐标（GetTissueCoordinates 可取 imagerow/imagecol）",
+      "evidence": "源码以 as.matrix(visium_slide@assays$SCT@data) 提取表达、以切片坐标构建 paraview 的步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "mistyR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "Visium 切片已完成 SCT 归一化；mistyR 输出目录 results/misty_visium_out 允许新建。"
+  ],
+  "outputs": [
+    {
+      "path": "results/misty_results.rds",
+      "content": "collect_results 汇总对象：各视图贡献占比、预测目标性能（gain.RMSE/多视图提升）、importances.aggregated 预测因子重要性表"
+    },
+    {
+      "path": "results/misty_visium_out",
+      "content": "run_misty 原始输出目录（improvements、coefficients、importances 分视图 txt 与性能汇总）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "视图构成：intraview（spot 自身 SCT 表达）+ paraview(l = 10)",
+      "basis": "源码以 ls = c(2,5,10) 扫描多个半径并取最优；模板固定 l = 10 一个代表性半径，迁移时需对新切片重新扫描半径（原管线含 shuffle 坐标置换的零分布对照）"
+    },
+    {
+      "setting": "表达矩阵取 SCT data 层",
+      "basis": "源码 view.assays 基于 SCT 数据；SCT 归一化校正测序深度，使跨 spot 邻域加权更可比"
+    }
+  ],
+  "adaptation": [
+    "移除外层 walk(ls,...) 多半径扫描、5 次坐标随机置换对照、双切片（A1/A2）批量与 OmnipathR 配体筛选等上游特征准备。",
+    "将 run_misty_seurat 封装（源自仓库内 utils/misty_utilities.R）展开为 create_initial_view + add_paraview + run_misty + collect_results 的基础 MISTy API 线性流程。",
+    "删除 source() 外部工具脚本、future 并行注册与 print 诊断；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "单半径 l = 10 缺少源码的多半径扫描与坐标置换零模型，重要性解释的统计基准不如原管线充分。",
+    "paraview 假设互作强度随距离衰减（高斯核），不适用于长程或各向异性组织结构（如沿管腔方向延伸）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "a359dd1410ef3fc660c35e6ea779e8a40cc5ddf43ae1a1b3947d74067d54d7eb"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

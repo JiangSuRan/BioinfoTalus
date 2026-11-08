@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "id": "dreamlet-pseudobulk-de",
+  "title": "dreamlet 单细胞样本级 Pseudobulk 聚合与跨亚群差异表达建模",
+  "kind": "method",
+  "method_type": "Pseudobulk差异分析",
+  "language": "R",
+  "tags": [
+    "dreamlet",
+    "muscat",
+    "SingleCellExperiment",
+    "Pseudobulk",
+    "差异表达"
+  ],
+  "paper": {
+    "repository": "https://github.com/cboix/admultiregion_analysis",
+    "figure": "Analysis_vulnerable_Inh_subtypes/RCode_dreamlet_Vulnerable_Inh_marker_genes.R（脆弱抑制性神经元亚群标记基因分析，提取 13–91 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "admultiregion_analysis",
+      "path": "Analysis_vulnerable_Inh_subtypes/RCode_dreamlet_Vulnerable_Inh_marker_genes.R",
+      "sha256": "7dc1123b5ba5068b813c7aaf357b4cdecb7e3151ce377d26167b142e61dfec47",
+      "lines": [
+        13,
+        91
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_inh.rds",
+      "object": "Seurat 对象",
+      "requirements": "RNA assay 含原始 counts；meta.data 需含 projid（供体/样本 ID）与 cell_type_high_resolution（亚群标签）列，且亚群取值覆盖 lst 中定义的比较组",
+      "evidence": "aggregateToPseudoBulk(cluster_id = \"cell_type_high_resolution\", sample_id = \"projid\") 接口要求推断"
+    },
+    {
+      "path": "Data/donor_metadata.csv",
+      "object": "data.frame（供体级临床表）",
+      "requirements": "含 projid 关联键；其余临床列供后续设计矩阵扩展使用",
+      "evidence": "left_join(data, metadata, by = \"projid\") 关联步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dreamlet",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SingleCellExperiment",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "亚群注释（cell_type_high_resolution）已完成且标签稳定；每个 projid × 亚群组合内有足够细胞数支撑聚合。"
+  ],
+  "outputs": [
+    {
+      "path": "results/dreamlet_pseudobulk_de.csv",
+      "content": "dreamletCompareClusters 完整差异表达结果表：logFC、AveExpr、t、P.Value、adj.P.Val 等（coef = \"compare\" 即 test 对 baseline）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "基因过滤 rowSums(counts(sce) > 1) >= 10",
+      "basis": "来源代码设定；同时覆盖未表达与低表达基因的剔除，10 个细胞的检出下限为经验阈值"
+    },
+    {
+      "setting": "aggregateToPseudoBulk assay = \"counts\", cluster_id = \"cell_type_high_resolution\", sample_id = \"projid\"",
+      "basis": "来源代码设定；样本级聚合避免细胞伪重复，聚合键随数据的亚群与样本列名调整"
+    },
+    {
+      "setting": "dreamletCompareClusters method = \"fixed\"",
+      "basis": "来源代码设定；固定效应模型，供体数足够且需刻画供体随机效应时可改用混合效应模型"
+    },
+    {
+      "setting": "lst 的 test / baseline 亚群列表",
+      "basis": "来源代码的研究特定比较设计（脆弱抑制性亚群 vs 其余抑制性亚群）；迁移到新数据必须替换为实际亚群标签"
+    }
+  ],
+  "adaptation": [
+    "移除 3 处 setwd、AD 病理分级派生（niareagansc 映射）与无 AD 病理诊断个体的 subset（研究特定子集逻辑）、注释掉的替代 QC 废码块及 dim()/assayNames() 预览。",
+    "topTable 的 number 由 30000 改为 Inf 提取全量结果；write.csv 直接输出到 results/。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "pseudobulk 检验功效受每亚群 × 样本细胞数与样本重复数影响；重复少时 fixed 效应模型无法刻画供体间随机变异，应考虑混合效应。",
+    "亚群标签漂移会直接混入比较组定义；标签质量决定聚合后的组学解释。"
+  ],
+  "code_sha256": {
+    "analysis.R": "82722a95fc2900cd41fd02685e9fbbad4d8ce1f2dffbbe0cf4ca5ddd4363aec0"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

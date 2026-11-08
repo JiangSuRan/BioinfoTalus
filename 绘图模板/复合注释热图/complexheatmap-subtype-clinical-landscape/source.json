@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "complexheatmap-subtype-clinical-landscape",
+  "title": "肿瘤微环境亚型与多维临床特征整合景观热图（ComplexHeatmap）",
+  "kind": "plot",
+  "plot_type": "复合注释热图",
+  "language": "R",
+  "tags": [
+    "ComplexHeatmap",
+    "临床景观图",
+    "肿瘤微环境",
+    "多行注释"
+  ],
+  "paper": {
+    "repository": "https://github.com/compbioNJU/scPDAC.git",
+    "figure": "Figure7.R（scPDAC 胰腺癌微环境互作景观图，全文件 1–142 行；scale 截断与 ComplexHeatmap::pheatmap 注释热图取自 127–135 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "scPDAC",
+      "path": "Figure7.R",
+      "sha256": "ebb4a06fd29067135bfcf99645ea8dbfbd92cfa209a90c42bbeeaf4e8e0525d5",
+      "lines": [
+        1,
+        142
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/microenvironment_mat.csv",
+      "object": "矩阵（行 = 细胞类型，列 = 互作配体受体对/临床分组）",
+      "requirements": "非负互作计数；列名唯一",
+      "evidence": "源码 intercells 计数矩阵（rownames = 细胞类型, colnames = PH 互作对）与 apply(log1p(intercells), 2, scale, center=F) 步骤推断"
+    },
+    {
+      "path": "data/subtype_annotation.csv",
+      "object": "data.frame（每列一个临床/亚型注记，行名与矩阵列对齐）",
+      "requirements": "至少含 subtype 列（如 NT/PT/HM 分组）",
+      "evidence": "源码 annotation_col <- data.frame(...) 与 ann_colors 构造模式推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "circlize",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "RColorBrewer",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "上游已完成通讯/组成统计得到计数矩阵，并完成临床分组注记。"
+  ],
+  "outputs": [
+    {
+      "path": "result/pdac_microenvironment_landscape.pdf",
+      "content": "列顶临床亚型注释、行细胞类型的 log1p 后按列缩放（截断 2）互作景观热图"
+    }
+  ],
+  "adaptation": [
+    "源脚本在单个 pdf 设备内顺序打印 9 组图（chordDiagram、corrplot、pheatmap 系列与 ggarrange）；按任务规范仅保留 ComplexHeatmap::pheatmap 注释热图段（log1p + 列向 scale + 截断 2 + annotation_colors）。",
+    "上游 cellphonedb significant_means 解析与 intercells 统计矩阵构造（依赖 mCols/PH 等全局对象）移至输入准备；去掉 cellheight 以行数自适应。"
+  ],
+  "code_sha256": {
+    "plot.R": "55b5ebc293c78a7f4c41c7a7fbffff34c9309fc2d4c4b894e4b24ecfec290850"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

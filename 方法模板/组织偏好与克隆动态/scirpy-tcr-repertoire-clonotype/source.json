@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "scirpy-tcr-repertoire-clonotype",
+  "title": "scirpy 单细胞 TCR 链质控（chain_qc）、克隆型定义与克隆扩增分析",
+  "kind": "method",
+  "method_type": "组织偏好与克隆动态",
+  "language": "Python",
+  "tags": [
+    "scirpy",
+    "TCR",
+    "克隆型",
+    "克隆扩增",
+    "免疫组库"
+  ],
+  "paper": {
+    "repository": "https://github.com/icbi-lab/scirpy (上游)；应用来源为 autoimmune10x_CD4T_Manuscript_2023 仓库 Tcell 大 notebook",
+    "figure": "CD4T_scRNAseq_atlas/230110_STR4.5.21_MS01.02.03_MG01.02.03_SL02.03.04_Tcell.ipynb（健康与自身免疫 CD4 T 图谱 TCR 分析，单元 0/4/23/150-155/178）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "autoimmune10x_CD4T_Manuscript_2023",
+      "path": "CD4T_scRNAseq_atlas/230110_STR4.5.21_MS01.02.03_MG01.02.03_SL02.03.04_Tcell.ipynb",
+      "sha256": "9031bfc85fdb4a84db1c45528483f3ad7b0bc19277c23157a06eadde22d0dca4",
+      "lines": [
+        1,
+        1258
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/<sample>_T_5DE/",
+      "object": "10x 表达目录 + filtered_contig_annotations.csv（每样本）",
+      "requirements": "cellranger 标准输出；表达与 VDJ barcode 可对齐",
+      "evidence": "源码 sc.read_10x_mtx 与 ir.io.read_10x_vdj + ir.pp.merge_with_ir 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scirpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "样本目录/命名已在脚本内列表化；有 BCR 时可同样处理（receptor_arms 调整）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scirpy_tcr_annotated.h5ad",
+      "content": "含 adata.obs：receptor_type/receptor_subtype/chain_pairing（chain_qc）、clone_id/clone_id_size（核苷酸克隆型）、cc_aa_alignment 克隆簇、clonal_expansion 扩增分类"
+    },
+    {
+      "path": "results/scirpy_clonal_expansion.pdf",
+      "content": "按样本分组的克隆扩增比例条形图"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "define_clonotypes(receptor_arms='all', dual_ir='primary_only')",
+      "basis": "来源代码设定；核苷酸精确克隆型要求两条臂一致且仅用主链对"
+    },
+    {
+      "setting": "ir_dist(metric='alignment', sequence='aa', cutoff=15) + define_clonotype_clusters(dual_ir='any')",
+      "basis": "来源代码设定；氨基酸对齐距离 15 内聚合为宽容克隆簇，跨样本共享克隆可检出"
+    },
+    {
+      "setting": "clonal_expansion + ir.pl.clonal_expansion(clip_at=4)",
+      "basis": "来源代码设定；≥4 克隆规模合并为 large 类"
+    }
+  ],
+  "adaptation": [
+    "源 notebook 含 13 样本循环、QC/聚类/NMF 等大量段；模板保留 ir 链路（读 VDJ → merge → 预处理 → chain_qc → 两种克隆型定义 → 扩增），样本列表精简为 3 个示例。",
+    "sc.pl.umap 与 ir.pl.clonal_expansion 的交互显示改为显式落盘；mix 样本（TB 拆分）分支删除。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "alignment cutoff=15 的宽容克隆簇可能合并抗原特异性不同的 TCR（尤其公共序列）；正式抗原推断应配合 tcrdist/GLIPH。",
+    "双臂='all' 时缺失链（TRA-only）细胞不进入核苷酸克隆型，需在解读时说明覆盖率。"
+  ],
+  "code_sha256": {
+    "analysis.py": "c1c28b9bca08a910a3aae86038c4b349aa7df428b728bc533b9352b9aad1a9fa"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

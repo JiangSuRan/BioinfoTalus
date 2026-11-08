@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "seurat-harmony-transfer",
+  "title": "Seurat + Harmony 多数据集整合与查询集锚点映射（TransferData / ProjectUMAP）",
+  "kind": "method",
+  "method_type": "整合与投影",
+  "language": "R",
+  "tags": [
+    "Seurat",
+    "Harmony",
+    "批次校正",
+    "锚点映射",
+    "ProjectUMAP"
+  ],
+  "paper": {
+    "repository": "Pan-cancer T cell atlas (Zheng et al., Science 2021)",
+    "figure": "Figure S17 CD8 ISG 亚群映射（code/w.step2.FigureS17.CD8_ISG_mapping.R 30–67 行的参考集整合与查询集投影段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "code",
+      "path": "code/w.step2.FigureS17.CD8_ISG_mapping.R",
+      "sha256": "28b3a94c8480a23005e46748173ab4211526304da6f6970cafc9ff6fb4602c4e",
+      "lines": [
+        30,
+        67
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_ref.rds",
+      "object": "Seurat 对象（参考集）",
+      "requirements": "已标准化的表达数据；meta.data 需含 dataset 列（Harmony 批次变量）与 meta.cluster 列（TransferData 的参考标签）；行名覆盖特征基因集合",
+      "evidence": "RunHarmony(group.by.vars = \"dataset\") 与 TransferData(refdata = \"meta.cluster\") 的接口要求推断"
+    },
+    {
+      "path": "Data/seurat_query.rds",
+      "object": "Seurat 对象（查询集）",
+      "requirements": "与参考集同一基因注释体系；表达状态与参考集一致（均为标准化值），以保证锚点空间可比",
+      "evidence": "原脚本参考/查询集均由同一 SingleCellExperiment 的 exprs 矩阵构建（CreateSeuratObject + SetAssayData(\"scale.data\")），模板将其移至上游准备"
+    },
+    {
+      "path": "Data/hvg_genes.txt",
+      "object": "特征基因向量（每行一个基因符号）",
+      "requirements": "参考集筛选出的整合用高变基因，需与两个对象的行名匹配",
+      "evidence": "RunPCA(features = gene_used) 与 FindTransferAnchors(features = gene_used) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "harmony",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "参考集与查询集已按同一流程标准化并保留统一基因符号；批次变量与参考标签列名按实际数据调整。"
+  ],
+  "outputs": [
+    {
+      "path": "results/seurat_query_mapped.rds",
+      "content": "映射后的查询集 Seurat 对象：含 meta.cluster 预测标签列（predicted id 与得分）、ref.pca 整合嵌入，以及投影到参考集 harmony.umap 空间的 UMAP 坐标"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "RunPCA npcs = 15，各步 dims = 1:15",
+      "basis": "来源代码设定；维度数随参考集规模与 PCA elbow 重评"
+    },
+    {
+      "setting": "RunHarmony group.by.vars = \"dataset\"",
+      "basis": "来源代码设定；批次变量列名随数据的批次注记列调整"
+    },
+    {
+      "setting": "FindTransferAnchors reduction = \"pcaproject\", reference.reduction = \"pca\"",
+      "basis": "来源代码设定；投影式锚点适用于大参考集场景，替代默认 CCA"
+    },
+    {
+      "setting": "ProjectUMAP reduction.model = \"harmony.umap\"",
+      "basis": "来源代码设定；将查询细胞投影到参考集 Harmony 校正后的 UMAP 模型，保证与参考集可视化空间一致"
+    }
+  ],
+  "adaptation": [
+    "输入改为已就绪的 Seurat 对象：原脚本由 SingleCellExperiment 经 CreateSeuratObject 与 SetAssayData(\"scale.data\") 转换、查询集按 meta.cluster 子集（CD8.c15.ISG.IFIT1）等准备步骤移至上游。",
+    "删除 colSet 色板读取与 71 行之后全部绘图段；save(...) 多对象保存改为 saveRDS 仅保存映射后的查询集。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "ProjectUMAP 是向参考集 UMAP 模型的投影而非重新学习流形，仅保证可视化对齐；标签转移质量依赖参考集表型覆盖度与批次一致性。",
+    "Harmony 校正 dataset 间批次效应，批次与生物学变量混叠时存在过度校正风险。"
+  ],
+  "code_sha256": {
+    "analysis.R": "447c13377236ffb2a4c00a89f43eef274cc10f78af8f089ad0199741ecfe6e49"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "id": "misty-imc-neighborhood",
+  "title": "MISTy 成像质谱流式（IMC）单细胞空间邻域互作推断",
+  "kind": "method",
+  "method_type": "空间多视图互作",
+  "language": "R",
+  "tags": [
+    "mistyR",
+    "IMC",
+    "空间蛋白质组",
+    "juxtaview",
+    "paraview"
+  ],
+  "paper": {
+    "repository": "https://github.com/saezlab/misty_pipelines.git",
+    "figure": "imc/imc_large_pipeline.R（IMC 大队列乳腺癌单细胞 MISTy 管线，全文件 1–51 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "misty_pipelines",
+      "path": "imc/imc_large_pipeline.R",
+      "sha256": "7ef2b419c7387a57c651e0c37dd51cca2dc66a0b98be349124f5ae1ab8669015",
+      "lines": [
+        1,
+        51
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/imc_expr.rds",
+      "object": "data.frame / matrix（细胞 × 蛋白标记强度）",
+      "requirements": "行名/细胞顺序与坐标表一致；列名为蛋白标记名；建议已完成通道清洗（去除 DAPI/废弃通道）与 asinh 类变换",
+      "evidence": "源码 select(Intensity_MeanIntensity_FullStack 列)、按 panel 映射标记并剔除部分通道后传入 create_initial_view 的步骤推断"
+    },
+    {
+      "path": "Data/imc_positions.rds",
+      "object": "data.frame（细胞 × X/Y 坐标）",
+      "requirements": "与表达表同序对齐的 Location_Center_X/Y 质心坐标，单位 µm",
+      "evidence": "源码 pos <- data %>% select(Location_Center_X, Location_Center_Y) 并过滤 NaN 的步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "mistyR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "单张图像的细胞已完成分割与通道清洗；多样本研究逐图像运行后汇总。"
+  ],
+  "outputs": [
+    {
+      "path": "results/misty_imc_results.rds",
+      "content": "collect_results 汇总对象：intra/juxta/para 各视图贡献、标记间重要性（importances.aggregated）与预测性能改善"
+    },
+    {
+      "path": "results/misty_imc_out",
+      "content": "run_misty 原始输出目录"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "juxtaview neighbor.thr = 12（近邻数上限）",
+      "basis": "来源代码设定；定义直接接触邻域的细胞数上限，随组织细胞密度调整"
+    },
+    {
+      "setting": "paraview l = 100（高斯核特征半径，zoi = 12 排除近邻）",
+      "basis": "来源代码设定；l 应与感兴趣的互作空间尺度（µm）匹配，zoi 与 neighbor.thr 一致避免两视图重复计数"
+    }
+  ],
+  "adaptation": [
+    "移除 walk(paths,...) 多图像批量循环、csv 原始读取与 panel 通道名映射清洗（移至上游输入准备）、message 进度输出与 if(nrow<1000) return 跳过逻辑。",
+    "future 并行注册（plan(multiprocess)）省略，默认顺序执行。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "juxtaview/paraview 参数（12 近邻、100 µm）为乳腺癌 IMC 队列设定，其他组织与倍率下需重估。",
+    "模板输入为单图像；跨图像汇总的跨视图重要性比较需在多样本运行后另行合并。"
+  ],
+  "code_sha256": {
+    "analysis.R": "a3bbe05983167f7c2a75a9ac054ce9de54481f312738a98fcd9906750766cd91"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "id": "xqtl-rb-correlation-pheatmap",
+  "title": "pheatmap 跨细胞类型 cis-eQTL / cis-caQTL 遗传效应相关性（rb）分段断点聚类热图",
+  "kind": "plot",
+  "plot_type": "相关性与遗传效应热图",
+  "language": "R",
+  "tags": [
+    "pheatmap",
+    "cis-eQTL",
+    "遗传相关性rb",
+    "分段色阶",
+    "谱系注释热图"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "cis-xQTL/03_visualization/20250324_draw_rb_heatmap.R（CIMA 跨细胞类型 rb 相关性热图，全文件 1–71 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "cis-xQTL/03_visualization/20250324_draw_rb_heatmap.R",
+      "sha256": "4371edc3fedd3a46ebd95754db337d5738a60a8bf7bfaec3f314d299e0d575bf",
+      "lines": [
+        1,
+        93
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/eqtl_rb_matrix.csv",
+      "object": "方阵（细胞类型 × 细胞类型的遗传效应相关性 rb）",
+      "requirements": "行列同名；上游已按共享 eQTL 的效应量相关性（如 bivariate LDSC/湖方法）估计",
+      "evidence": "源码 eQTL_rb_csv 读取、对角置 1 与行列重排步骤推断"
+    },
+    {
+      "path": "data/celltype_sort.csv",
+      "object": "data.frame（celltype 列，按谱系排列）",
+      "requirements": "覆盖矩阵中的全部细胞类型名；排序即谱系排布（Myeloid/B/CD4 T/CD8 T & NK）",
+      "evidence": "源码 celltype_sort 表与 gsub(\"-\",\".\") 行列重排推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "pheatmap",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "rb 相关性矩阵已由上游估计（源码另以 eGene 数 >100 过滤纳入细胞类型）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/xqtl_rb_correlation_heatmap.pdf",
+      "content": "谱系排布的 rb 相关性热图：分段非线性色阶（0.8 断点加密）、顶部四系注释条、行列不聚类"
+    }
+  ],
+  "adaptation": [
+    "合并源码 eQTL 与 caQTL 两段重复逻辑为单矩阵流程（caQTL 热图以同型输入复用本模板）。",
+    "按任务规范新增谱系注释条（annotation_col + annotation_colors，按细胞名前缀派生），源码仅按排序表排列无注释。",
+    "ggsave(pheatmap 对象) 改为 pheatmap filename 参数直写（任务规范）；调试性无 breaks 预览与 min() 输出删除。"
+  ],
+  "code_sha256": {
+    "plot.R": "05a60a2fbec33dc384722b1f6c06f6633ddfed654899ce96117ce6dd33f0e75d"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

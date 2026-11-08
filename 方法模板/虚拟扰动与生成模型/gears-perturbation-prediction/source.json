@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "id": "gears-perturbation-prediction",
+  "title": "GEARS 图神经网络单基因与组合基因遗传扰动响应预测",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "GEARS",
+    "Perturb-seq",
+    "遗传扰动预测",
+    "图神经网络",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/snap-stanford/GEARS.git",
+    "figure": "demo/model_tutorial.ipynb（GEARS 官方模型教程，全 15 个代码单元）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "GEARS",
+      "path": "demo/model_tutorial.ipynb",
+      "sha256": "6565e208df44d51214c87c9fd9d60223f5820c218f7b49ea4ecd2297ffaea069",
+      "lines": [
+        1,
+        45
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/gears_data/",
+      "object": "PertData 数据目录（内置数据集名如 norman / adamson / dixit）",
+      "requirements": "首次运行自动下载内置 Perturb-seq 数据集；自建数据需按 GEARS 格式提供 adata 与 perturbation 列",
+      "evidence": "源码 PertData('./data').load(data_name='norman') 与 prepare_split(split='simulation') 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "gears",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "GPU 可用（device=\"cuda\"）；GO 术语依赖已随包配置。"
+  ],
+  "outputs": [
+    {
+      "path": "results/gears_predictions.pkl",
+      "content": "每个扰动条件的预测结果列表：扰动类别、组合阶数、预测后表达与 top 差异基因等字典字段"
+    },
+    {
+      "path": "results/gears_model/",
+      "content": "训练后的 GEARS 模型保存目录（save_model），供 load_pretrained 复用"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "split = \"simulation\", seed = 1",
+      "basis": "源码设定；simulation 划分留出未见扰动组合做泛化评估"
+    },
+    {
+      "setting": "hidden_size = 64, epochs = 20, lr = 1e-3",
+      "basis": "源码 demo 以 epochs=1 演示、正式训练注释建议 20；hidden_size/lr 为 demo 设定"
+    },
+    {
+      "setting": "batch_size = 32 / test_batch_size = 128",
+      "basis": "源码设定；按显存调整"
+    }
+  ],
+  "adaptation": [
+    "将 notebook 单元顺序串接为线性脚本（PertData -> 划分 -> dataloader -> 模型初始化 -> 训练 -> 保存 -> 预测），移除 wandb 跟踪与 tunable_parameters 演示输出。",
+    "epochs 由演示值 1 恢复为正式训练值 20；新增 predict 结果 pickle 落盘。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "GEARS 泛化依赖 GO 图中目标基因的通路注释；未见基因（图外）与三基因以上组合的预测可靠性显著下降。",
+    "预测为扰动后分布的点估计（含均值与方差输出），下游比较应使用多次随机种子重复。"
+  ],
+  "code_sha256": {
+    "analysis.py": "42e819c128ae799101ffb700a4076f80c5ffb7949bd7b0eec91169a9af2773fa"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

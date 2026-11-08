@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "pyvia-topological-trajectory",
+  "title": "pyVIA 惰性随机游走拓扑图构建、终端状态识别与马尔可夫链拟时序推断",
+  "kind": "method",
+  "method_type": "轨迹与拟时序",
+  "language": "Python",
+  "tags": [
+    "pyVIA",
+    "拓扑轨迹",
+    "拟时序",
+    "终端状态",
+    "kNN图"
+  ],
+  "paper": {
+    "repository": "https://github.com/ShobiStassen/VIA (上游)；应用来源为 panVC 仓库 TrajectoryVIARun.py",
+    "figure": "TrajectoryVIARun.py（panVC pyVIA 拓扑轨迹段，全文件 29 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "panVC",
+      "path": "TrajectoryVIARun.py",
+      "sha256": "321fe077576a3bb2b1dd9cd78e2c2afc9510f086a0c139534906b0f227f60f83",
+      "lines": [
+        1,
+        29
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/via_input.h5ad",
+      "object": "AnnData",
+      "requirements": "obsm 含 X_css（或扩散成分等低维表征）与 X_umap；配套 id csv 提供 group_id 群体标签",
+      "evidence": "源码 adata.obsm['X_css'][:, 0:ncomps] 与 df_ids['group_id'] 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "pyVIA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "umap-learn",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "X_css（cell setState 表征）或等价低维嵌入需上游产生（BEYOND_DLPFC 主仓用 pyVIA 于 X_pca/diffmap）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/via_trajectory.h5ad",
+      "content": "obs 附 via_pseudotime（马尔可夫拟时序）的 AnnData；v0 对象含终端状态与谱系路径"
+    },
+    {
+      "path": "results/via_pseudotime.csv 与 streamplot.png",
+      "content": "逐细胞拟时序表与拓扑流线图"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "ncomps = 30, knn = 10, random_seed = 2",
+      "basis": "来源代码设定；低维分量数与 kNN 尺度"
+    },
+    {
+      "setting": "jac_std_global = 0.15, dist_std_local = 1, cluster_graph_pruning_std = 1, too_big_factor = 0.3",
+      "basis": "来源代码设定；图剪枝强度（Jacobi 全局/局部距离标准）与超大簇拆分阈值"
+    },
+    {
+      "setting": "preserve_disconnected = True, dataset = 'group'",
+      "basis": "来源代码设定；保留不连通子图（独立发育支）"
+    }
+  ],
+  "adaptation": [
+    "保留 VIA 初始化与 run_VIA、streamplot、single_cell_pt_markov 导出逐字逻辑；plt.savefig 的 dpi2 参数笔误修正为 dpi。",
+    "新增结果 h5ad 落盘；移除 mpimg 图像内联显示与注释掉的 examples 导入。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "终端状态由图拓扑自动识别，生物学命名需人工核对；断开子图 preserve 时多根谱系需分别解读。",
+    "拟时序基于随机游走 hitting time，对 kNN 图连通性敏感。"
+  ],
+  "code_sha256": {
+    "analysis.py": "55451df37673631cd7e78516673c4615b93c08d8c5b0c952a3dd272d05f6d69f"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

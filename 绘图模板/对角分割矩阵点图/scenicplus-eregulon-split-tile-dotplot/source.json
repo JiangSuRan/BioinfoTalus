@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "id": "scenicplus-eregulon-split-tile-dotplot",
+  "title": "ggplot2 对角分割双三角矩阵点图（同时展示 eRegulon 转录因子表达量、靶基因集可及性/表达 AUC 与 RSS 特异性得分）",
+  "kind": "plot",
+  "plot_type": "对角分割矩阵点图",
+  "language": "R",
+  "tags": [
+    "ggplot2",
+    "geom_polygon",
+    "对角分割热图",
+    "SCENIC+",
+    "eRegulon",
+    "ggnewscale"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "GRN/SCENIC+_Downstream_Analysis_Part2.R（CIMA SCENIC+ 下游分析之 split-tile eRegulon 概览图，提取 1–146 行数据准备与 141–189 行多边形绘图）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "GRN/SCENIC+_Downstream_Analysis_Part2.R",
+      "sha256": "480474e10907f51a2d8ad3883ef81cb38a0098823295f750be96044e1826a4b7",
+      "lines": [
+        1,
+        146
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/eregulon_activity.csv",
+      "object": "data.frame（Regulon × Cell_type 长表）",
+      "requirements": "列含 Regulon、Cell_type、Expression（TF 伪 bulk 表达）、AUC（eRegulon 靶集活性）、RSS（细胞类型特异性得分）；AUC_scale/Expression_scale 为行内 z-score（±2.5 截断）或由脚本前处理生成",
+      "evidence": "源码 rel_data 构造（Regulon/Cell_type/Expression/RSS/mean_AUC 列与 ave scale 截断）推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggnewscale",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "SCENIC+ loom 的 AUC/RSS/表达统计已汇总为长表（上游 loom 解析段移出模板）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scenicplus_eregulon_split_tile.pdf",
+      "content": "对角分割矩阵图：下三角 eRegulon AUC（RdBu）、上三角 TF 表达（BrBG）双色标、中心 RSS 尺寸映射菱形点"
+    }
+  ],
+  "adaptation": [
+    "源脚本从 SCENIC+ loom 提取 AUC/RSS/表达并做行内 z-score（±2.5 截断）与按 RSS 排序 eRegulon；模板改为直接读长表，只保留 split_tile 多边形构造与 ggplot 组装。",
+    "按任务规范：上下三角改用 ggnewscale 双色标（源码共用一个 fill），中心点 shape=23，coord_flip 改 coord_equal。",
+    "移除 Activators/Repressors 双图、Top_RSS 子集、堆叠条形图与 eRegulon 计数 csv 导出。"
+  ],
+  "code_sha256": {
+    "plot.R": "4a8ef0004fbd9a83ba29780f3c727d161434682313c68297b0be19d68b820a19"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

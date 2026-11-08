@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "id": "pheatmap-checkpoint-clinical-group",
+  "title": "髓系-T细胞免疫检查点跨临床分组表达热图与点图（DotPlot/pheatmap）",
+  "kind": "plot",
+  "plot_type": "复合注释热图",
+  "language": "R",
+  "tags": [
+    "pheatmap",
+    "ggplot2",
+    "免疫检查点",
+    "分组热图"
+  ],
+  "paper": {
+    "repository": "https://github.com/Swarbricklab-code/BrCa_cell_atlas.git",
+    "figure": "downstream_immune_analysis/Myeloid_Tcell_clinical_receptor_ligand_checkpoint_OI_heatmap_figure.R（乳腺癌图谱检查点跨层级注释热图，全文件 1–115 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "BrCa_cell_atlas",
+      "path": "downstream_immune_analysis/Myeloid_Tcell_clinical_receptor_ligand_checkpoint_OI_heatmap_figure.R",
+      "sha256": "23ca5aa40b249a3f2110627115250517d80ad752682b066fa8baaa2011125521",
+      "lines": [
+        1,
+        115
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/checkpoint_avg_expr.csv",
+      "object": "矩阵（行 = 检查点基因，列 = 细胞亚型×临床分组组合）",
+      "requirements": "值为 DotPlot 提取的 scaled 平均表达（avg.exp.scaled），行名列名唯一且与注释表可对齐",
+      "evidence": "源码 DotPlot(..., split.by=\"clinical_subtype\") 提取 data 槽 avg.exp.scaled 后 spread 成矩阵的步骤推断"
+    },
+    {
+      "path": "data/gene_annotation.csv",
+      "object": "data.frame（行名 = 基因，列 Mod/Flag/ExpCellType）",
+      "requirements": "Mod（抑制/激活）、Flag（受体/配体）、ExpCellType（来源细胞类型）分类注记",
+      "evidence": "源码 pheatmap_names_row 构造（genes_OI 三列）推断"
+    },
+    {
+      "path": "data/celltype_annotation.csv",
+      "object": "data.frame（行名 = 矩阵列，列 Major/Minor/Subset_CellType/BrCa_type）",
+      "requirements": "多层级细胞类型与临床亚型注记，层级顺序即列注释展示顺序",
+      "evidence": "源码 pheatmap_names_col（tiered cluster annotation）构造推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "pheatmap",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "RColorBrewer",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "上游已用 DotPlot/AverageExpression 得到 scaled 平均表达矩阵并整理双层注释表。"
+  ],
+  "outputs": [
+    {
+      "path": "result/checkpoint_clinical_heatmap.pdf",
+      "content": "行侧基因功能三行注记、列侧多层级细胞类型与临床亚型注记的 RdBu 配色检查点表达热图（列聚类开）"
+    }
+  ],
+  "adaptation": [
+    "移除 setwd、上游 Seurat 子集与 DotPlot 数据提取（输入改为整理好的矩阵与注释 csv）、world_col 50 色长表截取为示例 5 色。",
+    "修正源码 anno 列表中 Mod = mycolors（未定义变量）为 mycolors1；输出改为 pdf(print(phet)) 而非无设备 ggsave。"
+  ],
+  "code_sha256": {
+    "plot.R": "a51794135c2ad6c326c0bb782582fa9077a30f872f6f4f86fa6c26a046c2735b"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

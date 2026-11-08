@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "id": "ggrastr-million-cell-umap-volcano",
+  "title": "ggrastr 百万细胞 UMAP/散点 点层光栅化矢量图",
+  "kind": "plot",
+  "plot_type": "百万细胞栅格化矢量图",
+  "language": "R",
+  "tags": [
+    "ggrastr",
+    "栅格化",
+    "高密度散点",
+    "矢量PDF",
+    "DimPlot"
+  ],
+  "paper": {
+    "repository": "https://github.com/naomihabiblab/BEYOND_DLPFC.git",
+    "figure": "5. Manuscript code/Figure 1.R（geom_point_rast(raster.dpi=1000) 高密度 UMAP，100–115 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "BEYOND_DLPFC",
+      "path": "5. Manuscript code/Figure 1.R",
+      "sha256": "2acb081c12c8c2bc259d5c6c72a9bf221f629444757430a887d8b8c4678788d6",
+      "lines": [
+        100,
+        115
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/large_seurat.rds",
+      "object": "Seurat 对象（大规模）",
+      "requirements": "含 umap 降维与 joint.state（或目标着色列）",
+      "evidence": "源码 DimPlot + geom_point_rast(size=.05, raster.dpi=1000) 组合推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ggrastr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "大规模数据建议先 DietSeurat 瘦身。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ggrastr_umap_rasterized.pdf",
+      "content": "点层以 1000 dpi 位图嵌入、轴/图例保持矢量的 UMAP 图（PDF 体积可控）"
+    }
+  ],
+  "adaptation": [
+    "保留 geom_point_rast 核心层与 raster.dpi 设定；源码 no.labs/no.axes 自定义主题函数以内联 theme 等价实现。",
+    "火山图变体（geom_point_rast 同层）按同型调用即可；ggsave 补全五参数。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "code_sha256": {
+    "plot.R": "b84a6c845738d6368bc91319810a65aa68c96e68af0dc6ab76139e538deef569"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "scvi-probabilistic-integration",
+  "title": "scvi-tools (SCVI) 深度生成模型单细胞多批次概率整合与潜在表征提取",
+  "kind": "method",
+  "method_type": "整合与投影",
+  "language": "Python",
+  "tags": [
+    "scvi-tools",
+    "SCVI",
+    "批次整合",
+    "深度生成模型",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/omicverse/omicverse.git",
+    "figure": "omicverse/external/latentvelo/tools/batch_correction.py（latentVelo 配套的 scVI/scANVI 标准批次校正基线，全文件 1–139 行的 compute_scvi）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "omicverse",
+      "path": "omicverse/external/latentvelo/tools/batch_correction.py",
+      "sha256": "c7554bc330a5698a1a24b0bb819ca793b868e622ecd61d0f2b81fb8def9a4aad",
+      "lines": [
+        1,
+        139
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/counts_batched.h5ad",
+      "object": "AnnData（layers 含 counts）",
+      "requirements": "obs 含 batch 列；counts 层为原始整数计数（未归一化）",
+      "evidence": "源码 setup_anndata(layer=counts_key, batch_key=batch_key) 与 seurat_v3 HVG（layer=counts_key）推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scvi-tools",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "计数层为原始 UMI 计数；批次标签完整（缺失批次归入独立组）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scvi_integrated.h5ad",
+      "content": "含 obsm['X_scVI']（n_latent=20 潜在表征）与 HVG 子集的 AnnData，供 neighbors/UMAP/聚类下游"
+    },
+    {
+      "path": "results/scvi_model/",
+      "content": "训练好的 SCVI 模型目录，可加载做 scANVI 标签转移或 get_normalized_expression"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "HVG seurat_v3 top 2000（layer=counts, batch_key=batch, subset）",
+      "basis": "来源代码设定；计数层 HVG 且按批次分组，避免某批次主导特征选择"
+    },
+    {
+      "setting": "n_latent = 20, gene_likelihood = \"nb\", encode_covariates = True",
+      "basis": "来源代码默认（负二项似然适配 UMI 过离散）"
+    },
+    {
+      "setting": "max_epochs = 500",
+      "basis": "来源代码设定；大数据集可由 early_stopping 控制实际轮数"
+    }
+  ],
+  "adaptation": [
+    "将 compute_scvi 函数拆包为线性脚本，固定条件分支（n_top_genes=2000 执行 HVG；scANVI/ComBat/scGen 速度批校正等其余分支移除）。",
+    "复制输入（adata.copy()）与 tqdm 抑制等包装删除；新增模型保存与 h5ad 落盘。",
+    "counts 键固定为 \"counts\"、批次键固定为 \"batch\"（原函数参数化）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "scVI 假设批次内细胞类型共享（无批次-生物学完全混叠）；整合后仍应以生物保留性指标（如 LISI/graph connectivity）验证。",
+    "训练随机性需固定 scvi.settings.seed 复现；CPU 训练大图谱耗时显著。"
+  ],
+  "code_sha256": {
+    "analysis.py": "4df9504cc85e64dc6c54bc8bb95a0cf894ff1fa6084d4209e062f09f8f8fe9ba"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

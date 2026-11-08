@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "archr-lsi-clustering-doublets",
+  "title": "ArchR 双细胞评分过滤（addDoubletScores）与迭代 LSI 降维",
+  "kind": "method",
+  "method_type": "scATAC与表观组",
+  "language": "R",
+  "tags": [
+    "ArchR",
+    "scATAC-seq",
+    "IterativeLSI",
+    "双细胞过滤"
+  ],
+  "paper": {
+    "repository": "https://github.com/corceslab/2025_Sant_CHOIR.git",
+    "figure": "preprocessing_scripts/PreProcessArchR.R（CHOIR 基准 ATAC 预处理之质控与双细胞过滤，全文件 1–71 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "2025_Sant_CHOIR",
+      "path": "preprocessing_scripts/PreProcessArchR.R",
+      "sha256": "a69cac150c6c8d044993c747e792fcd58467e2279d12603aeed2c643737dcf60",
+      "lines": [
+        1,
+        71
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/archr_project.rds",
+      "object": "ArchRProject 对象",
+      "requirements": "已完成 createArrowFiles 与 ArchRProject 构建（对应 archr-arrow-creation-qc 模板输出）；cellColData 含 TSSEnrichment 与 nFrags",
+      "evidence": "源码 proj <- proj[proj$TSSEnrichment > 2 & proj$nFrags > 2500] 过滤与 addDoubletScores/filterDoublets 调用推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ArchR",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "项目含 TileMatrix（addIterativeLSI 依赖）；样本内细胞数足够双细胞模拟估计。"
+  ],
+  "outputs": [
+    {
+      "path": "results/archr_lsi_project.rds",
+      "content": "质控与双细胞过滤后的 ArchRProject：cellColData 含 DoubletScore/DoubetEnrichment，reductions 含 IterativeLSI 嵌入"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "精筛阈值 TSSEnrichment > 2 & nFrags > 2500",
+      "basis": "来源代码设定（相对建库阶段的 minTSS=1/minFrags=1000 收紧）；迁移时按 TSS/片段分布调整"
+    },
+    {
+      "setting": "addIterativeLSI useMatrix = \"TileMatrix\", iterations = 2, varFeatures = 25000, dimsToUse = 1:30",
+      "basis": "ArchR 官方流程默认参数（源脚本建库后另行聚类，LSI 段按任务规范补全）；Tile 矩阵较 peak 矩阵免去主观峰 Calling 环节"
+    },
+    {
+      "setting": "clusterParams resolution = 0.2, sampleCells = 10000",
+      "basis": "ArchR 默认；迭代内聚类仅用于重选特征，分辨率不必贴合最终聚类"
+    }
+  ],
+  "adaptation": [
+    "移除 commandArgs/setwd、cell_metadata 外部合并分支、ground_truth 策略分支与 plotFragmentSizes/plotTSSEnrichment QC 诊断图。",
+    "按任务规范补全 addIterativeLSI 步骤（源脚本止于 filterDoublets，LSI 在其下游脚本）；输出精简为单个项目 rds 与 cell_metadata csv 移除。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "双细胞过滤为模拟推断，scATAC 高开放肿瘤细胞可能被误判为双细胞（可复核 DoubletEnrichment 分布）。",
+    "迭代 LSI 对极低深度样本可能收敛于技术维；必要时改用 Harmony 校正或 LSI 参数重扫。"
+  ],
+  "code_sha256": {
+    "analysis.R": "5160894ed17922f4f72c9e5db2dbcf186b80d769b96a24f6b782e0edaeaf19d5"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

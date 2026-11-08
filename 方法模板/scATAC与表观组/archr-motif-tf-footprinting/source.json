@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "archr-motif-tf-footprinting",
+  "title": "ArchR 转录因子 Motif 富集与 Tn5 偏倚校正足迹分析（getFootprints）",
+  "kind": "method",
+  "method_type": "scATAC与表观组",
+  "language": "R",
+  "tags": [
+    "ArchR",
+    "scATAC-seq",
+    "转录因子足迹",
+    "Motif",
+    "getFootprints"
+  ],
+  "paper": {
+    "repository": "https://github.com/ma-jq/B.git",
+    "figure": "Fig3/scATAC/6-footprint.R（B 细胞图谱图 3 转录因子足迹分析，全文件 1–42 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "B_cell_atlas_ma_jq",
+      "path": "Fig3/scATAC/6-footprint.R",
+      "sha256": "a96078f346c0b3a2a2452169e44d755b6543440f9eae04e9fac148588c9cab67",
+      "lines": [
+        1,
+        42
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/archr_motif_project.rds",
+      "object": "ArchRProject 对象",
+      "requirements": "已完成 addMotifAnnotations（getPositions 可取 motif 位点）；groupBy 指定列（如 Clusters2）存在且群内细胞数充足",
+      "evidence": "源码 getPositions(projHeme5) 与 getFootprints(groupBy = \"Clusters2\") 调用推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ArchR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "BSgenome.Hsapiens.UCSC.hg38",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "项目已带 motif 注释与分组聚类标签；测序深度经 TSS/片段 QC 且双细胞已滤。"
+  ],
+  "outputs": [
+    {
+      "path": "results/archr_footprints.rds",
+      "content": "SummarizedExperiment（seFoot）：每个目标 motif 的结合位点中心 ±250bp 插入覆盖率矩阵（分组 × 位置），含正负链与 Tn5 偏倚通道，供 plotFootprints(normMethod=\"Subtract\") 校正可视化"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "addGroupCoverages(groupBy = \"Clusters2\")",
+      "basis": "来源代码设定（源码中被注释，按任务规范恢复）；聚合粒度决定足迹信噪比，稀有群覆盖率不足时足迹被稀释"
+    },
+    {
+      "setting": "目标 TF 以 grep 模糊匹配 motif 名展开（如 TBX21 匹配 TBX21_22 等变体）",
+      "basis": "来源代码 markerMotifs 构造方式；目标列表源码取自 SCENIC 与 ATAC 交集 TF 表，模板改为显式向量"
+    },
+    {
+      "setting": "threads = 8（原脚本 12）",
+      "basis": "任务规范设定；按本机核数调整"
+    }
+  ],
+  "adaptation": [
+    "移除 setwd、上游调试用连续覆盖的 motifs 赋值（最终仅保留 SCENIC 交集表读入逻辑的显式向量替代）与 plotFootprints 绘图段。",
+    "恢复源码中被注释掉的 addGroupCoverages 步骤使流程自含；TF 列表改为字面向量并保留 grep 模糊匹配。",
+    "输出改为 saveRDS(seFoot)（源码仅落图不落数据），Tn5 偏倚校正（Subtract）留给绘图阶段。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "TF 足迹受 Tn5 序列偏好与染色体可及性混杂，必须配合偏倚校正通道（Subtract/Divide）解读；间接结合（通过辅因子）也会产生足迹。",
+    "grep 模糊匹配可能误纳入同家族 motif 变体，目标列表应逐个核对 names(motifPositions)。"
+  ],
+  "code_sha256": {
+    "analysis.R": "f2c2aadf19a74f1cde7a5a5d937709f77d0cb561d78e1d86562841fdbfa94636"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

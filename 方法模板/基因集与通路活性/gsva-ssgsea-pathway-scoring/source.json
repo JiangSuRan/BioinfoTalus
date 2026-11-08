@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "id": "gsva-ssgsea-pathway-scoring",
+  "title": "GSVA / ssGSEA 批量转录组基因签名富集评分计算",
+  "kind": "method",
+  "method_type": "基因集与通路活性",
+  "language": "R",
+  "tags": [
+    "GSVA",
+    "ssGSEA",
+    "通路评分",
+    "Bulk转录组",
+    "基因签名"
+  ],
+  "paper": {
+    "repository": "code",
+    "figure": "code/w.step0.09.TCGA_scoring.R（泛癌 T 细胞图谱 TCGA 签名打分，全文件 1–46 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "code",
+      "path": "code/w.step0.09.TCGA_scoring.R",
+      "sha256": "1eb8b5f6652b03e15e1f15e6f2eff58ed400cda016de999bc6b500833f6cae76",
+      "lines": [
+        1,
+        46
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bulk_tpm_matrix.rds",
+      "object": "矩阵（基因 × 样本，TPM/对数 TPM 等连续表达量）",
+      "requirements": "行名为基因符号；未做行内 z 标准化（GSVA 按基因在样本间的分布重排）",
+      "evidence": "源码 as.matrix(assay(sce.sub, \"Toil_TPM\")) 输入推断"
+    },
+    {
+      "path": "Data/signature_genes.tsv",
+      "object": "两列制表符表（签名名、基因符号，无表头）",
+      "requirements": "基因符号与表达矩阵行名同源；每签名建议 >= 10 基因以稳定分布估计",
+      "evidence": "源码 sigs 两列表（cluster, gene）展开 inpList 的构造推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "GSVA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "data.table",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "表达矩阵已按样本类型筛选（如实体瘤样本）；基因集已确定。"
+  ],
+  "outputs": [
+    {
+      "path": "results/gsva_scores.rds",
+      "content": "GSVA 得分矩阵（签名 × 样本），行名签名、列名样本，取值约 [-1,1]"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "method = \"gsva\", kcdf = \"Gaussian\", mx.diff = TRUE",
+      "basis": "来源代码设定；连续表达量配 Gaussian 核，mx.diff=TRUE 得双向有界分数（ssGSEA 可改 method=\"ssgsea\"）"
+    },
+    {
+      "setting": "parallel.sz = 8",
+      "basis": "来源代码设定（按核数调整）；并行粒度为签名"
+    }
+  ],
+  "adaptation": [
+    "移除按癌种循环分片计算与 rbind 拼接（一次性全矩阵计算等价且更简洁）、colData 合并落表与 SingleCellExperiment 容器依赖。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/），输出为 saveRDS 得分矩阵。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "GSVA 分数依赖基因在样本间的分布估计，样本数少（<10）时分布不稳；跨批次/平台合并前应先校正。",
+    "签名间基因重叠会造成分数相关，解读时注意冗余；小基因集（<10）方差大。"
+  ],
+  "code_sha256": {
+    "analysis.R": "ac0e8372f4ab1e8f796966e3b352e3a11a278e04f715b9b9632a1e3178ce775e"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

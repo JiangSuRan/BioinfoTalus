@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "choir-hierarchical-clustering",
+  "title": "CHOIR 单细胞层级统计置换聚类与亚群识别",
+  "kind": "method",
+  "method_type": "亚群与层级聚类",
+  "language": "R",
+  "tags": [
+    "CHOIR",
+    "Seurat",
+    "亚群分析",
+    "层级聚类",
+    "Harmony"
+  ],
+  "paper": {
+    "repository": "https://github.com/corceslab/2025_Sant_CHOIR",
+    "figure": "CHOIR 基准测试主流程脚本 clustering_scripts/run_CHOIR.R（160–235 行，纯 Seurat RNA 分支）与同仓 additional_analysis_scripts/real_datasets/Siletti_2023_human_brain_atlas.R 第 15 行的 runCHOIRumap 用法",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "2025_Sant_CHOIR",
+      "path": "clustering_scripts/run_CHOIR.R",
+      "sha256": "ce988ba0b5384289543502fcc42b0e959ab4caeb907e9442a2fedfbbf562909d",
+      "lines": [
+        160,
+        235
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_input.rds",
+      "object": "Seurat 对象",
+      "requirements": "RNA assay 含 counts 层（use_slot = \"counts\"）；meta.data 需含 Batch 列（Harmony 批次标签，字符串型）；细胞数足够大时 CHOIR 内部会降采样检验",
+      "evidence": "CHOIR(use_assay = \"RNA\", use_slot = \"counts\", batch_labels = \"Batch\") 接口要求；原脚本在 Harmony 分支将 cell_metadata$Batch 写入 meta.data$Batch"
+    }
+  ],
+  "packages": [
+    {
+      "name": "CHOIR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "输入对象已完成基础质控；Batch 列为希望在校正后聚类的批次注记。"
+  ],
+  "outputs": [
+    {
+      "path": "results/choir_clusters.csv",
+      "content": "每细胞一行：CellID 与 CHOIR_clusters_0.05 层级聚类标签"
+    },
+    {
+      "path": "results/seurat_choir.rds",
+      "content": "含 CHOIR 层级树结果（object@misc$CHOIR）、各层聚类标签列与 CHOIR UMAP 嵌入的 Seurat 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "alpha = 0.05",
+      "basis": "来源代码基准脚本默认值；层级分裂置换检验的显著性水平，越小亚群分辨率越粗，迁移时按所需分辨率调整"
+    },
+    {
+      "setting": "batch_correction_method = \"Harmony\", batch_labels = \"Batch\"",
+      "basis": "来源代码 Harmony 分支设定；批次标签列名随数据调整，无批次时可设 NULL"
+    },
+    {
+      "setting": "use_assay = \"RNA\", use_slot = \"counts\"",
+      "basis": "来源代码对原始计数输入的设定；CHOIR 在内部自行归一化，不传入预归一化数据"
+    },
+    {
+      "setting": "n_cores = 4, random_seed = 1",
+      "basis": "来源代码基准脚本取值（n_cores 按本机核数缩减）；固定随机种子保证置换检验可重复"
+    }
+  ],
+  "adaptation": [
+    "剥离原脚本用于基准测试的参数表解析、ArchR / 多模态输入分支、计时包装（Sys.time 差值）与按 parameter_key 分片保存中间文件的逻辑，仅保留纯 Seurat RNA 对象的 CHOIR 主流程。",
+    "聚类标签输出列名简化为 Clusters（原脚本带参数索引后缀）；runCHOIRumap 步骤依据同仓 additional_analysis_scripts/real_datasets/Siletti_2023_human_brain_atlas.R 第 15 行补入。",
+    "CHOIR 调用仅保留任务规范指定的参数子集，其余（p_adjust、min_accuracy、sample_max、downsampling_rate、verbose 等）交给包默认值。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "CHOIR 通过逐层置换检验控制亚群数量，alpha 与内部降采样参数影响最终分辨率；批次效应强时 Harmony 校正可能不足以消除假亚群。",
+    "本模板 use_assay / use_slot 参数名对应 corceslab 开发版 CHOIR，Bioconductor 发行版接口可能不同，迁移时需核对版本。"
+  ],
+  "code_sha256": {
+    "analysis.R": "e515f3ae34d0c6ea663ad94261e58192dadb31b61b46043e2b68fd6019e103b6"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

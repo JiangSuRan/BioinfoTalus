@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "rctd-stereoseq-doublet-deconv",
+  "title": "spacexr (RCTD) 高分辨率空间组（Stereo-seq/Slide-seq）doublet 模式反卷积",
+  "kind": "method",
+  "method_type": "反卷积与细胞组成",
+  "language": "R",
+  "tags": [
+    "spacexr",
+    "RCTD",
+    "Stereo-seq",
+    "doublet模式",
+    "空间反卷积"
+  ],
+  "paper": {
+    "repository": "https://github.com/lcy1364/Cortex-Atlas-Code.git",
+    "figure": "src/STEREO/2_Deconvolution_and_QC/1_Initial_deconvolution.R（Cortex Atlas Stereo-seq 初始反卷积，全文件 1–70 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Cortex-Atlas-Code",
+      "path": "src/STEREO/2_Deconvolution_and_QC/1_Initial_deconvolution.R",
+      "sha256": "39c3080da2d296b80fe6ece9283875b40f5a9ceada2d2d787e9185466186d3e0",
+      "lines": [
+        1,
+        70
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/snRNA_seurat.rds",
+      "object": "Seurat 对象（单细胞/单核参考）",
+      "requirements": "RNA assay 含原始 counts；meta.data 含 subclass（细胞类型标签）与 nCount_RNA 列；基因符号与空间数据一致（来源研究另做了 ENSEMBL ID 对齐）",
+      "evidence": "Reference(GetAssayData(snRNA, slot=\"counts\"), cell_types = snRNA$subclass, nUMI = snRNA$nCount_RNA) 推断"
+    },
+    {
+      "path": "Data/stereo_seurat.rds",
+      "object": "Seurat 对象（Stereo-seq/Slide-seq 切片）",
+      "requirements": "counts 层为原始计数且行名与参考基因符号同一体系；meta.data 含 x、y 空间坐标列",
+      "evidence": "GetAssayData(ST, slot=\"count\")、coords <- ST@meta.data[c(\"x\",\"y\")] 与 SpatialRNA(coords, countSP, nUMI = umiSP) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "spacexr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "空间 bin 的 UMI 深度与单细胞参考量级可比；高分辨率平台 bin UMI 低时 doublet 模式比 full 更稳健。"
+  ],
+  "outputs": [
+    {
+      "path": "results/rctd_doublet_results.rds",
+      "content": "RCTD 结果列表：results_df（每 bin 的 singlet/doublet 分类与 first_type/second_type 映射）、weights（bin × 细胞类型权重）与各类型得分"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "doublet_mode = \"doublet\"",
+      "basis": "来源代码设定；高分辨率 bin 仅容纳少量细胞，显式建模 1-2 个细胞的混合比 unconstrained full 模式更符合物理尺度"
+    },
+    {
+      "setting": "参考表达谱限制到与空间数据共有基因并重算 nUMI",
+      "basis": "来源代码设定；保证似然计算在共同基因空间上进行，避免缺失基因造成的概率错位"
+    },
+    {
+      "setting": "max_cores = 8（原脚本 create.RCTD 为 20）",
+      "basis": "任务规范设定；按本机核数缩减"
+    }
+  ],
+  "adaptation": [
+    "移除外层 mclapply 多切片批量循环、setwd、devtools::load_all 本地包加载、qs 序列化读写（改为 readRDS/saveRDS）与 print 诊断。",
+    "研究特定的 ENSEMBL gtf 基因 ID 转换（name_id 映射）移至上游输入准备，模板要求两侧基因符号已对齐。",
+    "保存对象由 qs 分片的完整 RCTD 改为 @results 结果列表；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "doublet 模式上限两个细胞类型，bin 含 3 类以上混合或极低 UMI 时分配不可靠；结果应结合 spot UMI 深度过滤（源仓库后续 QC 步骤）。",
+    "参考限制到共有基因会牺牲部分类型分辨力，共有基因数过少时类型间可分性下降。"
+  ],
+  "code_sha256": {
+    "analysis.R": "362c51d56ab3fd0713d632e56eea35bdd92d4a1fbe6083385f80d84b5e66de42"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

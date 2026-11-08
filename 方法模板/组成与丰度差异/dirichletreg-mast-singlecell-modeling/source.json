@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "dirichletreg-mast-singlecell-modeling",
+  "title": "DirichletReg 细胞组成回归与 MAST 零膨胀双部分广义线性模型差异检验",
+  "kind": "method",
+  "method_type": "组成与丰度差异",
+  "language": "R",
+  "tags": [
+    "DirichletReg",
+    "MAST",
+    "组成回归",
+    "零膨胀模型",
+    "差异表达"
+  ],
+  "paper": {
+    "repository": "ulcerative_colitis（UC 单细胞研究代码）",
+    "figure": "analysis.r 的 dirichlet_regression 函数（250–277 行）与 markers.r 的 MAST zlm 流程",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "ulcerative_colitis",
+      "path": "analysis.r",
+      "sha256": "bda29ff005af766c88be1132b39d83bfd60e98550d004c2597bec615367b2780",
+      "lines": [
+        250,
+        277
+      ],
+      "role": "Dirichlet 组成回归核心函数"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/uc_seurat.rds",
+      "object": "Seurat 对象",
+      "requirements": "meta.data 含 orig.ident（样本）、celltype（细胞类型）、condition（条件，可由 orig.ident 派生）与 nCount_RNA；data 层已归一化",
+      "evidence": "dirichlet_regression 的 tapply(orig.ident, celltype) 组成聚合与示例注释推断；MAST FromMatrix 接口"
+    }
+  ],
+  "packages": [
+    {
+      "name": "DirichletReg",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "MAST",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Matrix.utils",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "data.table",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "条件变量可从样本名解析（源码 gsub('[12].*','',...) 模式随命名调整）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/dirichlet_reg_pvals.csv",
+      "content": "条件效应 p 值矩阵：细胞类型 × 条件水平"
+    },
+    {
+      "path": "results/dirichlet_reg_fit.rds",
+      "content": "DirichReg 拟合对象（系数、p 值矩阵）"
+    },
+    {
+      "path": "results/mast_zlm_condition_lrt.csv",
+      "content": "MAST zlm 条件 LRT 汇总表（discrete/continuous 双组分的 coefficient/Pr(>Chisq)）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "DR_data + DirichReg(counts ~ condition)",
+      "basis": "来源代码函数设定；Dirichlet 分布建模组成向量，条件系数即对数组成比变化"
+    },
+    {
+      "setting": "MAST thresholdSCRNASEQExpressionClean + zlm(~ condition + nCount_RNA)",
+      "basis": "MAST 教程标准流程（源码 markers.r 使用同族接口）；深度协变量纳入离散与连续两组分"
+    }
+  ],
+  "adaptation": [
+    "dirichlet_regression 函数拆包为线性脚本并保留 p 值矩阵构造逐字逻辑；covariates 由调用示例补全。",
+    "MAST 段按源码 markers.r 的 zlm 流程补全阈值化与 LRT 输出（模板为可运行的最小链路）；移除 source() 的多个本地工具脚本。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Dirichlet 组成回归无零膨胀项，空类型样本需预先过滤；MAST 阈值化对低表达基因敏感，阈值选择影响检出。",
+    "组成与 DE 两个检验的结论应联合解读（组成变化可能来自某型的基因表达上调）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "43bfb32e31cfd877637852f902a0f66806224b3c1de2cd3cda627fb7c209c237"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

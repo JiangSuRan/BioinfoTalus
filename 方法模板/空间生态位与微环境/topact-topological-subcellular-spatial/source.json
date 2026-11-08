@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "topact-topological-subcellular-spatial",
+  "title": "topact 亚细胞空间转录组密度场构建与 blob 拓扑峰检测",
+  "kind": "method",
+  "method_type": "空间生态位与微环境",
+  "language": "Python",
+  "tags": [
+    "topact",
+    "Stereo-seq",
+    "持续同调",
+    "blob检测",
+    "空间密度"
+  ],
+  "paper": {
+    "repository": "https://github.com/attarpourtopact/topact (上游)；应用来源为 topact-paper 仓库 Figure 5 notebook",
+    "figure": "Figure 5/Bin 20 Gloms.ipynb（Stereo-seq 肾小球足细胞团块检测，全文件 51 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "topact-paper",
+      "path": "Figure 5/Bin 20 Gloms.ipynb",
+      "sha256": "785341a0c3c53b02f10d9da4cb4c7f65dec2ecc0c3530402ac2806f348d6ae8a",
+      "lines": [
+        1,
+        51
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bin20_classifications.csv",
+      "object": "CSV（每 bin 一行）",
+      "requirements": "列含 x、y、mouse_ID（样本）、clusterid_0_6（簇标签）",
+      "evidence": "源码 pd.read_csv(usecols=[...]) 推断"
+    },
+    {
+      "path": "Data/offsets.csv",
+      "object": "CSV（每样本一行）",
+      "requirements": "列含 sample、xmin、ymin（全局坐标偏移）",
+      "evidence": "源码 offsets 读取与坐标平移推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "topact",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scikit-image",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游已完成 bin 级细胞分类（topact count classifier）；目标簇标签模式（pods）按数据调整。"
+  ],
+  "outputs": [
+    {
+      "path": "results/{sample}_gloms.txt",
+      "content": "每样本的目标团块中心坐标表（全局坐标系，blob_dog 尺度校正后）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "20 像素 bin 分格指示矩阵 + density(matrix, 1) 密度场",
+      "basis": "来源代码设定；bin 大小决定检测分辨率（亚细胞/细胞/bin 级可选）"
+    },
+    {
+      "setting": "blob_dog threshold = 0.2，坐标 * 20 + 10 还原至 bin 中心",
+      "basis": "来源代码设定；DoG 尺度空间 blob 检测，threshold 控制团块显著性"
+    },
+    {
+      "setting": "样本坐标按 mouse_ID 映射（源码含两样本标签互换的勘正注释）",
+      "basis": "来源代码 samples 字典；多切片拼接时必须核对坐标偏移"
+    }
+  ],
+  "adaptation": [
+    "样本循环由 10 个映射样本精简为 4 个显式示例（去掉源码 4032_1/4032_2 标签互换勘正的 dict）；skimage 导入提为模块级。",
+    "保留 density/blob_dog/坐标还原逐字逻辑与 np.savetxt 落盘。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "blob_dog 对密度场平滑度敏感，bin 过稀时团块碎裂；threshold=0.2 为经验值需按分布复核。",
+    "该流程仅做团块中心检测（拓扑峰），未执行完整持续同调（PH0/PH1 条码图）分析；完整 TDA 需 persistomics 管线。"
+  ],
+  "code_sha256": {
+    "analysis.py": "dee5302a3b66105ddb65da9032670fce6e948e3c8585f134f4760fbf03615afa"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

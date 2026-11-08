@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "id": "deseq2-covariate-gsea",
+  "title": "DESeq2 多协变量差异表达拟合与排序基因列表 GSEA 通路分析",
+  "kind": "method",
+  "method_type": "Bulk与队列建模",
+  "language": "R",
+  "tags": [
+    "DESeq2",
+    "clusterProfiler",
+    "GSEA",
+    "差异表达"
+  ],
+  "paper": {
+    "repository": "https://github.com/yyoshiaki/autoimmune10x_CD4T_Manuscript_2023.git",
+    "figure": "NMFproj/Immunexut_DEseq2.R（ImmuNexUT 队列 Bulk 差异与 GSEA，全文件 1–90 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "autoimmune10x_CD4T_Manuscript_2023",
+      "path": "NMFproj/Immunexut_DEseq2.R",
+      "sha256": "625963893e41c267fc7cc39134cbbf4a45faf0e0487923d045b2723dca4738e8",
+      "lines": [
+        1,
+        90
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bulk_counts.tsv",
+      "object": "计数表（Gene_id、Gene_name 与样本列）",
+      "requirements": "未归一化整数计数（kallisto/featureCounts 估计计数）；样本列与临床表 id 对应",
+      "evidence": "源码 read_tsv(count.txt) 后按 Gene_name 求和的整理步骤推断"
+    },
+    {
+      "path": "Data/clinical_metadata.tsv",
+      "object": "data.frame（每样本一行）",
+      "requirements": "含 id 与 disease 列；参照水平为 HC（relevel），其余协变量可加入 design",
+      "evidence": "源码 design = ~disease 与 relevel(ref=\"HC\") 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "DESeq2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "clusterProfiler",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ReactomePA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "org.Hs.eg.db",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "每组样本数 >= 3（源码 smallestGroupSize=3）；临床表覆盖全部计数样本。"
+  ],
+  "outputs": [
+    {
+      "path": "results/deseq2_results.csv",
+      "content": "DESeq2 tidy 结果表：全基因 baseMean/log2FoldChange/lfcSE/stat/pvalue/padj"
+    },
+    {
+      "path": "results/gsea_results.csv",
+      "content": "Reactome GSEA 结果：NES、pvalue、padjust 与 leading edge 基因"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "design = ~ disease，参照水平 HC",
+      "basis": "来源代码设定；协变量（批次/性别等）应在 design 中显式加入而非事后回归"
+    },
+    {
+      "setting": "过滤 rowSums(counts >= 10) >= 3（th.exp=10, smallestGroupSize=3）",
+      "basis": "来源代码设定；DESeq2 官方推荐的独立过滤降低多重检验负担"
+    },
+    {
+      "setting": "GSEA 以 log2FoldChange 全排序列表（非截断 DEG）",
+      "basis": "来源代码设定（arrange(desc(log2FoldChange))）；使用连续统计量避免阈值选择偏差"
+    }
+  ],
+  "adaptation": [
+    "移除疾病 × 细胞类型双层 for 循环、EnhancedVolcano 火山图、compareCluster 多列表 GSEA 与 summary(res) 控制台输出，单比较线性化。",
+    "geneList 构造与 bitr 符号映射保留源码逻辑；输出统一到 results/ 目录。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "组间样本量悬殊或存在批次未建模时 DESeq2 离散度估计有偏；估计计数（非整数）输入会触发警告，应 rounds 到整或改 tximport 流程。",
+    "以 log2FC 排序的 GSEA 对低表达噪声基因敏感，可用 Wald 统计量排序做敏感性分析。"
+  ],
+  "code_sha256": {
+    "analysis.R": "df7160a48a592d6409928e92c8950b994fc56749d924902d566a7736e7477f45"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "id": "scanpy-xenium-spatial-preprocess",
+  "title": "10x Xenium 原位空间转录组数据读取、质控过滤与空间坐标规范化",
+  "kind": "method",
+  "method_type": "空间组学预处理",
+  "language": "Python",
+  "tags": [
+    "Xenium",
+    "scanpy",
+    "空间转录组",
+    "预处理",
+    "anndata"
+  ],
+  "paper": {
+    "repository": "https://github.com/theislab/nicheformer.git",
+    "figure": "data/spatialcorpus-110M/spatial/examplary-Xenium/preprocess_xenium_lung.py（nicheformer 训练语料 Xenium 预处理，全文件 1–70 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "nicheformer",
+      "path": "data/spatialcorpus-110M/spatial/examplary-Xenium/preprocess_xenium_lung.py",
+      "sha256": "68c19cde77a3ca88bc4b36236e1a51a8db06febeaaead63e53e01d8988c4ae24",
+      "lines": [
+        1,
+        70
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cell_feature_matrix.h5",
+      "object": "10x h5 计数矩阵（Xenium cell_feature_matrix.h5）",
+      "requirements": "Xenium outs 目录的标准输出；基因为 panel 探针",
+      "evidence": "sc.read_10x_h5(...) 读取步骤推断"
+    },
+    {
+      "path": "Data/cells.csv.gz",
+      "object": "Xenium cells 表（每细胞一行）",
+      "requirements": "含 x_centroid、y_centroid 列（µm 尺度质心坐标）",
+      "evidence": "adata.obs = pd.read_csv(...) 与 obs['x_centroid']/['y_centroid'] 坐标提取步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scipy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "Xenium run 的 outs 目录已就位；h5 与 cells 表来自同一次 run（条码一致）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/xenium_processed.h5ad",
+      "content": "质控后的 AnnData：稀疏计数 X、obsm['spatial'] 质心坐标、var 含 gene_name 与 feature_is_filtered 标记"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "var 以 gene_ids 为索引、gene_name 为列",
+      "basis": "来源代码设定；双标识保留便于与 scRNA 参考（符号）和 10x 生态（ID）分别对齐"
+    },
+    {
+      "setting": "feature_is_filtered 统一置 False（保留全部特征）",
+      "basis": "来源代码设定；nicheformer 语料要求全特征计数，模板沿用并通过显式过滤参数控制质量"
+    },
+    {
+      "setting": "filter_cells(min_counts=10, min_genes=10) / filter_genes(min_cells=10)",
+      "basis": "模板补充（源码依赖 Xenium 官方 QC flag 而未显式过滤计数）；保守阈值，迁移时按 UMI/基因分布重评"
+    },
+    {
+      "setting": "X 转 csr_matrix",
+      "basis": "来源代码设定；稀疏存储控制大切片内存占用"
+    }
+  ],
+  "adaptation": [
+    "移除 nicheformer 私有依赖（constants/validate 模块）与本体注释字段填充（assay/sex/organism/tissue 等 ObsConstants 列）、命令行参数解析与 mkdir 目录管理。",
+    "空间坐标由源码写入 obs 常量列改为写入标准 obsm['spatial']，validate 校验步骤删除。",
+    "新增显式细胞/基因过滤；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "未做细胞分割质量核验（核面积/边界）；Xenium 多轮实验的负控探针与拆分探针背景未显式校正。",
+    "保留全部特征（含控制探针）时下游差异分析前应再次过滤；坐标为质心，不携带细胞形态信息。"
+  ],
+  "code_sha256": {
+    "analysis.py": "539e061e5d55e83034e17b5a27050b279681f0fcb56e184b7bc261a2f06c0d6f"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

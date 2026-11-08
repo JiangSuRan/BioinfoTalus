@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "id": "clusterprofiler-reactome-ora",
+  "title": "clusterProfiler 多基因模块 Reactome / GO 批量过代表富集分析（compareCluster）",
+  "kind": "method",
+  "method_type": "基因集与通路活性",
+  "language": "R",
+  "tags": [
+    "clusterProfiler",
+    "ReactomePA",
+    "compareCluster",
+    "富集分析"
+  ],
+  "paper": {
+    "repository": "https://github.com/yyoshiaki/autoimmune10x_CD4T_Manuscript_2023.git",
+    "figure": "CD4T_scRNAseq_atlas/NMF_reactome.R（自身免疫 CD4 T 细胞 atlas NMF 模块 Reactome 富集，全文件 1–83 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "autoimmune10x_CD4T_Manuscript_2023",
+      "path": "CD4T_scRNAseq_atlas/NMF_reactome.R",
+      "sha256": "291ac58a011d6370bb807c14a8ebc6dd01d6012060fc494e15e0ee6296fee7b6",
+      "lines": [
+        1,
+        83
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/nmf_marker_genes.csv",
+      "object": "data.frame（每列为一个模块的标记基因排序列 gene_NMF0..gene_NMF11）",
+      "requirements": "列名格式 gene_NMF<n>；行序即基因排序（相关性降序），取前 n_top 参与富集",
+      "evidence": "源码 df[1:n_top, paste0('gene_NMF', c)] 逐模块取前 50 的步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "clusterProfiler",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ReactomePA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "org.Hs.eg.db",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "模块标记基因已由上游（NMF/WGCNA/差异分析）产出并排序；ReactomePA 需联网获取注释。"
+  ],
+  "outputs": [
+    {
+      "path": "results/reactome_enrichment.csv",
+      "content": "compareCluster 结果表：Cluster（模块）× Reactome 通路的 GeneRatio/BgRatio、p 值、q 值与基因成员"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "每模块 top 50 标记基因（n_top = 50）",
+      "basis": "来源代码设定；top 基因数目在富集灵敏度与模块特异性间权衡"
+    },
+    {
+      "setting": "bitr SYMBOL -> ENTREZID 后 enrichPathway(organism = \"human\")",
+      "basis": "来源代码设定；ReactomePA 以 ENTREZID 为键，符号转换失败基因被剔除"
+    },
+    {
+      "setting": "compareCluster 默认 pAdjustMethod/BH 与 qvalueCutoff",
+      "basis": "来源代码未显式设定，用包默认"
+    }
+  ],
+  "adaptation": [
+    "移除 setwd、dotplot 绘图与 ggsave、后续 top15/top10 的 NMF 相关性 pheatmap 段及 sessionInfo()。",
+    "for 循环与逐模块 print 诊断改为 lapply 构造；富集结果统一落盘 csv。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "ORA 依赖输入列表的截断（top 50），排序标准不同会改变富集结论；未使用完整排序统计量的 GSEA 互补验证。",
+    "符号转换失败（别名/新基因）会静默丢失基因，应核对 bitr 的 drop 消息。"
+  ],
+  "code_sha256": {
+    "analysis.R": "5952545b4ae8deea1fe6ae9afb776fe3e0c3865206ba2211180dcbbcc9ca941e"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "id": "pyscenic-arboreto-grnboost2",
+  "title": "pySCENIC 三步管线（arboreto grnboost2 共表达、cisTarget motif 修剪与 AUCell 活性）",
+  "kind": "method",
+  "method_type": "转录因子与调控网络",
+  "language": "Python",
+  "tags": [
+    "pySCENIC",
+    "grnboost2",
+    "cisTarget",
+    "AUCell",
+    "调控网络"
+  ],
+  "paper": {
+    "repository": "https://github.com/aertslab/pySCENIC (上游)；应用来源为 MMRF_ImmuneAtlas-main 仓库 figure_5 管线",
+    "figure": "manuscript_figures/figure_5/pyscenic_pipeline_reduced_MY_iter1.py（MM 骨髓微环境 pySCENIC 三步管线，1–120 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "MMRF_ImmuneAtlas-main",
+      "path": "MMRF_ImmuneAtlas-main/manuscript_figures/figure_5/pyscenic_pipeline_reduced_MY_iter1.py",
+      "sha256": "9d31756af5b202785bc3fe78d53549eb5b7fefe84d08966be0f23a967ab624d9",
+      "lines": [
+        1,
+        120
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/myeloid_counts.h5ad",
+      "object": "AnnData（原始计数或可用表达）",
+      "requirements": "X 为计数矩阵（grnboost2 在基因 × 细胞矩阵上运行）；基因 HGNC",
+      "evidence": "源码 adata.to_df() 直接进 grnboost2 推断"
+    },
+    {
+      "path": "Data/scenic/*feather 与 motifs-v9-nr.hgnc-m0.001-o0.0.tbl 与 allTFs_hg38.txt",
+      "object": "cisTarget feather 排名库 + motif2tf 注释表 + TF 列表",
+      "requirements": "aertslab hg38 refseq_r80 gene_based 库；本地路径按资源目录调整",
+      "evidence": "源码 DATABASES_GLOB/MOTIF_ANNOTATIONS_FNAME/HG_TFS_FNAME 常量推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "pyscenic",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "arboreto",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ctxcore",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dask",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "feather 库较大（每库数 GB）；prune2df 需 dask 并行。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scenic/aucell.csv",
+      "content": "细胞 × regulon AUCell 活性矩阵"
+    },
+    {
+      "path": "results/scenic/regulons.p 与 adjacencies.tsv 与 motifs.csv",
+      "content": "共表达邻接表、motif 修剪中间表与 regulon pickle"
+    },
+    {
+      "path": "results/pyscenic_annotated.h5ad",
+      "content": "obs 合并 AUCell 矩阵的 AnnData"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "grnboost2(tf_names) + modules_from_adjacencies(min_genes = 20)",
+      "basis": "来源代码设定；模块最少 20 靶基因过滤"
+    },
+    {
+      "setting": "prune2df(num_workers = 6) + df2regulons",
+      "basis": "来源代码设定；cisTarget motif 富集修剪（正/负调控 regulon 区分）"
+    },
+    {
+      "setting": "aucell(num_workers = 4)",
+      "basis": "来源代码设定；AUC 排名活性矩阵"
+    }
+  ],
+  "adaptation": [
+    "移除 25 次 bootstrapping 外层循环（DATASET_ID = NB_run{i}，模板单次）、tkinter Progressbar、os.chdir、dask LocalCluster 与注释掉的 loom 导出/binarize 段。",
+    "ctxcore RankingDatabase（源码已弃用 pyscenic.rnkdb）保留；输出集中 results/scenic/。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "grnboost2 为共表达推断，motif 修剪降低但不消除间接靶；单次运行（无 bootstrap）网络稳定性应做多次重复对比。",
+    "ex_matrix 全基因载入内存，>3 万基因图谱建议先按表达过滤。"
+  ],
+  "code_sha256": {
+    "analysis.py": "fe98700e4d3722b4193b4a6c333843fc07b9a72bec390838432c333ac9e9db20"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

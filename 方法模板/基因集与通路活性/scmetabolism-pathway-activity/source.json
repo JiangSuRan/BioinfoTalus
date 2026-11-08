@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "id": "scmetabolism-pathway-activity",
+  "title": "scMetabolism 单细胞 KEGG 代谢通路活性量化（AUCell 模式）",
+  "kind": "method",
+  "method_type": "基因集与通路活性",
+  "language": "R",
+  "tags": [
+    "scMetabolism",
+    "Seurat",
+    "AUCell",
+    "代谢通路",
+    "KEGG"
+  ],
+  "paper": {
+    "repository": "https://github.com/ma-jq/B",
+    "figure": "B 细胞图谱 Figure 6A 代谢分析（Fig6/Fig6.R 18–35 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "B_cell_atlas_ma_jq",
+      "path": "Fig6/Fig6.R",
+      "sha256": "27fd14226958bb123231aa34a072b23ec1c81211c65b177db35296aec6fbc164",
+      "lines": [
+        18,
+        35
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/panB_scRNA_processed_data.rds",
+      "object": "Seurat 对象",
+      "requirements": "RNA assay；meta.data 含 celltype 列且取值覆盖目标亚群（来源研究取 B.08.ITGB1+SwBm 与 B.09.DUSP4+AtM）",
+      "evidence": "Idents(objN) = \"celltype\" 与 subset(objN, idents = c(...)) 的子集步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scMetabolism",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "目标亚群细胞数不少于抽样数 10000，否则需先调小抽样规模。"
+  ],
+  "outputs": [
+    {
+      "path": "results/seurat_scmetabolism_kegg.rds",
+      "content": "追加 METABOLISM assay 的 Seurat 对象：行名为 KEGG 代谢通路、值为每细胞通路 AUC 活性得分，meta.features 含通路注释"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "抽样 10000 细胞（set.seed(100), replace = FALSE）",
+      "basis": "来源代码设定；AUCell 模式需逐细胞全基因组排序，计算与内存开销大，抽样控制成本；抽样规模迁移时按亚群细胞数与算力重评"
+    },
+    {
+      "setting": "method = \"AUCell\", imputation = FALSE, ncores = 4",
+      "basis": "来源代码 method/imputation 设定，ncores 由 10 按常规核数缩减；不插值避免在稀疏表达上引入虚假连续性"
+    },
+    {
+      "setting": "metabolism.type = \"KEGG\"",
+      "basis": "来源代码设定；KEGG 含 85 条代谢通路，另有 REACTOME（82 条）可选"
+    }
+  ],
+  "adaptation": [
+    "移除 table(Idents(...))、length、dim 控制台打印、VISION 安装注释与 type_celltype 因子重排及其后全部绘图代码。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "10000 细胞随机抽样引入抽样误差，亚群细胞数不足 10000 时 sample(replace = FALSE) 会直接报错；固定种子仅保证同环境可重复。",
+    "通路活性为基因集相对富集得分，受通路基因集质量与文库深度影响；imputation = FALSE 时低检测细胞得分偏保守。"
+  ],
+  "code_sha256": {
+    "analysis.R": "b21eb7a8036d5f8847b2b72b4a978d4fe7e3b8fe1bf09c992587af1647e76adc"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

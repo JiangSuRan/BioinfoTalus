@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "commot-spatial-optimal-transport-ccc",
+  "title": "COMMOT 最优传输距离约束的空间细胞通讯推断与配体受体流向分析",
+  "kind": "method",
+  "method_type": "空间多视图互作",
+  "language": "Python",
+  "tags": [
+    "COMMOT",
+    "最优传输",
+    "空间通讯",
+    "配体受体",
+    "Visium"
+  ],
+  "paper": {
+    "repository": "https://github.com/zcang/COMMOT (上游)；应用来源为 ST_subclone_publication 仓库 Figure4/5_CCI_COMMOT.py",
+    "figure": "Figure4/5_CCI_COMMOT.py（PDAC 亚克隆空间通讯推断，全文件 187 行核心段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "ST_subclone_publication",
+      "path": "Figure4/5_CCI_COMMOT.py",
+      "sha256": "3be2216494b3410e97784fec41a4008cf845240b11cd231b371fe9e73ec57af2",
+      "lines": [
+        40,
+        127
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_sample/outs",
+      "object": "10x Visium 输出目录（spaceranger）",
+      "requirements": "标准 outs 结构（filtered_feature_bc_matrix + spatial 坐标）",
+      "evidence": "sq.read.visium(f\"{options.filename}\") 读取推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "commot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "squidpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ot",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "CellChat 配受体数据库随包提供；通路列表按实际数据的 pathway_sum 键调整。"
+  ],
+  "outputs": [
+    {
+      "path": "results/commot_spatial_ccc.h5ad",
+      "content": "含 commot-cellchat-<LR>/sum-sender|receiver 逐 spot 信号强度、每通路通信方向场（communication_direction）与聚类水平置换检验网络的 AnnData"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "dis_thr = 500（源码默认 1000）",
+      "basis": "来源代码选项参数默认值；距离阈值约束最优传输可达范围，随平台 spot 尺度调整"
+    },
+    {
+      "setting": "min_cell_pct = 0.05（配受体表达过滤）",
+      "basis": "来源代码设定；表达率不足 5% 的 LR 对剔除，压缩推断空间"
+    },
+    {
+      "setting": "cluster_communication n_permutations = 100, communication_direction k = 5",
+      "basis": "来源代码设定；置换数决定聚类网络 p 值分辨率，k 为方向场平滑近邻数"
+    },
+    {
+      "setting": "数据库 CellChat（可换 CellPhoneDB_v4.0）",
+      "basis": "来源代码选项支持；两种配受体库覆盖度不同"
+    }
+  ],
+  "adaptation": [
+    "移除 optparse 参数解析、os.chdir 目录往返、逐通路 mkdir/出图（plot_cell_communication/plot_cluster_communication_network）、TradeSeq 信号 DE 与随机森林 impact 注释段。",
+    "通路循环精简为显式三通路示例；新增结果 h5ad 落盘（源码中间已有 2_adata_LR_calculated.h5ad 缓存守卫，属防御代码移除）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "最优传输假设信号强度随空间距离单调衰减且服从测地成本，不建模细胞极性与受体侧异质性。",
+    "spot 聚类作为假想 sender/receiver 群，注释粒度影响通路归属；置换数 100 时 p 值分辨率约 0.01。"
+  ],
+  "code_sha256": {
+    "analysis.py": "c28cd58fa31c636ecd545eaf5b95cfac9fec7b49801bbcbc2f3cc41c40c806c3"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

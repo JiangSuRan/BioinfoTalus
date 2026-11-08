@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "id": "splatter-simulate-sce",
+  "title": "splatter Splat 单细胞 RNA-seq 计数模拟（groups 多群法）",
+  "kind": "method",
+  "method_type": "数据模拟与基准测试",
+  "language": "R",
+  "tags": [
+    "splatter",
+    "模拟数据",
+    "SingleCellExperiment",
+    "基准测试",
+    "Splat"
+  ],
+  "paper": {
+    "repository": "https://github.com/Oshlack/splatter",
+    "figure": "R/splat-simulate.R（splatSimulate 主函数文档与参数契约，1–125 行；含 groups/paths 方法说明与 8 步模拟流程）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "splatter",
+      "path": "R/splat-simulate.R",
+      "sha256": "724c6b534fdd6fab9f253142d6f1345c4ab8469975b541d309316cfea1872a37",
+      "lines": [
+        1,
+        125
+      ],
+      "role": "模拟接口契约与参数说明"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "无外部输入（参数化模拟）",
+      "object": "SplatParams",
+      "requirements": "nGenes/batchCells/group.prob 按目标规模设定；如需真实参数可 splatEstimate(real_counts)",
+      "evidence": "函数文档参数（method: single/groups/paths、sparsify）与 examples 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "splatter",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scater",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "group.prob 长度 = 群数且和为 1。"
+  ],
+  "outputs": [
+    {
+      "path": "results/splatter_sim_groups.rds",
+      "content": "SingleCellExperiment：counts（含 dropout 后 TrueCounts/counts）、Group/Batch/ExpLibSize 等模拟真值列"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "method = 'groups'（可选 'single'/'paths'）",
+      "basis": "来源文档设定；groups 产离散细胞类型、paths 产连续分化轨迹"
+    },
+    {
+      "setting": "nGenes = 1000, batchCells = c(500, 500), group.prob = c(0.5, 0.3, 0.2)",
+      "basis": "示例规模（文档 examples 风格 nGenes=1000 扩展）；基准测试时按被评方法规模调整"
+    },
+    {
+      "setting": "8 步模拟（文库大小→均值→群/轨迹→BCV→计数→dropout）",
+      "basis": "来源文档 details 明确列出"
+    }
+  ],
+  "adaptation": [
+    "本模板提取包函数的接口契约与文档示例组装为可运行线性脚本（splatter 为模拟器包，无独立分析脚本可提取）。",
+    "logNormCounts/runPCA 核对段补全为可落盘的 SCE；交互 plotPCA 改保存到会话。",
+    "输出统一 results/。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Splat 的 NB+dropout 生成机制与真实 UMI 数据的过离散/高零膨胀结构不完全一致，基准结论应注明模拟器；建议与 splatEstimate 真数据参数联用。"
+  ],
+  "code_sha256": {
+    "analysis.R": "7b07844b930215b858bc8fdd7ad270a448f5caa17377932e9902f914439b1d2b"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

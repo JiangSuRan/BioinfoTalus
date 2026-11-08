@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "snapatac2-scatac-pipeline",
+  "title": "SnapATAC2 大规模单细胞 ATAC-seq 片段导入、Tile 矩阵构建、谱嵌入降维与基因活性计算",
+  "kind": "method",
+  "method_type": "单细胞表观组学",
+  "language": "Python",
+  "tags": [
+    "SnapATAC2",
+    "scATAC-seq",
+    "谱嵌入",
+    "Harmony",
+    "基因活性矩阵",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "scATAC-seq/SnapATAC2_analysis.py（CIMA 图谱 SnapATAC2 主流程，提取 1–114 行导入段与 216–349 行谱嵌入/聚类/基因矩阵段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "scATAC-seq/SnapATAC2_analysis.py",
+      "sha256": "b347e077adb3a65124fc41dc9d5f531279546d3c869f7f76003bea9449dc5e80",
+      "lines": [
+        1,
+        114
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sample*.fragments.tsv.gz",
+      "object": "ATAC 片段文件（每样本一个）",
+      "requirements": "含 barcode/chr/start/end 列的片段文件；hg38 坐标",
+      "evidence": "源码 snap.pp.import_data(fragment_files, chrom_sizes=snap.genome.hg38, min_num_fragments=500, sorted_by_barcode=False) 推断"
+    },
+    {
+      "path": "Data/blacklist.bed",
+      "object": "ENCODE 黑名单 BED",
+      "requirements": "hg38 黑名单区域，用于特征选择前剔除 artifact bin",
+      "evidence": "任务规范指定的 select_features(blacklist=...) 参数推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "snapatac2",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "片段文件已按 barcode 排序与否均可（sorted_by_barcode=False 时自动处理）；snap.genome.hg38 首次使用会下载。"
+  ],
+  "outputs": [
+    {
+      "path": "results/snap_merged.h5ads",
+      "content": "SnapATAC2 AnnDataSet：TSSe/片段数 QC 列、5kb tile 矩阵、谱嵌入（X_spectral）、X_spectral_harmony、knn 图、leiden 与 UMAP 坐标"
+    },
+    {
+      "path": "results/gene_activity_matrix.h5ad",
+      "content": "基因活性矩阵（细胞 × 基因，TSS 邻近片段计数），可作 scRNA 标签迁移输入"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "filter_cells min_tsse = 10, min_counts = 1000",
+      "basis": "任务规范设定（SnapATAC2 教程推荐阈值）；导入阶段另有 min_num_fragments=500 下限"
+    },
+    {
+      "setting": "bin_size = 5000, n_features = 50000",
+      "basis": "来源代码设定；粗 bin 控制内存，top 特征聚焦信息量最高的开放区域"
+    },
+    {
+      "setting": "spectral 谱嵌入 + harmony(batch='sample')",
+      "basis": "来源代码设定；谱嵌入对稀疏二值矩阵更稳，Harmony 消样本批次（源码按 individual 校正并 max_iter_harmony=30）"
+    },
+    {
+      "setting": "leiden resolution = 0.5, umap use_dims = 30",
+      "basis": "来源代码设定；分辨率随数据规模调整"
+    }
+  ],
+  "adaptation": [
+    "源 notebook 混合 R/Signac 双细胞检测与 QC 段及 ipython magic 调用；仅保留 SnapATAC2 Python 主链并线性化（import -> filter -> tile -> select -> spectral -> harmony -> knn/leiden/umap -> gene matrix）。",
+    "多样本先各自 import 再 AnnDataSet 合并的两步并为 import_data 多文件直建（file 参数落盘合并）；绘图段删除。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "基因活性矩阵以 TSS 邻近近似，不含剪接与远端增强子贡献；与 scRNA 表达差异大的基因（如抑制性染色质区域基因）活性解释需谨慎。",
+    "tile bin 分辨率 5kb 平衡内存与精细度，精细 motif 分析需另建 peak 级矩阵。"
+  ],
+  "code_sha256": {
+    "analysis.py": "77135ea440474c9ef73c391fa50402877a986939323bfd5a23edcd72eaf1f389"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

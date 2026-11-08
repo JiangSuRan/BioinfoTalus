@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "id": "liana-consensus-ccc",
+  "title": "LIANA+ 单细胞多算法共识配体-受体通讯推断与聚合",
+  "kind": "method",
+  "method_type": "细胞通讯",
+  "language": "R",
+  "tags": [
+    "liana",
+    "Seurat",
+    "细胞通讯",
+    "配体受体",
+    "共识排名"
+  ],
+  "paper": {
+    "repository": "https://github.com/cboix/admultiregion_analysis.git",
+    "figure": "Cell_cell_communication/LIANA/RCode_LIANA_AG_major_cell_type_by_projid_magnitude.R（按 projid 分层的 LIANA magnitude 聚合分析，全文件 1–70 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "admultiregion_analysis",
+      "path": "Cell_cell_communication/LIANA/RCode_LIANA_AG_major_cell_type_by_projid_magnitude.R",
+      "sha256": "1f9b1f1fb0371a73841f31fdb092e4edd55685618b9f4008a97b5c4fe15cf748",
+      "lines": [
+        1,
+        70
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_annotated.rds",
+      "object": "Seurat 对象",
+      "requirements": "已归一化（NormalizeData 后 data 层）；meta.data 含 cell_type 列（作为通讯推断的细胞群标识，来源研究为 major_cell_type 派生列）",
+      "evidence": "源码 Idents(pbmc) <- 'major_cell_type' 与 liana_wrap(pbmc, idents_col = 'major_cell_type') 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "liana",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "细胞类型注释已完成且群内细胞数充足；基因符号为 HGNC（与 OmniPath 配受体资源匹配）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/liana_consensus_ccc.csv",
+      "content": "共识通讯结果表：source-target 细胞对 × 配体-受体对的 magnitude 分量（lr_means、spec_weight 等）、跨方法共识排名（aggregate_rank）与 p 值"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "liana_wrap 默认方法集（natmi / connectome / logfc / cellphonedb / sca 等）",
+      "basis": "来源代码未指定 method 参数，即运行 liana 默认多方法集合；共识强度来自跨方法一致性"
+    },
+    {
+      "setting": "liana_aggregate(aggregate_how = \"magnitude\")",
+      "basis": "来源代码设定（文件名即 magnitude）；magnitude 聚合保留连续通讯强度而非仅二元显著判定，适合按强度排序的下游汇总"
+    }
+  ],
+  "adaptation": [
+    "移除 setwd 硬编码路径、研究特定的细胞亚群 subset 列表、major_cell_type 前缀派生（grepl case_when）与 SplitObject 按供体循环。",
+    "细胞群标识统一为 cell_type 列；NormalizeData 移至上游输入准备。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "通讯推断依赖表达推断而非直接互作证据，共识排名缓解但无法消除单方法偏差；低细胞数群对的推断不稳定。",
+    "按整体对象聚合会混合供体间差异，需分层比较时应在聚合前按样本分组运行。"
+  ],
+  "code_sha256": {
+    "analysis.R": "ee09ebb607059be2cace08097db15f1e2560f791cc53a7ef06d4cdbe33448b34"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

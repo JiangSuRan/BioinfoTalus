@@ -1,67 +1,80 @@
+## TCGA 原始计数差异分析
 library(tidyverse)
-library(DESeq2) # 做差异分析的包，也可用edgeR，limma做差异分析
+library(DESeq2)
 library(ggpubr)
 library(ggthemes)
 
-# 注意：差异分析必须用counts数据
-load("Data/TCGA_counts_matrix.Rda")
+input_dir <- "Data/TCGA_expression_output"
+counts_matrix <- readRDS(file.path(input_dir, "counts_protein_coding.rds"))
+sample_meta <- read_tsv(file.path(input_dir, "sample_metadata.tsv"),
+                        col_types = cols(sample_type_code = col_character()))
+gene_annotation <- read_tsv(file.path(input_dir, "gene_annotation.tsv"), show_col_types = FALSE)
+fdr_cutoff <- 0.05
 
-# 定义分组条件，这里以是否是肿瘤样本为分组条件（01A后缀的样本为肿瘤，11A为正常）
-conditions = data.frame(group = factor(ifelse(endsWith(colnames(counts_matrix), "01A"), 1, 0), levels=c(1, 0)))
-
-# 对所有数值列进行四舍五入取整
-for (col in names(counts_matrix)) {
-  if (is.numeric(counts_matrix[[col]])) {
-    counts_matrix[[col]] <- round(counts_matrix[[col]])
-  }
+sample_meta <- sample_meta %>% filter(keep)
+if (anyDuplicated(sample_meta$sample_barcode)) stop("样本信息存在重复条码")
+idx <- match(colnames(counts_matrix), sample_meta$sample_barcode)
+if (anyNA(idx)) stop("矩阵样本无法在 sample_metadata 中找到")
+sample_meta <- sample_meta[idx, ]
+if (!all(sample_meta$sample_type_code %in% c("01", "11"))) {
+  stop("此模板只对比 01 与 11；其他样本类型需明确设计后再分析")
+}
+group <- ifelse(sample_meta$sample_type_code == "01", "tumor", "normal")
+conditions <- data.frame(group = factor(group, levels = c("tumor", "normal")),
+                          row.names = sample_meta$sample_barcode)
+if (any(table(conditions$group) == 0)) stop("对比需要 tumor 和 normal 两组")
+if (any(!is.finite(counts_matrix)) || any(counts_matrix < 0) ||
+    any(counts_matrix != floor(counts_matrix))) stop("必须使用非负整数原始计数，不用 round 修补")
+if (anyDuplicated(rownames(counts_matrix)) || anyDuplicated(gene_annotation$gene_id)) {
+  stop("gene_id 重复，需先核实输入")
 }
 
-# 差异分析准备工作
-dds <- DESeqDataSetFromMatrix(
-  countData = counts_matrix,
-  colData = conditions,
-  design = ~ group)
-
-# 开始差异分析
+#+ Check Point：原始 counts 与样本表已对齐；沿用原模板 ~ group 的独立样本设计
+# 若队列含配对或协变量，应先明确设计，不能直接沿用本示例
+# 保持旧版 normal/tumor 方向，正 log2FC 表示 normal 较高
+contrast <- c("group", "normal", "tumor")
+dds <- DESeqDataSetFromMatrix(countData = counts_matrix, colData = conditions,
+                              design = ~ group)
 dds <- DESeq(dds)
-resultsNames(dds)
-# 提取结果
-DEG <- results(dds)
-DEG <- as.data.frame(DEG)
-DEG <- DEG[rowSums(is.na(DEG)) == 0, ] # 去除包含空值NA的行
-# 筛选差异显著的基因
-DEG <- DEG[DEG$padj < 0.05, ] # 这里仅针对调整后的p值做筛选，后续可按需对log2FC做筛选
-save(DEG, file="Data/DEG_results.Rda")
+DEG_full <- as.data.frame(results(dds, contrast = contrast, alpha = fdr_cutoff))
+DEG_full$gene_id <- rownames(DEG_full)
+annotation_idx <- match(DEG_full$gene_id, gene_annotation$gene_id)
+if (anyNA(annotation_idx)) stop("差异结果 gene_id 无法对应基因注释")
+DEG_full$SYMBOL <- gene_annotation$gene_name[annotation_idx]
 
+# 完整结果保留 NA 和未显著基因，供背景核实与火山图使用
+DEG <- DEG_full %>% filter(!is.na(padj), padj < fdr_cutoff)
+save(DEG, DEG_full, contrast, fdr_cutoff, file = "Data/DEG_results.Rda")
+DEG_plot <- DEG_full %>% filter(!is.na(padj), !is.na(log2FoldChange))
 
 # 火山图
 #添加上下调信息
 logFC_cutoff <- 1
-type1 = (DEG$padj < 0.05)&(DEG$log2FoldChange < -logFC_cutoff)
-type2 = (DEG$padj < 0.05)&(DEG$log2FoldChange > logFC_cutoff)
-DEG$change = ifelse(type1,"DOWN",ifelse(type2,"UP","NOT"))
-DEG$logP <- -log10(DEG$padj)
+type1 = (DEG_plot$padj < 0.05)&(DEG_plot$log2FoldChange < -logFC_cutoff)
+type2 = (DEG_plot$padj < 0.05)&(DEG_plot$log2FoldChange > logFC_cutoff)
+DEG_plot$change = ifelse(type1,"DOWN",ifelse(type2,"UP","NOT"))
+DEG_plot$logP <- -log10(DEG_plot$padj)
 
 # 添加基因标签信息
-DEG$Label = ""  # 新加一列label
+DEG_plot$Label = ""  # 新加一列label
 # 对差异基因的p值进行从小到大的排序
-DEG <- DEG[order(DEG$padj), ]
-# 将行名赋给DEG$Gene
-DEG$Gene <- rownames(DEG)
+DEG_plot <- DEG_plot[order(DEG_plot$padj), ]
+# 将行名赋给DEG_plot$Gene
+DEG_plot$Gene <- rownames(DEG_plot)
 # 高表达的基因中，选择fdr值最小的5个
-up.genes <- head(DEG$Gene[which(DEG$change == "UP")], 5)
+up.genes <- head(DEG_plot$Gene[which(DEG_plot$change == "UP")], 5)
 # 低表达的基因中，选择fdr值最小的5个
-down.genes <- head(DEG$Gene[which(DEG$change == "DOWN")], 5)
+down.genes <- head(DEG_plot$Gene[which(DEG_plot$change == "DOWN")], 5)
 # 将up.genes和down.genes合并，并加入到Label中
-DEG.top5.genes <- c(as.character(up.genes), as.character(down.genes))
-# 在DEG$Label中为DEG.top5.genes对应的基因添加标签
-DEG$Label[match(DEG.top5.genes, DEG$Gene)] <- DEG.top5.genes
+DEG_plot.top5.genes <- c(as.character(up.genes), as.character(down.genes))
+# 在DEG_plot$Label中为DEG_plot.top5.genes对应的基因添加标签
+DEG_plot$Label[match(DEG_plot.top5.genes, DEG_plot$Gene)] <- DEG_plot.top5.genes
 
-ggscatter(DEG, x = "log2FoldChange", y = "logP",
+ggscatter(DEG_plot, x = "log2FoldChange", y = "logP",
           color = "change",
           palette = c("blue", "black", "red"),
           size = 1,
-          label = DEG$Label,
+          label = DEG_plot$Label,
           font.label = 8,
           repel = TRUE,
           xlab = "log2FoldChange",

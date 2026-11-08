@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "fgsea-hallmark-pathway-enrichment",
+  "title": "GSVA / fgsea 治疗响应分组通路富集评分与统计比较",
+  "kind": "method",
+  "method_type": "基因集与通路活性",
+  "language": "R",
+  "tags": [
+    "GSVA",
+    "fgsea",
+    "GSEA",
+    "通路富集"
+  ],
+  "paper": {
+    "repository": "https://github.com/shengxinbaixiaosheng/CRC-nCRT.git",
+    "figure": "Signature_score.r（CRC 新辅助治疗 IFN-γ 通路评分与疗效关联，全文件 1–104 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CRC-nCRT",
+      "path": "Signature_score.r",
+      "sha256": "cce8f8c308416e6cb7d44adfe990af1a7e31fc56b970b8df602e212b4611bc8d",
+      "lines": [
+        1,
+        104
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bulk_logtpm.tsv",
+      "object": "矩阵表（基因 × 样本，log TPM）",
+      "requirements": "行名基因符号；列名与 metadata 的 Ident 键对应",
+      "evidence": "源码 read.table(\"bulkRNA_logTPM.tsv\") 直接作为 gsva 输入推断"
+    },
+    {
+      "path": "Data/bulk_metadata.tsv",
+      "object": "data.frame（每样本一行）",
+      "requirements": "含 Ident（样本键）、SampleTimePoint（如 BL/nRCT）与 Efficacy（如 CR/non-CR）列",
+      "evidence": "源码 metadata 表与 int_lab = str_c(SampleTimePoint, '_', Efficacy) 分组构造推断"
+    },
+    {
+      "path": "Data/c2.cp.reactome.v2023.1.Hs.json",
+      "object": "MSigDB c2 Reactome 基因集 JSON",
+      "requirements": "含 REACTOME_INTERFERON_GAMMA_SIGNALING 键（或替换为目标通路键）",
+      "evidence": "源码 jsonlite::fromJSON 与 geneSymbols 提取推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "GSVA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "jsonlite",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "tidyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "样本治疗时点与疗效分组注记完整；各组样本数 >= 3 支撑 t 检验。"
+  ],
+  "outputs": [
+    {
+      "path": "results/signature_score_stats.csv",
+      "content": "各比较对的通路得分统计表：两组均值、t 统计量、p 值与 BH 校正 p 值"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "gsva kcdf = \"Gaussian\"（连续 log TPM）",
+      "basis": "来源代码设定；计数型数据应改 Poisson 核"
+    },
+    {
+      "setting": "分组比较 Welch t.test + BH 校正",
+      "basis": "来源代码 geom_signif(test=t.test) 的计算等价实现；比较对取源码三组（BL vs nCRT_non-CR/CR 及组间）"
+    }
+  ],
+  "adaptation": [
+    "移除 geom_signif/geom_boxplot 箱线绘图、pROC 的 ROC 曲线段与单细胞评分 ComplexHeatmap 热图段（按任务规范剥离绘图）。",
+    "geom_signif 的隐式检验改为显式 t.test 统计表并新增 BH 校正与 csv 落盘；pdat 的空值替换与因子 levels 精简。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "小样本疗效分组的 t 检验功效有限，多重比较校正后易无显著结论；评分对通路基因集版本敏感。",
+    "单通路打分不构成富集方向检验（如需秩统计富集请配合 fgsea/GSEA 模板）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "7e94a0eee4f7c0a6a21d860ddb6b3bf09d913912e20287967ff09ef53942ad9c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "bpcells-outofcore-million-cells",
+  "title": "BPCells 磁盘外存（bit-packed）矩阵读写与 Seurat v5 大图谱流式归一化",
+  "kind": "method",
+  "method_type": "百万级单细胞加速分析",
+  "language": "R",
+  "tags": [
+    "BPCells",
+    "磁盘外存",
+    "Seurat v5",
+    "大图谱",
+    "流式计算"
+  ],
+  "paper": {
+    "repository": "https://github.com/bnprks/BPCells (上游)；应用来源为 2025_Sant_CHOIR 仓库基准脚本",
+    "figure": "additional_analysis_scripts/real_datasets/Hao_2021_CITEseq_human_PBMCs.R（BPCells 矩阵导入与 Seurat v5 对象构建，20–33 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "2025_Sant_CHOIR",
+      "path": "additional_analysis_scripts/real_datasets/Hao_2021_CITEseq_human_PBMCs.R",
+      "sha256": "17eb03ec92dcd6f2ea3b3c7326fa4995820d666ffc2a45ce051b4cb46065ecdf",
+      "lines": [
+        20,
+        33
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bpcells_hao2021/",
+      "object": "BPCells 目录格式矩阵（十进制压缩 counts）",
+      "requirements": "open_matrix_dir 可读的目录结构（mat.bin/dir_meta 等）；如从 10x h5 转换需先 write_matrix_dir",
+      "evidence": "源码 count_matrix <- open_matrix_dir(dir = paste0(input_dir, '/bpcells')) 推断"
+    },
+    {
+      "path": "Data/cell_metadata.csv",
+      "object": "data.frame",
+      "requirements": "含 CellID 列且与矩阵列名对齐",
+      "evidence": "源码 cbind(seurat_object@meta.data, cell_metadata) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "BPCells",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "Seurat >= 5（assay.version = 'v5' 支持 on-disk 图层）；源矩阵保持为引用不复制。"
+  ],
+  "outputs": [
+    {
+      "path": "results/bpcells_seurat_v5.rds",
+      "content": "Seurat v5 对象：counts 为 BPCells 磁盘引用、data 为流式归一化结果"
+    },
+    {
+      "path": "results/bpcells_counts_out/",
+      "content": "写出的 BPCells 目录矩阵（供跨会话/集群复用）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "open_matrix_dir 磁盘引用（不载入内存）",
+      "basis": "来源代码设定；BPCells 位压缩向量按块流式读取"
+    },
+    {
+      "setting": "options(Seurat.object.assay.version = 'v5')",
+      "basis": "来源代码设定；v5 assay 允许 on-disk layer 传入 CreateSeuratObject"
+    },
+    {
+      "setting": "NormalizeData 默认 LogNormalize",
+      "basis": "来源代码设定；v5 对磁盘图层延迟求值"
+    }
+  ],
+  "adaptation": [
+    "源基准脚本含 CHOIR UMAP/MAGIC/ADT DE 大量下游段；模板仅取 BPCells 导入 → Seurat v5 构建 → NormalizeData 主链。",
+    "按任务规范补全 write_matrix_dir 回写（源码无此步，为 BPCells 标准接口）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Seurat v5 对 BPCells 图层的方法覆盖有限（部分函数会强制物化为内存矩阵），长链分析前应逐函数核验；RDS 保存的对象跨机器移动时磁盘引用路径会失效，需用 write_matrix_dir 重建。"
+  ],
+  "code_sha256": {
+    "analysis.R": "daecbae9b03bb4ce3108988aeb9cff607fc5a031a9a53d1c613759e7f44a1965"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

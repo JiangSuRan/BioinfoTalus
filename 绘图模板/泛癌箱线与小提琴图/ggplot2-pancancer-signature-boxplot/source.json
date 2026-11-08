@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-pancancer-signature-boxplot",
+  "title": "泛癌种 T 细胞反应性评分排序箱线散点复合图（ggplot2）",
+  "kind": "plot",
+  "plot_type": "泛癌箱线与小提琴图",
+  "language": "R",
+  "tags": [
+    "ggplot2",
+    "箱线图",
+    "泛癌分析",
+    "基因签名评分"
+  ],
+  "paper": {
+    "repository": "https://github.com/lambrechtslab/Pan-cancer_Lodietal.git",
+    "figure": "Box plots/T cell reactivity score across cancer types.R（泛癌 atlas T 细胞反应性签名跨癌种比较，全文件 1–116 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Pan-cancer_Lodietal",
+      "path": "Box plots/T cell reactivity score across cancer types.R",
+      "sha256": "0dd5fccce4a59591d3bad5fbf31ecee2e5d3b72e480b653538bd76905cd421d6",
+      "lines": [
+        1,
+        116
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/pancancer_patient_score.csv",
+      "object": "data.frame（每患者一行）",
+      "requirements": "含 SampleID、TumorType、mean_Tcell_Reactivity1（患者级签名均分）列；上游已做样本量过滤（每样本>=500 细胞且 T 细胞>=20）",
+      "evidence": "源码 res 表构造（group_by(SampleID) 均分 + merge TumorType）与过滤阈值推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ggpubr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "签名打分（AddModuleScore 等）与患者级聚合已完成；配色键与癌种缩写一致。"
+  ],
+  "outputs": [
+    {
+      "path": "result/pancancer_reactivity_boxplot.pdf",
+      "content": "横向箱线图：癌种按均分升序排列、点层抖动散点叠加、均值标记，显著癌种对带 Wilcoxon 星号"
+    }
+  ],
+  "adaptation": [
+    "移除上游 Seurat 对象读取、AddModuleScore 打分与样本量过滤循环（输入改为患者级评分表）。",
+    "源码的 purrr::transpose 比较对提取改为 lapply 等价构造；ggsave 补全 width/height/units 显式参数。"
+  ],
+  "code_sha256": {
+    "plot.R": "8fd1e70aa96fc79630e5eb55fcee169aec832367b721ea8adb85884a7e734442"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

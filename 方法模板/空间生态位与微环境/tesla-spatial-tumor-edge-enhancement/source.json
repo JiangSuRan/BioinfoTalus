@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "id": "tesla-spatial-tumor-edge-enhancement",
+  "title": "TESLA 组织学引导的超分辨率基因表达增强与肿瘤前缘目标细胞群轮廓标注",
+  "kind": "method",
+  "method_type": "空间生态位与微环境",
+  "language": "Python",
+  "tags": [
+    "TESLA",
+    "超分辨率",
+    "图像引导插值",
+    "Visium",
+    "轮廓检测"
+  ],
+  "paper": {
+    "repository": "https://github.com/amss-hexin/TESLA (上游)；应用来源为 TCM 仓库 res_largerT.py",
+    "figure": "res_largerT.py（TCM 乳腺癌 TESLA T 细胞轮廓标注流程，40–130 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "TCM",
+      "path": "res_largerT.py",
+      "sha256": "0c7d003ae48ac0eb41ca94ed17d10e91b588904a243312b79174a015c872d912",
+      "lines": [
+        40,
+        130
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_sample.h5ad",
+      "object": "AnnData（Visium 计数）",
+      "requirements": "X 为计数；基因符号将统一大写；可含 x1 组织内标记列",
+      "evidence": "源码 adata = adata[adata.obs['x1']==1] 与 var_names 大写化推断"
+    },
+    {
+      "path": "Data/spatial/tissue_hires_image.png",
+      "object": "HE 组织学图像",
+      "requirements": "与空间坐标对应的 hires 图像（TESLA 需图像长边约 2000 px）",
+      "evidence": "resize_factor = 2000 / min(img.shape) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "TESLA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "opencv-python",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "imageio",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "HE 图像与 spaceranger 坐标系对齐；目标基因列表按实际 marker 调整。"
+  ],
+  "outputs": [
+    {
+      "path": "results/tesla_enhanced_expression.h5ad",
+      "content": "图像引导插值后的增强表达 AnnData（超分辨率网格表达）"
+    },
+    {
+      "path": "results/tesla_CD3_annotation.jpg",
+      "content": "叠加 HE 图像的目标群轮廓标注图（T 细胞富集区域边界）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "Canny 轮廓 apertureSize = 5, L2gradient = True",
+      "basis": "来源代码设定；组织边界检测用于限制插值与标注范围"
+    },
+    {
+      "setting": "imputation res = 1, s = 1, k = 2, num_nbs = 10",
+      "basis": "来源代码设定；增强网格分辨率参数与插值近邻数"
+    },
+    {
+      "setting": "annotation num_required = 2, target_size = 'small'",
+      "basis": "来源代码设定；小目标群至少 2 个连通簇才予标注，避免噪声"
+    }
+  ],
+  "adaptation": [
+    "移除 argparse 样本循环、CD3-all/HSPA1A 组合基因组的第二组标注、print 诊断与 IPython Image 内联显示。",
+    "读取方式由 spaceranger 目录（sc.read_10x_h5 + csv）简化为直接读 h5ad；组织内过滤保留 x1 分支与默认全量两支。",
+    "输出统一到 results/（源码写入外部 outDir）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "插值增强为形态学平滑假设下的表达外推，不产生真实测量；标注精度受 HE 染色质量与对齐误差影响。",
+    "target_size='small' 的聚类参数按 T 细胞规模调定，大群（如肿瘤区）需换 'large'。"
+  ],
+  "code_sha256": {
+    "analysis.py": "5b2539d8bd2e6cf38805ea62bb6c12fafad0b9f542438ac2c6520a53acfda7be"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

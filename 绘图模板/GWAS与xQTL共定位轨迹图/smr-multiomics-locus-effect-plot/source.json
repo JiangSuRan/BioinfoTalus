@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "id": "smr-multiomics-locus-effect-plot",
+  "title": "SMR / OPERA 多组学（GWAS + cis-eQTL + cis-caQTL）孟德尔随机化基因座共定位图与效应量散点图",
+  "kind": "plot",
+  "plot_type": "GWAS与xQTL共定位轨迹图",
+  "language": "R",
+  "tags": [
+    "SMR",
+    "OPERA",
+    "共定位分析",
+    "LocusPlot",
+    "eQTL",
+    "caQTL",
+    "GWAS"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "SMR_analysis/03_visualization/20250313_draw_loucs_effectplot.R（CIMA SMR/OPERA 基因座与效应图，提取 1–80 行多基因座重复调用段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "SMR_analysis/03_visualization/20250313_draw_loucs_effectplot.R",
+      "sha256": "b1f45b355c704034795ee9b178fdc7992a3b05cab7fbc1186ddfec07886a9238",
+      "lines": [
+        1,
+        80
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/smr_locus_opera.txt",
+      "object": "omicSMR 基因座输出表（OPERA 多组学）",
+      "requirements": "SMR --make-opera 产出的 locus 文本，含 GWAS 与 xQTL 层关联统计",
+      "evidence": "源码 ReadomicSMRData(...) + omicSMRLocusPlot(...) 组合推断"
+    },
+    {
+      "path": "Data/smr_locus_smr.txt",
+      "object": "SMR 基因座输出表",
+      "requirements": "SMR --besd 结果经 plot 模式导出的效应表",
+      "evidence": "源码 ReadSMRData(...) + SMREffectPlot(...) 组合推断"
+    },
+    {
+      "path": "Data/plot_OmicsSMR_xQTL_with_legend.r 与 Data/plot_SMR.r",
+      "object": "SMR 官方可视化脚本（函数定义）",
+      "requirements": "提供 ReadomicSMRData/omicSMRLocusPlot/ReadSMRData/SMREffectPlot 函数定义",
+      "evidence": "源码 source() 两个脚本后调用其函数推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "TeachingDemos",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "SMR/OPERA 分析已完成并导出 locus 与效应表；两个官方绘图脚本随项目提供。"
+  ],
+  "outputs": [
+    {
+      "path": "results/smr_locus_and_effect_plot.pdf",
+      "content": "两页图：多层基因座关联轨迹（GWAS/eQTL/caQTL 层 + 高亮探针 + HEIDI 阈值线）与 xQTL-GWAS 效应量散点回归图"
+    }
+  ],
+  "adaptation": [
+    "源脚本对 IKZF4/CCR6/PADI2 三个基因座与多细胞类型逐对出图（14 次重复调用）；模板精简为单基因座一图（LocusPlot）+ 效应散点（EffectPlot）各一次，多基因座复用需循环调用。",
+    "pdf 尺寸按任务规范固定为 10x8（源码各图 6x12 与 8x8 不一）；阈值参数保留源码第一个基因座的取值，实际按表型 SMR p 值调整。"
+  ],
+  "code_sha256": {
+    "plot.R": "e5ca283a86a940fa3d0bd778b3a0fb600a8308a61429d6f1d31b44968035395a"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

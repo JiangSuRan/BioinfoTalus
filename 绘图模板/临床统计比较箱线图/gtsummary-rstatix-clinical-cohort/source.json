@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "id": "gtsummary-rstatix-clinical-cohort",
+  "title": "rstatix 组间检验 + ggpubr stat_pvalue_manual 多亚组比较图",
+  "kind": "plot",
+  "plot_type": "临床统计比较箱线图",
+  "language": "R",
+  "tags": [
+    "rstatix",
+    "ggpubr",
+    "stat_pvalue_manual",
+    "Wilcoxon",
+    "临床比较"
+  ],
+  "paper": {
+    "repository": "MMRF_ImmuneAtlas-main（多发性骨髓瘤免疫图谱）",
+    "figure": "manuscript_figures/figure_4/Fig4B_F_RP_v_NP_Diff_Abundance.Rmd（复发 vs 无进展丰度比较，stat_pvalue_manual 段约 590–600 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "MMRF_ImmuneAtlas-main",
+      "path": "MMRF_ImmuneAtlas-main/manuscript_figures/figure_4/Fig4B_F_RP_v_NP_Diff_Abundance.Rmd",
+      "sha256": "bde133eb467c5d38dc0b75631d4997d652fc8acc4e7a2b1517d3f7ddae55fc85",
+      "lines": [
+        580,
+        610
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/diff_abundance_props.csv",
+      "object": "data.frame（长表）",
+      "requirements": "列含 celltype、prop（丰度）、progression_group（二分组）",
+      "evidence": "源码 stat_pvalue_manual(tmp_out, label='{scales::pvalue(p)}', y.position=..., hide.ns=T) 与丰度长表推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "rstatix",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggpubr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "分组变量为因子；组内样本数足够支撑 Wilcoxon。"
+  ],
+  "outputs": [
+    {
+      "path": "results/rstatix_grouped_boxplot.pdf",
+      "content": "分组箱线图：自动 p 值位置标注（仅显著对，scales::pvalue 格式）"
+    }
+  ],
+  "adaptation": [
+    "源码按细胞类型循环逐图 + tmp_distinct_pval_filt 手工 y 位置；模板以 rstatix add_xy_position 自动定位（等价且更稳），单图化。",
+    "label 保留 scales::pvalue 格式；ggsave 补全五参数。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "code_sha256": {
+    "plot.R": "51589f28b6dfd7bb566ec25b44a16dd5dafcd86fb0ea9265ded753005f28b929"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

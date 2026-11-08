@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "scop-seurat-publication-suite",
+  "title": "scop 单细胞多维综合面板（CellDimPlot 注释 UMAP + GroupHeatmap 标志基因热图）",
+  "kind": "plot",
+  "plot_type": "单细胞多维综合面板图",
+  "language": "R",
+  "tags": [
+    "scop",
+    "CellDimPlot",
+    "GroupHeatmap",
+    "publication",
+    "栅格化"
+  ],
+  "paper": {
+    "repository": "https://github.com/zhanghao-njmu/scop",
+    "figure": "man/CellDimPlot.Rd 与 man/GroupHeatmap.Rd 的官方 examples（standard_scop → CellDimPlot/GroupHeatmap → thisplot::panel_fix 栅格化）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "scop",
+      "path": "man/CellDimPlot.Rd",
+      "sha256": "6898b60088508c9422cc6faa620b0c5f0ad2150ec56018577e2ff5daa15ba759",
+      "lines": [
+        415,
+        440
+      ],
+      "role": "CellDimPlot 官方示例"
+    },
+    {
+      "root_label": "scop",
+      "path": "man/GroupHeatmap.Rd",
+      "sha256": "cd7d212d2cf489fa5560588edfe95633b77ce8144e9a494e59a1f3be17e8f019",
+      "lines": [
+        511,
+        540
+      ],
+      "role": "GroupHeatmap 官方示例"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scop_input.rds",
+      "object": "Seurat/SingleCellExperiment 对象",
+      "requirements": "含 CellType/SubCellType 注记、降维与 marker 基因",
+      "evidence": "官方 examples data(pancreas_sub) -> standard_scop -> CellDimPlot/GroupHeatmap 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scop",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "thisplot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "standard_scop 完成 embedding/聚类标准化。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scop_celldimplot.pdf",
+      "content": "分群标注 UMAP 面板"
+    },
+    {
+      "path": "results/scop_groupheatmap.pdf",
+      "content": "标志基因 × 细胞类型（双层分组）均值表达热图（点层栅格化）"
+    }
+  ],
+  "adaptation": [
+    "官方 examples 以内置 pancreas_sub 演示；模板改为 readRDS 输入并精简为 CellDimPlot + GroupHeatmap 两个核心面板。",
+    "panel_fix 栅格化导出保留官方调用（raster=TRUE, dpi=300）；热图 features 列表改实际 marker。",
+    "输出路径统一 results/。"
+  ],
+  "code_sha256": {
+    "plot.R": "810cff6a26fc8996cb029643ab6030c4415f78e2e4568e71355edab18685ad1d"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

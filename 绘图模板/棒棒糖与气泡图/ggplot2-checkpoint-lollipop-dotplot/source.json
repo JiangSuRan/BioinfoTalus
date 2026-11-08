@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-checkpoint-lollipop-dotplot",
+  "title": "免疫检查点配受体表达棒棒糖图（ggplot2 双向/分级 Lollipop）",
+  "kind": "plot",
+  "plot_type": "棒棒糖与气泡图",
+  "language": "R",
+  "tags": [
+    "ggplot2",
+    "棒棒糖图",
+    "lollipop",
+    "免疫检查点",
+    "配体受体"
+  ],
+  "paper": {
+    "repository": "https://github.com/Swarbricklab-code/BrCa_cell_atlas.git",
+    "figure": "downstream_immune_analysis/Myeloid_Tcell_clinical_receptor_ligand_checkpoint_OI_lolipop_figure.R（乳腺癌图谱髓系-T 细胞检查点临床亚型比较棒棒糖图，全文件 1–155 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "BrCa_cell_atlas",
+      "path": "downstream_immune_analysis/Myeloid_Tcell_clinical_receptor_ligand_checkpoint_OI_lolipop_figure.R",
+      "sha256": "49ec55122dba2191a801813d451a14a2cd644c3259df4a0985af26c85aac3b52",
+      "lines": [
+        1,
+        155
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/checkpoint_dge.csv",
+      "object": "data.frame（差异基因结果聚合表）",
+      "requirements": "含 gene、celltype、comparison、avg_log2FC、p_val_adj 列；数据来自目标基因集（免疫检查点/配受体）在各细胞类型与临床比较的 FindMarkers 输出",
+      "evidence": "源码 TNBC_HER2/TNBC_ER/ER_HER2 三组比较聚合（all_data）与 sign 列构造（format_p + ns 替换）推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ggpubr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "insight",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "上游已完成各细胞类型临床亚型两两差异检验并聚合为长表。"
+  ],
+  "outputs": [
+    {
+      "path": "result/checkpoint_lollipop.pdf",
+      "content": "按比较分面的双向棒棒糖图：细胞类型着色大圆点编码 avg_log2FC，点内星号编码显著性，灰棒从 0 出发"
+    }
+  ],
+  "adaptation": [
+    "移除上游 Seurat FindMarkers(MAST) 逐细胞类型循环、tryCatch 容错、三组比较 csv 的目录遍历聚合（输入改为整理好的长表）。",
+    "保留 ggdotchart 棒棒糖图层（segments + dot + 星号标签）、map_colours 配色与分面/坐标截断设定；png/eps 双输出精简为单 pdf。"
+  ],
+  "code_sha256": {
+    "plot.R": "ce109fa9602797d7bf14ac7b1af41b7c651af01915efa720e36a545c63713b16"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

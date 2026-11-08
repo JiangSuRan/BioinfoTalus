@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "id": "viper-pisces-protein-activity",
+  "title": "VIPER / PISCES 基于 ARACNe 调控网络的蛋白质/转录因子活性推断",
+  "kind": "method",
+  "method_type": "转录调控网络",
+  "language": "R",
+  "tags": [
+    "viper",
+    "PISCES",
+    "ARACNe",
+    "蛋白活性推断",
+    "调控网络"
+  ],
+  "paper": {
+    "repository": "https://github.com/Aleksobrad/single-cell-rcc-pipeline.git",
+    "figure": "single-cell-pipeline-master/ARACNe/aracne_consolidate.r（RCC 管线 ARACNe bootstrap 网络整合，全文件 1–48 行；VIPER 调用对应同仓 bulkRNASeq_survival_analysis.R）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "single-cell-rcc-pipeline",
+      "path": "single-cell-pipeline-master/ARACNe/aracne_consolidate.r",
+      "sha256": "d4231eb3b18880446b8c646463e102c0b915d072363864cacc5aca1c3f94790d",
+      "lines": [
+        1,
+        48
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/aracne_bootstrap/bootstrapNetwork*",
+      "object": "ARACNe bootstrap 网络文本（每行 调节子\\t靶基因\\t互信息）",
+      "requirements": "ARACNe3 各 bootstrap 轮次的输出文件；基因符号体系一致",
+      "evidence": "源码 list.files(pattern=\"bootstrapNetwork\") 与 strsplit(行,\"\\t\") 取前三列的解析推断"
+    },
+    {
+      "path": "Data/regulators.txt",
+      "object": "调控子基因名列表（每行一个）",
+      "requirements": "候选转录因子集合",
+      "evidence": "源码 regs <- readLines(regfn) 与 tedges 密度计算推断"
+    },
+    {
+      "path": "Data/expression_genes.txt",
+      "object": "表达数据首行基因列表（制表符分隔，首行为表头）",
+      "requirements": "与 ARACNe 运行同一基因集（第一列基因符号）",
+      "evidence": "源码 genes <- sapply(strsplit(readLines(expfn)[-1], \"\\t\"), x[1]) 推断"
+    },
+    {
+      "path": "Data/expression_matrix.rds",
+      "object": "矩阵（基因 × 样本，行标准化后的表达）",
+      "requirements": "VIPER 输入需行内已标准化（来源研究逐行 z-score）",
+      "evidence": "同仓 bulkRNASeq_survival_analysis.R 的 data_normalized_scaled 与 viper(dset, nets, method=\"none\") 调用推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "viper",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "ARACNe bootstrap 已运行完毕；表达矩阵与网络基因符号对齐。"
+  ],
+  "outputs": [
+    {
+      "path": "results/finalNetwork_4col.tsv",
+      "content": "整合后 4 列网络：调节子、靶基因、bootstrap 均互信息、Poisson 校正后 p 值（仅显著边）"
+    },
+    {
+      "path": "results/viper_protein_activity.rds",
+      "content": "VIPER 活性矩阵（调控子 × 样本），正分表示该调控子靶基因集合协同上调"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "显著性 = ppois(合并边数, lambda) 上尾 + FDR < 0.05",
+      "basis": "来源代码设定（mht/alpha 为命令行参数，模板固定 fdr 与 0.05）；lambda 由实际密度估计"
+    },
+    {
+      "setting": "viper method = \"none\"",
+      "basis": "同仓来源代码设定；不再做 Regulon 内合并权重（网络已 bootstrap 整合），常规用途可用默认 rank/shadow 法"
+    },
+    {
+      "setting": "aracne2regulon format = \"3col\"",
+      "basis": "finalNetwork_4col 前 3 列即 regulator-target-mi 标准格式"
+    }
+  ],
+  "adaptation": [
+    "移除 commandArgs 参数解析与 print 日志；工作目录改为项目根相对路径，网络输出由 cat 逐行写改为 write.table。",
+    "保留 bootstrap 逐轮符号/互信息累积合并的核心算法逐字逻辑（含 Poisson 合并显著性），按任务规范补全 aracne2regulon -> viper 活性推断链路（取自同仓 bulkRNASeq_survival_analysis.R 的 viper 用法）。",
+    "删除同仓脚本中的 GSEA 检验、KM 曲线与 pheatmap 绘图段。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "VIPER 活性是网络推断的靶基因集合富集，受 ARACNe 网络质量与 regulator 列表完整性制约；间接靶与 cofactor 混合时解释需谨慎。",
+    "Poisson 合并模型假设各 bootstrap 轮独立同分布，轮数不足时 p 值分辨率有限。"
+  ],
+  "code_sha256": {
+    "analysis.R": "302b4ae800e8f579d8bfc0727d8220f8fd1b1f136f0a127a291d9c51e81fc546"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

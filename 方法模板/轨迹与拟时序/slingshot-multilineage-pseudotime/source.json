@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "slingshot-multilineage-pseudotime",
+  "title": "Slingshot 单细胞指定起始群多谱系拟时序推断",
+  "kind": "method",
+  "method_type": "轨迹与拟时序",
+  "language": "R",
+  "tags": [
+    "slingshot",
+    "SingleCellExperiment",
+    "Seurat",
+    "多谱系轨迹",
+    "拟时序"
+  ],
+  "paper": {
+    "repository": "Cell Reports Medicine 2025 (hello-world-Cell_Reports_Medicine_2025)",
+    "figure": "Figure 2A B 细胞 Slingshot 轨迹（hello-world-Cell_Reports_Medicine_2025/Figure_2.R 54–73 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "hello-world-Cell_Reports_Medicine_2025",
+      "path": "hello-world-Cell_Reports_Medicine_2025/Figure_2.R",
+      "sha256": "ced08bae644467ca2e86036348e1c04686593a98e21e0d5311a99c796a2ccf7a",
+      "lines": [
+        54,
+        73
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bcell_seurat.rds",
+      "object": "Seurat 对象",
+      "requirements": "meta.data 含 B_type 聚类标签列且取值覆盖起始群（如 Naive_B）；已计算 TSNE 降维（as.SingleCellExperiment 后保留为 reducedDim(\"TSNE\")）",
+      "evidence": "slingshot(clusterLabels = \"B_type\", reducedDim = \"TSNE\", start.clus = \"Naive_B\") 接口要求推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "slingshot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SingleCellExperiment",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游已完成聚类与 TSNE 降维；起始群依据生物学先验（如 naive 细胞）确定。"
+  ],
+  "outputs": [
+    {
+      "path": "results/slingshot_sce.rds",
+      "content": "SingleCellExperiment：含 slingPseudotime_1..k 各谱系伪时间列、slingClusters 标签与跨谱系合并的 pseudotime0 列，及 slingCurves 谱系曲线"
+    },
+    {
+      "path": "results/slingshot_pseudotime.csv",
+      "content": "细胞 × 谱系伪时间矩阵（psts），行名为细胞条码、列名为 slingPseudotime_1..k"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "clusterLabels = \"B_type\", reducedDim = \"TSNE\", start.clus = \"Naive_B\"",
+      "basis": "来源代码设定；聚类标签列、降维类型与起始群随研究假设与数据改变，起始群错误会使伪时序方向反转"
+    },
+    {
+      "setting": "stretch = 0, approx_points = 100",
+      "basis": "来源代码设定；stretch = 0 允许曲线在簇中心处自由转折，approx_points 对平滑曲线等距抽样以降低计算与存储开销"
+    },
+    {
+      "setting": "pseudotime0 = 各谱系伪时间逐细胞取最大值（NA 记 0）",
+      "basis": "与原脚本 ifelse(is.na(...), 0, ...) + pmax 三谱系合并等价的通用写法，适配谱系数不同的数据"
+    }
+  ],
+  "adaptation": [
+    "移除 setwd(\"your_working_directory\")、冗长包加载（仅保留 Seurat / SingleCellExperiment / slingshot）与后续 t-SNE 拟时序着色绘图段。",
+    "原脚本写死的 pseudotime1/2/3 三列合并改为对 slingPseudotime 矩阵逐行取最大值（NA 记 0），对谱系数可变的数据通用。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Slingshot 轨迹对聚类质量与起始群选择敏感；在 t-SNE 这类局部结构嵌入上拟合曲线，其保留全局结构的能力弱于扩散映射等专用嵌入。",
+    "pseudotime0 取跨谱系最大值仅提供可比合并视角，不同谱系伪时间尺度的直接合并生物学解释需谨慎。"
+  ],
+  "code_sha256": {
+    "analysis.R": "e2df95189d08888f452ef58340185b2b8ecad53fce192a3c171227b280d82962"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

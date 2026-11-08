@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "id": "coolbox-multitrack-genome-browser",
+  "title": "coolbox 多组学基因组浏览器轨迹图（BigWig 信号 + GTF 基因结构 + peak 区域）",
+  "kind": "plot",
+  "plot_type": "多组学基因组浏览器轨迹图",
+  "language": "Python",
+  "tags": [
+    "coolbox",
+    "BigWig",
+    "基因组浏览器",
+    "BED",
+    "多轨迹"
+  ],
+  "paper": {
+    "repository": "pritykinlab-multimodal_tcells-4da0614（多模态 T 细胞研究）",
+    "figure": "bigwig pseudotracks.ipynb（CD4/CD8 亚群 scATAC 伪批次 BigWig 轨迹 + 基因注释，单元 1–10）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "pritykinlab-multimodal_tcells-4da0614",
+      "path": "bigwig pseudotracks.ipynb",
+      "sha256": "b7e154a53987c6c200b1bdd8dd6b4e0a124f86d7b010f4b475369803b29da093",
+      "lines": [
+        1,
+        52
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bigwig/<subtype>.bw 与 annotation BED",
+      "object": "BigWig 信号文件（每亚群一个）+ 基因/peak BED",
+      "requirements": "坐标一致（mm10/gencode vM25 示例）；peak bed 第 4 列含 peak id",
+      "evidence": "源码 BigWig(...) + BED(gencode)/BED(peak_atlas) 组装推断"
+    },
+    {
+      "path": "Data/peaks.more_info.bed",
+      "object": "peak 信息 BED",
+      "requirements": "第 4 列为 peak id（如 peak.44945），前 3 列坐标",
+      "evidence": "region_str(peak_info[peak_info[3]==...]) 解析推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "coolbox",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "BigWig 索引（.bw 自含）与 BED 排序完成。"
+  ],
+  "outputs": [
+    {
+      "path": "results/coolbox_multitrack.pdf",
+      "content": "浏览器式多轨迹图：各亚群 BigWig 着色轨道 + 基因结构 + peak 条带"
+    }
+  ],
+  "adaptation": [
+    "make_small_plot 函数拆包为线性脚本；源码 5 个 BigWig 精简为 3 个示例（同构可扩展）、HighLights 高亮参数保留可选。",
+    "min/max y 轴固定参数省略（默认自动）；Browser.save(dpi=200) 改 300。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "code_sha256": {
+    "plot.py": "802499d5dacd2ff34787d767d704644b56f84ed6db4f55c9b95b252ef4cab238"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

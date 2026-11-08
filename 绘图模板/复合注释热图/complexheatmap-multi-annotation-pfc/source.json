@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "id": "complexheatmap-multi-annotation-pfc",
+  "title": "ComplexHeatmap 多区域临床表型与细胞状态复合注释热图",
+  "kind": "plot",
+  "plot_type": "复合注释热图",
+  "language": "R",
+  "tags": [
+    "ComplexHeatmap",
+    "复合注释热图",
+    "HeatmapAnnotation",
+    "Nature风格"
+  ],
+  "paper": {
+    "repository": "https://github.com/cboix/admultiregion_analysis.git",
+    "figure": "plot_astreactivity_pfc.R（星形胶质细胞反应性随病理-认知分组的比较，全文件 1–121 行；delta 分组与基因集定义取自该脚本）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "admultiregion_analysis",
+      "path": "plot_astreactivity_pfc.R",
+      "sha256": "d3db6cb66accf70e586bb1ca36cd8588bc8c265a769e1153dd86256e7a43a6cb",
+      "lines": [
+        1,
+        121
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/ast_reactivity_mat.rds",
+      "object": "矩阵（基因/评分 × 供体）",
+      "requirements": "行名含 GFAP/OSMR/CD44 等以匹配行侧基因集注释；列名（供体 ID）与注释表行名可对齐",
+      "evidence": "源码 reactive/glu-uptake 基因集（GFAP、OSMR、CD44 与 SLC1A2、SLC1A3）与 projid 级聚合逻辑推断"
+    },
+    {
+      "path": "data/sample_annotation.csv",
+      "object": "data.frame（每供体一行，行名为 projid）",
+      "requirements": "含 niareagansc（病理分级，>2 为 CTRL）与 cogdx（认知诊断，<4 为 CTRL）列",
+      "evidence": "源码 nrad/cogdxad/delta 三级派生规则推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "circlize",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "矩阵已按供体聚合（如细胞阳性比例或平均表达），供体临床表完整。"
+  ],
+  "outputs": [
+    {
+      "path": "result/ast_reactivity_heatmap.pdf",
+      "content": "行侧基因集分类、列顶病理-认知复合注释（delta/nrad/cogdxad）的 z-score 聚类热图"
+    }
+  ],
+  "adaptation": [
+    "源脚本以 ggpubr 小提琴+箱线+抖动逐评分绘图且依赖 cbrbase/set_proj 私有环境；按任务规范改写为 ComplexHeatmap 复合注释热图，保留其 delta 四分组派生与基因集定义。",
+    "删除 system(mkdir)、上游计数打分（读矩阵移至上游准备）与多张 png 输出；输出改为单张 pdf。"
+  ],
+  "code_sha256": {
+    "plot.R": "b63d43c1a560ab3a1b7ad2251382fc0c9c8500dfe55438fa9e336a2c511bad72"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

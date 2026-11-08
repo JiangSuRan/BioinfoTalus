@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "id": "spatial-niche-rctd-misty",
+  "title": "空间转录组细胞丰度矩阵构建与空间生态位（Niche）聚类表征",
+  "kind": "method",
+  "method_type": "空间生态位与微环境",
+  "language": "R",
+  "tags": [
+    "Seurat",
+    "spacexr",
+    "空间生态位",
+    "Niche聚类",
+    "微环境"
+  ],
+  "paper": {
+    "repository": "https://github.com/Dr-fly/GRIT-Atlas.git",
+    "figure": "3_Spatial_Landscape_Analysis_and_Niche_Characterization.R（GRIT-Atlas 空间景观与生态位表征，提取 1–140 行中 RCTD 权重整合段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "GRIT-Atlas",
+      "path": "3_Spatial_Landscape_Analysis_and_Niche_Characterization.R",
+      "sha256": "fb9d38eb84abd839e6afcd0df22802133fb7bdfacbb34bbf9edd3e7e4b1b0064",
+      "lines": [
+        1,
+        140
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_seurat.rds",
+      "object": "Seurat 对象（Visium 切片）",
+      "requirements": "已质控；barcodes 与反卷积权重行名可交集对齐",
+      "evidence": "源码 commonspots <- intersect(colnames(seu_vis), rownames(weights.df)) 对齐步骤推断"
+    },
+    {
+      "path": "Data/rctd_visium.rds",
+      "object": "spacexr RCTD 结果对象",
+      "requirements": "已完成 run.RCTD，@results$weights 为 spot × 细胞类型权重矩阵",
+      "evidence": "源码 weights.df <- as.data.frame(as.matrix(RCTD@results$weights)) 与 AddMetaData(seu_vis, metadata = weights.df) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游已完成空间反卷积（RCTD 或其他给出 spot × 细胞类型权重的工具），权重行名与空间 spot 对齐。"
+  ],
+  "outputs": [
+    {
+      "path": "results/spatial_niche_seurat.rds",
+      "content": "含 niche assay（细胞类型权重特征）、niche.pca 降维与 niche 聚类标签列的 Seurat 对象；metadata 同时保留各细胞类型原始权重列"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "Niche 特征 = RCTD 权重矩阵转置为细胞类型 × spot 的 assay",
+      "basis": "源码将权重 AddMetaData 写回后在组成空间分析；模板将其固化为可降维聚类的 assay 对象"
+    },
+    {
+      "setting": "NormalizeData -> ScaleData -> RunPCA(dims = 1:10) -> FindClusters(resolution = 0.4)",
+      "basis": "模板设定（源码 niche 定义经 MISTy 隐式给出）；PCA 维数按解释方差 elbow、分辨率按 silhouette 重评"
+    }
+  ],
+  "adaptation": [
+    "剥离源码的 5 个数据集 48 患者批量循环、MISTy 建模段（paraview 半径估计与 run_misty，属另一模板）、PART 4 重要性 meta 分析与 pheatmap 绘图。",
+    "保留权重对齐（intersect + subset + AddMetaData）核心段，按任务规范补全 Niche assay 构建与归一化聚类。",
+    "future 多会话并行注册（96 workers）省略；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Niche 聚类结果依赖上游反卷积质量：权重偏差会直接映射为生态位错分；对稀有细胞类型的 niche 边界不敏感。",
+    "以组成为特征的聚类不使用空间坐标本身，相邻 spot 生态位标签的空间连续性需事后检验（如 Moran's I）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "7042a095e763582934214b546db0539a761b46b739b6ae24e1792388fe59b0a3"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

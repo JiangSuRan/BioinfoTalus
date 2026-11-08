@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "dbdiffusion-guided-singlecell-diffusion",
+  "title": "dbDiffusion VAE 潜空间 classifier-free 引导扩散单细胞转录组生成采样",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "dbDiffusion",
+    "引导扩散",
+    "VAE潜空间",
+    "单细胞生成",
+    "DDIM"
+  ],
+  "paper": {
+    "repository": "https://github.com/EperLuo/dbDiffusion (上游)；应用来源为 dbDiffusion 仓库采样脚本",
+    "figure": "functions/classifier_free/cell_sample.py（指定细胞态的潜空间采样，1–120 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "dbDiffusion",
+      "path": "functions/classifier_free/cell_sample.py",
+      "sha256": "3f27d55861826647ce4b08d0adf767efd5a5dcd64cf81274d304676a5fb3b1af",
+      "lines": [
+        1,
+        120
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/class_emb_target.npy",
+      "object": "类别嵌入向量（VAE 潜空间）",
+      "requirements": "目标细胞态/亚群的 class embedding（128 维 VAE 潜变量均值）",
+      "evidence": "main(class_emb_for_one_class, ...) 参数与 unsqueeze(0).repeat(batch,1) 推断"
+    },
+    {
+      "path": "Data/model/trained_Unet_fullLoop800000_v3.pt",
+      "object": "classifier-free UNet 扩散权重",
+      "requirements": "与 script_util_classifier_free_v3_acc 架构一致",
+      "evidence": "model_path 模式串与 create_model_and_diffusion 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "guided-diffusion",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "分布式 dist_util 初始化（单卡亦可）；生成 3 万样本耗时。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ref_v3_eta1.5_30000gen.npz",
+      "content": "条件生成的 VAE 潜空间样本矩阵（num_samples × input_dim），经 VAE 解码得表达矩阵"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "num_samples = 30000, batch_size = 10000",
+      "basis": "来源代码设定；大批次以获得稳定的条件分布估计"
+    },
+    {
+      "setting": "eta = 1.5（采样学习率/加速参数）",
+      "basis": "来源代码注释 \"you can change the learning rate for sampling here\"；影响采样步长"
+    },
+    {
+      "setting": "DDIM（use_ddim）确定性采样 + accel_flag",
+      "basis": "来源代码分支与注释；加速版 p_sample_loop"
+    }
+  ],
+  "adaptation": [
+    "main() 函数拆包为线性脚本；移除 argparse、torch.distributed all_gather 多卡收集（单卡直接收集）与 logger 进度。",
+    "采样输出由 save_data 包装改为直接 np.savez；目录名改 results/。",
+    "扰动名/邻居前缀参数保留字面量。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "生成样本为潜空间近似，解码后需经判别性 QC（标记基因相关性/分布检验）；eta>1 为加速采样可能引入偏差。",
+    "类别嵌入须来自与 UNet 训练一致的 VAE 编码器，跨模型混用会失败。"
+  ],
+  "code_sha256": {
+    "analysis.py": "d1a3b366be28107544ef9bd8156de219006de2c703a8572b3dc197982cf4e107"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "decoupler-progeny-pathway-tf-activity",
+  "title": "decoupler CollecTRI/PROGENy 网络的 ULM/MLM 转录因子与通路活性推断",
+  "kind": "method",
+  "method_type": "基因集与通路活性",
+  "language": "Python",
+  "tags": [
+    "decoupler",
+    "CollecTRI",
+    "PROGENy",
+    "TF活性",
+    "ULM"
+  ],
+  "paper": {
+    "repository": "https://github.com/saezlab/decoupler (上游)；应用来源为 skin_fibroblast_atlas 仓库 figures notebook",
+    "figure": "figures/extended_fig5_scrna_disease.ipynb（皮肤纤维母细胞图谱 TF 活性分析，单元 0/39 附近）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "skin_fibroblast_atlas",
+      "path": "figures/extended_fig5_scrna_disease.ipynb",
+      "sha256": "0d741813339b4b9203d016ea28d7260419d691cc6ff15231e08784a2c9384703",
+      "lines": [
+        1,
+        554
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/fibroblast_annotated.h5ad",
+      "object": "AnnData",
+      "requirements": "X 已 log1p 归一化；obs 含 celltype；基因符号 HGNC",
+      "evidence": "dc.run_ulm(mat=adata) 直接以对象为输入的约定推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "decoupler",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "CollecTRI/PROGENy 首次调用会联网下载（需缓存目录可写）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/decoupler_tf_activity.h5ad",
+      "content": "TF 活性 AnnData（obsm['ulm_estimate'] 转入 X），每个基因为一个转录因子的标准化活性"
+    },
+    {
+      "path": "results/decoupler_progeny_activity.h5ad 与 by_celltype.csv",
+      "content": "PROGENy 通路活性对象与按细胞类型均值汇总表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "get_collectri(organism='human', split_complexes=False)",
+      "basis": "来源代码设定；split_complexes=False 不拆分蛋白复合物（保持 TF-复合物整体边）"
+    },
+    {
+      "setting": "run_ulm（TF 网络）/ run_mlm（PROGENy）",
+      "basis": "来源代码 run_ulm 设定；PROGENy 段按任务规范以官方推荐的 mlm 补全（权重矩阵回归）"
+    },
+    {
+      "setting": "get_progeny(top = 500)",
+      "basis": "decoupler 默认 top 通路；500 为常见设定"
+    }
+  ],
+  "adaptation": [
+    "提取 notebook 的 import 与 run_ulm 调用段；上游 GSEA/绘图段移除。",
+    "按任务规范补全 PROGENy mlm 分支与按细胞类型均值汇总导出。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "TF 活性为网络推断（受 CollecTRI 覆盖与权重先验影响），低表达 TF 估计不稳；活性不可直接等同于 TF 结合/磷酸化状态。",
+    "ULM 逐 TF 独立回归忽略调控子共线性，可用 multivariate（mlm）敏感性对照。"
+  ],
+  "code_sha256": {
+    "analysis.py": "31b40343911776c571bc580cf7769518defc7eb46c4bb058ca74d24169415d46"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

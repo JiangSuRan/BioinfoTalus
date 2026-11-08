@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "tcgabiolinks-pancancer-immune-genetics",
+  "title": "TCGAbiolinks GDC 队列数据获取、蛋白编码 TPM 整理与患者去重",
+  "kind": "method",
+  "method_type": "Bulk生存与预后建模",
+  "language": "R",
+  "tags": [
+    "TCGAbiolinks",
+    "GDC",
+    "TCGA",
+    "TPM",
+    "队列数据"
+  ],
+  "paper": {
+    "repository": "EC-DCLS-paper-2025（内皮-导管样信号 paper 代码）",
+    "figure": "14_deconvolution.R 的 TCGA 数据获取段（39–90 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "EC-DCLS-paper-2025",
+      "path": "14_deconvolution.R",
+      "sha256": "5623ba79fa9795e880c8d1ff1982d74d3d2e910cda03e610ad8351590237804f",
+      "lines": [
+        39,
+        90
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "GDC TCGA-UCEC（或其他 TCGA 项目）",
+      "object": "远程 GDC 数据",
+      "requirements": "网络可达；STAR - Counts 工作流的 Gene Expression Quantification",
+      "evidence": "GDCquery(project, data.category, data.type, workflow.type) 调用推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "TCGAbiolinks",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SummarizedExperiment",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "tibble",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "GDC 下载目录可写；正式分析项目名按研究替换（UCEC 为示例）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/tcga_ucec_counts.csv 与 tcga_ucec_tpm.csv",
+      "content": "蛋白编码基因 × 患者去重后的 unstranded 计数矩阵与 TPM 矩阵"
+    },
+    {
+      "path": "results/TCGA-UCEC_mRNA.Rdata",
+      "content": "GDCprepare 的 SummarizedExperiment 原始对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "workflow.type = 'STAR - Counts'",
+      "basis": "来源代码设定；统一计数/TPM 双 assay 的新版 GDC 工作流"
+    },
+    {
+      "setting": "蛋白编码过滤 gene_type == 'protein_coding' + Primary Tumor",
+      "basis": "来源代码设定；聚焦 mRNA 表达层"
+    },
+    {
+      "setting": "患者多播片去重（rowMeans 最高保留）",
+      "basis": "来源代码设定；同患者多个 vial 保留表达均值最高者"
+    }
+  ],
+  "adaptation": [
+    "移除开头 40 行依赖检查/安装块与 sapply(library) 静默加载；绝对下载路径改 results/。",
+    "保留 GDCquery → GDCdownload → GDCprepare → 蛋白编码/原发肿瘤过滤 → count/tpm 双矩阵 → 去重主链。",
+    "TPM 段的中文注释删除；两矩阵分别落盘。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "GDC 数据版本随时间更新，结果可复现性需记录 data_release；免疫遗传关联分析需另行合并基因型（本模板仅覆盖表达获取）。",
+    "TPM 不适合跨样本 DE 建模（无大小因子意义），差异分析应基于 counts + TMM/DESeq2。"
+  ],
+  "code_sha256": {
+    "analysis.R": "423e76ab244cc969ffd7009c81d085e7b37aca314a514ad843af8236c75abfeb"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

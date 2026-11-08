@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "id": "corr-heatmap-pheatmap",
+  "title": "细胞类型比例 Pearson 相关性热图（pheatmap）",
+  "kind": "plot",
+  "plot_type": "相关性热图",
+  "language": "R",
+  "paper": {
+    "repo": "TLS_in_HNSCC",
+    "figure": "Fig7 (TMA correlation 部分)",
+    "doi": null,
+    "url": null
+  },
+  "source_files": [
+    {
+      "repo": "TLS_in_HNSCC",
+      "relative_path": "figure_code/Fig7_TMA_correlation.R",
+      "sha256": "71e9d2b3521931fcef5a20d7965d3db5e897d3384d5f9cf6203398c718bf6a31",
+      "lines": [
+        1,
+        26
+      ]
+    }
+  ],
+  "license": {
+    "type": "GPL-3.0",
+    "file": "LICENSE",
+    "note": "来源仓库整体 GPL-3.0，提取片段含必要署名信息"
+  },
+  "inputs": {
+    "object": "数值矩阵 csv（Data/cell_type_for_correlation.csv）",
+    "fields": "由代码确认的接口要求：第一列用作行标识，其余列须为数值变量；cor() 计算这些列之间的相关性。若用于细胞类型间相关，列须对应细胞类型；真实行列身份、观测单位与数值尺度尚未核实",
+    "state": "输入未随模板提供；来源仓库的原始数据未下载，字段实际类型未实测"
+  },
+  "packages": [
+    "pheatmap",
+    "ggplot2"
+  ],
+  "prerequisites": [
+    "输入矩阵的上游整理不在本案例范围；实际数据来源与尺度尚未核实",
+    "ggsave 保存 pheatmap 返回的绘图对象"
+  ],
+  "adaptation": [
+    "仅提取原文件 1-26 行的热图单元；28 行起的散点与 scatterpie 段依赖更多未定义对象，未纳入",
+    "删除原文件未使用的 tidyverse 与 RColorBrewer 加载；保留 cor(Pearson 默认)、scale=none、行列不聚类、单元格显示相关系数、五色渐变与 6.6x6 英寸输出",
+    "原 XXX 占位路径改为模板根 Data/ 相对约定",
+    "2026-10-31 保存方式统一：显式 ggsave(filename, plot, width, height, units)，参数就地填写；保留原有格式、物理尺寸、PNG 分辨率和 PDF 设备特性。仅归一化保存接口/GO 图对象赋值后，其余表达式比对 identical=TRUE。"
+  ],
+  "code_sha256": {
+    "plot.R": "b1557b41c7220cc67003471a5df50bf08ca86b89803bf08750f2910a7ae0cae5"
+  },
+  "validation": {
+    "syntax": "2026-10-28：修改前后均通过 R 4.5.3 parse",
+    "render": "2026-10-28：6 行 3 列合成数值表上，修改前后均生成 PDF；相关矩阵及全部 pheatmap 参数 identical。仅核对配色内联的等价性",
+    "real_data": null,
+    "figure_comparison": null,
+    "notes": "无真实输入与原图；合成渲染不代表真实数据或原图外观验证，未宣称复现原图",
+    "save_update": {
+      "date": "2026-10-31",
+      "code_comparison": "四案移除保存调用及归一化 GO 对象赋值后，其他表达式 identical=TRUE；语法通过",
+      "saving_api_smoke": "真实 ggplot2 的 base PDF、Cairo PDF 与 PNG 保存通过；7x3 英寸/600dpi 的 PNG 新旧调用像素一致",
+      "real_template_render": false,
+      "note": "本次保存接口冒烟测试使用独立示例 ggplot，不代表四个正式模板已重画；此前渲染记录只覆盖当时快照。"
+    }
+  }
+}

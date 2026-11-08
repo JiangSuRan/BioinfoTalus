@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "scprint-gene-network-embedding",
+  "title": "scPRINT 预训练单细胞大模型基因嵌入提取与细胞表征推断",
+  "kind": "method",
+  "method_type": "AI基础模型与嵌入",
+  "language": "Python",
+  "tags": [
+    "scPRINT",
+    "单细胞基础模型",
+    "基因嵌入",
+    "scRNA-seq",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/cantinilab/scPRINT.git",
+    "figure": "scprint/tasks/gene_emb.py（scPRINT 基因嵌入提取任务实现，全文件 1–105 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "scPRINT",
+      "path": "scprint/tasks/gene_emb.py",
+      "sha256": "eaa3604865f0d55598be134c089dbd5070b612b3e03d1c7699bbb01f4061232d",
+      "lines": [
+        1,
+        105
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cells.h5ad",
+      "object": "AnnData",
+      "requirements": "X 为原始计数；var 基因符号与 model.genes 有交集；建议 obs 含 organism_ontology_term_id（默认补人 NCBITaxon:9606）",
+      "evidence": "源码 SimpleAnnDataset/Collator 构造与 organism 默认赋值推断"
+    },
+    {
+      "path": "Data/scprint_checkpoint.ckpt",
+      "object": "scPRINT 预训练检查点",
+      "requirements": "与安装的 scprint 版本匹配（v2/core 模型任选）",
+      "evidence": "源码 model 参数注释 \"A loaded and trained scPrint\" 与 load_from_checkpoint 惯例推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scprint",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scdataloader",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "scPRINT 检查点已下载；GPU 显存按模型规模评估（建议 >= 16GB）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scprint_embeddings.h5ad",
+      "content": "含 obsm['X_scprint'] 的 AnnData：基因嵌入在基因维取均值聚合的细胞级表征（d_model 维）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "Collator how=\"some\"、max_len=0、genelist=model.genes",
+      "basis": "来源代码设定；允许与词表部分重叠的输入基因集，不截断序列（大基因集时改 max_len 截断）"
+    },
+    {
+      "setting": "batch_size = 64, num_workers = 8",
+      "basis": "来源代码默认；按显存与 CPU 核数调整"
+    },
+    {
+      "setting": "基因维均值聚合为细胞表征",
+      "basis": "任务规范的 obsm 2D 要求；基因级逐基因嵌入（n_cells, n_genes, d_model）不宜直接入 obsm，均值池化为其常见细胞级汇总"
+    }
+  ],
+  "adaptation": [
+    "将 extract_gene_embeddings 函数拆包为线性脚本，函数体逻辑（model.eval + pred_log_adata=False + Collator/DataLoader + autocast 前向）保留。",
+    "fp16 autocast 简化为 no_grad 推理（CPU 兼容）；逐批 torch.cuda.empty_cache() 删除。",
+    "输出改为基因维均值入 obsm 并落盘 h5ad（源码仅返回数组）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "均值池化丢失基因特异性嵌入结构，基因级下游（共表达网络构建）应使用未聚合的三维嵌入并另行存储。",
+    "模型词表未覆盖基因被静默丢弃；不同 scPRINT 版本检查点嵌入空间不可直接混用。"
+  ],
+  "code_sha256": {
+    "analysis.py": "3c60635ada2311b9c313902e187f989b93f867273a809e3f465aa095c5826cb2"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

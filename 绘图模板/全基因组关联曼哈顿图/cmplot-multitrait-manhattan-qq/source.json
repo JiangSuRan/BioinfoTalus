@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "id": "cmplot-multitrait-manhattan-qq",
+  "title": "CMplot 多表型全基因组关联分析（GWAS）背景降采样矩形曼哈顿图与多轨迹分位数 QQ 图",
+  "kind": "plot",
+  "plot_type": "全基因组关联曼哈顿图",
+  "language": "R",
+  "tags": [
+    "CMplot",
+    "GWAS",
+    "曼哈顿图",
+    "QQ图",
+    "多表型可视化",
+    "R"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "inhouse_GWAS/20250116_draw_manhantten.R（CIMA 自测 GWAS 多表型曼哈顿与 QQ 图，提取 1–85 行血脂段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "inhouse_GWAS/20250116_draw_manhantten.R",
+      "sha256": "40ed70205a69752f49c35a54558179d0506be1139e2f954aee80b8da35c95847",
+      "lines": [
+        1,
+        85
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/gwas/<trait>_378.mlma",
+      "object": "GEMMA 关联结果表（每表型一个）",
+      "requirements": "含 SNP、Chr、bp、p 列；多表型 SNP 集合一致（同一基因型阵列）",
+      "evidence": "源码 fread(paste0(GWAS_lipid/, each_lipid, '_378.mlma')) 逐表型合并 p 列推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "CMplot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "data.table",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "GEMMA/GCTA 关联检验已完成；性状名与 mlma 文件名前缀对应。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cima_multitrait_manhattan.pdf",
+      "content": "多表型矩形曼哈顿图：灰底背景点 + 显著位点四色放大，双阈值线（5e-8 与 Bonferroni 5e-8/36）"
+    },
+    {
+      "path": "results/cima_multitrait_qq.pdf",
+      "content": "多表型分位数 QQ 图：置信带、每表型独立轨迹与膨胀因子标注"
+    },
+    {
+      "path": "results/cima_gwas_significant_snps.csv",
+      "content": "任一表型 P<5e-8 的全部显著 SNP 表（降采样前全量）"
+    }
+  ],
+  "adaptation": [
+    "源脚本血脂与代谢两族重复段合并为单族 traits 向量循环；jpg 双格式输出精简为 pdf。",
+    "显著阈值由源码 8.3e-9 统一为任务规范的 5e-8 全基因组线 + 5e-8/36 Bonferroni 线；multraits 参数按任务规范写作 multracks。",
+    "仅图例用的 0.005% 极限降采样段与 setwd 删除；新增显著 SNP 全量 csv 导出。"
+  ],
+  "code_sha256": {
+    "plot.R": "71f557815872d0f8a171f4d378bdb3758d92ad4c027e6632fccaa64bfb6da780"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

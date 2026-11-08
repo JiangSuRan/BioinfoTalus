@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "id": "seurat-spatial-celltype-map",
+  "title": "空间转录组细胞亚群原位空间分布与高亮映射图（SpatialDimPlot）",
+  "kind": "plot",
+  "plot_type": "空间组学图谱",
+  "language": "R",
+  "tags": [
+    "Seurat",
+    "SpatialDimPlot",
+    "空间分布图",
+    "细胞亚群"
+  ],
+  "paper": {
+    "repository": "https://github.com/lcy1364/Cortex-Atlas-Code.git",
+    "figure": "src/fig7/fig7ab.R（Cortex Atlas 图 7a 空间域原位映射，全文件 1–49 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Cortex-Atlas-Code",
+      "path": "src/fig7/fig7ab.R",
+      "sha256": "6c502dba00c4fbfbbcb087e2cfdb8f9381602f55198d49b19801a982a9b56368",
+      "lines": [
+        1,
+        49
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/spatial_seurat.rds",
+      "object": "Seurat 对象（空间切片）",
+      "requirements": "meta.data 含 domain 列（空间域/亚群标签，值覆盖高亮目标如 L4a）；含空间坐标与图像信息",
+      "evidence": "源码 SpatialDimPlot(seu, group.by = \"domaine.fine\") 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "空间域标签已由聚类或反卷积注释产生。"
+  ],
+  "outputs": [
+    {
+      "path": "result/spatial_dim_panel.pdf",
+      "content": "目标亚群红色高亮、其余细胞灰化的原位空间映射图，附图例"
+    }
+  ],
+  "adaptation": [
+    "源码 fig7a 为全类别 SpatialDimPlot、fig7b 为逐基因 FetchData 自绘渐变点图且依赖 mclapply 与外部 qs 分片；模板合并为单对象高亮映射（cells.highlight 灰化背景）。",
+    "setwd 与 qs 读取移除；ggsave 改显式 filename/plot/width/height/units。"
+  ],
+  "code_sha256": {
+    "plot.R": "340f3e33261787014f87f9b545d336b968b0c80e30c4c97f3d6fbc65e8f800a9"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

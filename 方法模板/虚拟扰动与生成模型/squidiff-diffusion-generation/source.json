@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "squidiff-diffusion-generation",
+  "title": "Squidiff 扩散模型单细胞转录状态条件生成与扰动采样",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "Squidiff",
+    "扩散模型",
+    "Diffusion",
+    "单细胞生成",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/siyuh/Squidiff.git",
+    "figure": "sample_squidiff.py（Squidiff 官方采样脚本，提取 1–90 行模型加载段与 pred/interp 采样方法）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Squidiff",
+      "path": "sample_squidiff.py",
+      "sha256": "f3cf663c1e47b896c6f72dd906abc06faf186d173218da6c2fb23fee25913f02",
+      "lines": [
+        1,
+        90
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/squidiff_model.pt",
+      "object": "Squidiff 训练好的扩散模型权重",
+      "requirements": "与 script_util 默认架构一致（gene_size/output_dim/num_layers/drug_dimension 等须与训练配置相同）",
+      "evidence": "源码 create_model_and_diffusion(**args) + load_state_dict(dist_util.load_state_dict(model_path)) 加载流程推断"
+    },
+    {
+      "path": "Data/condition_latent.npy",
+      "object": "条件潜在向量矩阵（n × output_dim）",
+      "requirements": "语义条件编码（如药物结构 encoder 输出或细胞类型均值嵌入），维度与模型 z_mod 输入一致",
+      "evidence": "源码 sample_fn(model, shape=(z_sem.shape[0], gene_size), model_kwargs={'z_mod': z_sem}) 的 pred 方法推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Squidiff",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "扩散模型已在目标数据（或 LINCS/sci-Plex 预训练）上训练完成；条件编码器与训练一致。"
+  ],
+  "outputs": [
+    {
+      "path": "results/squidiff_samples.npy",
+      "content": "条件生成的细胞转录状态矩阵（n × gene_size），每行对应一个条件向量的采样细胞"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "use_ddim = True, diffusion_steps = 1000",
+      "basis": "来源代码默认采样配置；DDIM 确定性采样比 p_sample_loop 随机朗之万采样可复现且步数可控"
+    },
+    {
+      "setting": "gene_size = 5000, drug_dimension = 1024, num_layers = 3",
+      "basis": "来源代码 updated_args 设定（对应 LINCS landmark 5000 基因与 1024 维药物结构编码）；须与训练一致不可独立调整"
+    },
+    {
+      "setting": "噪声起点 noise = None（从纯噪声起始）",
+      "basis": "来源代码 pred 方法设定；对既有细胞做插值扰动时用 interp_with_direction 的均值+方向向量作为条件"
+    }
+  ],
+  "adaptation": [
+    "将 sampler 类的 __init__（模型加载）与 pred（条件采样）两段拆包为线性脚本；parse_args 的命令行参数改为字面配置。",
+    "移除 stochastic_encode/get_diffused_data 调试方法、r2/pearson 评估与 print 日志；输出新增 npy 落盘。",
+    "设备与 fp16 转换保留 dist_util 约定。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "生成样本为模型分布的近似样本，未经核磁真实性检验（每基因分布/标记相关性）不可直接作定量结论。",
+    "条件向量超出训练条件分布（未见药物结构）时生成质量下降；采样方差取决于扩散步数与随机种子，应多样本汇总。"
+  ],
+  "code_sha256": {
+    "analysis.py": "e25a9d3c791a04c62be6f7068d553c9900e0ba88e98df9892f68f8ef158ce430"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

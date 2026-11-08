@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "id": "sc-qc-doubletfinder",
+  "title": "单细胞 Seurat 质控指标计算、DoubletFinder 双细胞识别与 MAD 异常值过滤",
+  "kind": "method",
+  "method_type": "质控与双细胞去除",
+  "language": "R",
+  "tags": [
+    "Seurat",
+    "DoubletFinder",
+    "scater",
+    "质控",
+    "双细胞去除",
+    "MAD"
+  ],
+  "paper": {
+    "repository": "https://github.com/lcy1364/Cortex-Atlas-Code",
+    "figure": "SnRNA 预处理流程脚本 src/SnRNA/1_SnRNA_preprocessing/1_doubletFinderQC.R（28–114 行），对应 cortex atlas 构建中的单样本质控与双细胞去除步骤",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Cortex-Atlas-Code",
+      "path": "src/SnRNA/1_SnRNA_preprocessing/1_doubletFinderQC.R",
+      "sha256": "5e33f89c58b6a4e3f28df6efc5a4ecd9d27061eed7a0a0e49125410297358f96",
+      "lines": [
+        28,
+        114
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/filtered_feature_bc_matrix",
+      "object": "10x 计数矩阵目录（matrix.mtx / barcodes.tsv / features.tsv）",
+      "requirements": "10x Genomics cellranger 输出，单个样本；基因符号需保留 MT- / RP[SL] / HB 前缀与 PECAM1、PF4 以计算质控占比；人源核转录组数据的阈值设定",
+      "evidence": "Read10X(matrixFile) 读入与 PercentageFeatureSet 的正则模式（^MT-、^RP[SL]、^HB[^(P)]、PECAM1|PF4）推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "DoubletFinder",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scater",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "stringr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "Data/filtered_feature_bc_matrix 为单个样本的 cellranger 过滤后矩阵目录；多样本研究需逐样本运行后自行合并。"
+  ],
+  "outputs": [
+    {
+      "path": "results/seurat_qc_filtered.rds",
+      "content": "质控并去除双细胞后的 Seurat 对象；meta.data 含 percent.mt / percent.ribo / percent.hb / percent.plat、pANN 得分与 DF.classifications 双细胞注释列"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "初步筛选 nFeature_RNA > 500 & percent.mt < 1 & percent.ribo < 1",
+      "basis": "来源代码设定（核转录组数据阈值）；迁移到其他组织或平台时需按分布重新评估"
+    },
+    {
+      "setting": "降维与聚类 PCs = 1:15；DoubletFinder pN = 0.25、pK 取 BCmetric 最大值",
+      "basis": "来源代码设定；pK 由 paramSweep 数据驱动获得，PCs 数需与新数据的 elbow 结果联动调整"
+    },
+    {
+      "setting": "nExp_poi = round(1/100 * (ncol(seu)/1000) * ncol(seu))，再经 modelHomotypic 同源校正得 nExp_poi.adj",
+      "basis": "来源代码按 10x 试剂 multiplet 率随细胞数外推预期双细胞数；不同试剂与上机载量需按厂家 multiplet 率重设系数"
+    },
+    {
+      "setting": "isOutlier(nmads = 3, log = TRUE)：nCount_RNA / nFeature_RNA 取下尾、percent.mt 取上尾",
+      "basis": "来源代码设定；scater 推荐的对数尺度 3 MAD 稳健过滤，阈值随本样本分布自适应"
+    }
+  ],
+  "adaptation": [
+    "删去外层 while / mclapply 多样本批量循环、qs 分片缓存与 GTF 基因名转换保存，只保留单样本线性流程。",
+    "将过时的 ncol(seu@assays$RNA@data) 改为 ncol(seu)；doubletFinder 的 nExp 按任务规范改用同源校正后的 nExp_poi.adj（原脚本计算了 adj 但调用时用了未校正的 nExp_poi）。",
+    "删除 RunUMAP、print(table(...)) 诊断输出与末尾 merge 汇总段；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "DoubletFinder 基于表达相似性人工合成双细胞，对同型（同亚群内）双细胞识别能力有限；nExp 依赖试剂 multiplet 率假设。",
+    "MAD 阈值在单样本内估计，细胞数少或质量分布多峰时可能不稳定；percent.mt < 1 等初筛阈值为核转录组特有设定，其他组织需重评。"
+  ],
+  "code_sha256": {
+    "analysis.R": "44e4ef8d91741e6ca1b22272e83db5674b34f65cb6fd800a6b70110f35ce22db"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

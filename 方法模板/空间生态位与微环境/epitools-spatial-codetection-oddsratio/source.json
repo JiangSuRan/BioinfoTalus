@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "epitools-spatial-codetection-oddsratio",
+  "title": "epitools 空间多标志物共检出（SNV 基因型 × 肿瘤克隆）列联表构建与比值比检验",
+  "kind": "method",
+  "method_type": "空间生态位与微环境",
+  "language": "R",
+  "tags": [
+    "epitools",
+    "oddsratio",
+    "Xenium",
+    "SNV共检出",
+    "列联表"
+  ],
+  "paper": {
+    "repository": "spatial_driver_co-detection_paper（空间驱动突变共检出论文）",
+    "figure": "plotting_snippets/plotting_snippets.R（Extended Data Figure 7a 共检出比值比段，约 1620–1690 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "spatial_driver_co-detection_paper",
+      "path": "plotting_snippets/plotting_snippets.R",
+      "sha256": "1c6ce839bc1dde517bab4cbbd5612206958e4c0d90a7dffec56a4d5182a1b4c5",
+      "lines": [
+        1620,
+        1700
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/xenium_snv_seurat.rds",
+      "object": "Seurat 对象",
+      "requirements": "assay（如 Xenium.with.snvs）counts 含变体探针（<基因>-p-<突变>---ALT-T/WT）列；meta.data 含 neoplasm_normal_unknown（克隆/正常标签）列",
+      "evidence": "源码 GetAssayData 提取与 tumor_cell_call 标签层推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "epitools",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "effectsize",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "Xenium SNV 探针已并入 assay 且按 UMI 阈值标注 ALT/WT；克隆标签已注释。"
+  ],
+  "outputs": [
+    {
+      "path": "results/codetection_oddsratio.csv",
+      "content": "比值比点估计与 Fisher 置信区间表（克隆 vs 正常 × ALT vs WT）"
+    },
+    {
+      "path": "results/codetection_oddsratio_res.rds",
+      "content": "oddsratio 结果对象与模拟 p 值卡方检验（simulate.p.value=TRUE）交叉验证"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "oddsratio(as.matrix(data_1), method = 'fisher')",
+      "basis": "来源代码设定；Fisher 法给出精确置信区间"
+    },
+    {
+      "setting": "chisq.test(simulate.p.value = TRUE, correct = FALSE)",
+      "basis": "来源代码设定；列联表稀疏时用蒙特卡洛 p 值复核"
+    },
+    {
+      "setting": "克隆 × 基因型 2x2 表按细胞求和探针 UMI（非按细胞计数）",
+      "basis": "来源代码设定；UMI 求和反映共检出强度，若需细胞级二分应改为 table() 计数"
+    }
+  ],
+  "adaptation": [
+    "源文件为 7178 行的杂合绘图脚本，提取 Extended Data Fig 7a 的第一个变体（TPD52L1）段；其余变体（LDHB/APC）与多克隆重复段按同型循环调用。",
+    "AddMetaData 的列名拼接逻辑保留；输出由 print 改为 rds/csv 落盘。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "2x2 表以 UMI 求和为权重，探针捕获效率差异直接影响 OR；细胞级二值化是更保守的替代口径。",
+    "单变体检验的多重性应在跨变体汇总后统一 BH 校正。"
+  ],
+  "code_sha256": {
+    "analysis.R": "ee95203556462bf58b97d754b63584ec3f3036f6799ce4117a742daff75d43d7"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

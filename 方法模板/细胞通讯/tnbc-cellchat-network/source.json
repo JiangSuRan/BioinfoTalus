@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "id": "tnbc-cellchat-network",
+  "title": "人类 CellChat 通讯网络推断（已初始化对象）",
+  "kind": "method",
+  "method_type": "细胞通讯",
+  "language": "R",
+  "paper": {
+    "repository": "https://github.com/navinlabcode/tnbc-chemo",
+    "figure": "Extended Data Fig. 8（来源分析指南；本模板不复现该图）",
+    "author_attribution": "Yun Yan（来源分析指南署名）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "tnbc-chemo",
+      "path": "analysis/scripts/cellchat/cellchat.s1.R",
+      "sha256": "b0874e548db255bdc6d00835beba3ba765605219ad5fbf8fd9e5c224a5c41db4",
+      "lines": [
+        1,
+        51
+      ],
+      "role": "提取的推断主流程"
+    },
+    {
+      "root_label": "tnbc-chemo",
+      "path": "analysis/scripts/cellchat/cellchat.s0a.R",
+      "sha256": "c11780a35051048a0dc4f7171089a3390b23c99ce67412355f844f936cf27124",
+      "lines": [
+        185,
+        233
+      ],
+      "role": "仅核实上游对象创建接口；不提取注释、重命名或抽样逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未找到 LICENSE 文件；不替来源重授权，本次仅本地模板入库。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cellchat_input.rds",
+      "object": "CellChat",
+      "requirements": "人类、单个非空间 scRNA 数据集；已初始化对象，data 为基因×细胞的非负归一化表达，基因符号对应人类数据库，idents 为已核实分组且与细胞身份/顺序一致。",
+      "evidence": "s0a.R 使用 RNA data 创建 CellChat，以 meta 的 cellstate 分组；实际源 RDS 未加载，归一化和对齐仍需使用时核实。"
+    }
+  ],
+  "packages": [
+    {
+      "name": "CellChat",
+      "tested_version": "2.2.0.9001",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "预先完成归一化和分组核实，并保存上述输入对象；本模板不负责细胞注释或上游抽样。",
+    "从项目根运行，Data 与 results 目录已存在；目标 results/cellchat_network.rds 尚未占用。路径在实际适配时就地替换。",
+    "确认抽样/富集方式允许群体比例参与推断；需要样本层比较时另设计分析，不直接把细胞作为独立生物学重复。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cellchat_network.rds",
+      "content": "含 net（配体受体概率/p值/汇总）及 netP（通路）结果的 CellChat 对象；不输出论文图或跨条件比较。"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "CellChatDB.human",
+      "basis": "来源代码，使用本机包所带完整人类数据库；未声称与论文原版数据库相同。"
+    },
+    {
+      "setting": "raw.use = TRUE",
+      "basis": "来源代码；本机帮助定义为 data.signaling 的未平滑/未投影信号，不表示原始 UMI counts。来源“Do use PPI”注释与禁用 projectData 的代码冲突，以执行代码为准。"
+    },
+    {
+      "setting": "population.size = TRUE",
+      "basis": "保留来源的群体比例加权；原上游存在抽样，不能直接推广到富集/重采样或不平衡队列。"
+    },
+    {
+      "setting": "do.fast = FALSE",
+      "basis": "明确版本适配：本机默认快速 Wilcoxon 需要未安装的 presto，改用包提示的标准 Wilcoxon。未添加自动检测/回退，未比较 presto 两种实现结果。"
+    },
+    {
+      "setting": "其余使用本机包默认值",
+      "basis": "未额外添加 filterCommunication 或猜测阈值；computeCommunProb 的已核实默认 type=triMean、nboot=100、seed.use=1。不同版本须重查。"
+    }
+  ],
+  "adaptation": [
+    "保留 s1 的分析调用顺序，删除死 projectData 分支、计时、日志、未使用变量、重复读写。",
+    "以 base R readRDS/saveRDS 替代 readr 包装；输入输出分离，只保存最终对象，不覆盖来源输入。",
+    "只交付推断阶段；s0a 的抽样策略、s2 的生态型比较与作图不在本模板范围。"
+  ],
+  "limitations": [
+    "实际文献输入及第二套用户数据未验证；运行成功不代表论文复现或跨数据有效。",
+    "源代码未锁定包/数据库版本，模板验证只针对记录的本机环境。",
+    "通讯网络是表达与数据库支持的推断，不等于实验互作或因果结论。"
+  ],
+  "code_sha256": {
+    "analysis.R": "0034df562d09cd2a182721c51f9c0e07b7221042314bac37559006b835a76a36"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "R 4.5.3；实际 source 完整执行",
+      "date": "2026-10-31"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "CellChat 2.2.0.9001；实际原生接口，非 mock",
+      "input": "34 基因 × 60 细胞，A/B 各 30；基因取本机数据库前 20 条互作及其复合体/辅助因子中可识别符号。",
+      "generation": "seed=420；Poisson(2) 计数，奇偶基因在 A/B 分别加 15，按列总量缩放 10000 后 log1p；仅用于工程验证。",
+      "output": "net$prob 为 2×2×42，有限值；输入细胞分组身份保持不变。",
+      "note": "先前全基因合成探针因耗时中止，不计为通过；本结果仅代表该小样本。"
+    },
+    "reference_comparison": {
+      "status": "passed",
+      "reference": "从同一初始化对象按源 s1 分析调用顺序独立重建；两侧均显式 do.fast=FALSE，其余使用相同本机包/数据库/默认随机种子。",
+      "checks": [
+        "net 完全 identical",
+        "netP 完全 identical",
+        "idents 与输入 identical"
+      ],
+      "limits": "未执行包含原绝对路径的完整 s1，也未比较 presto 快速实现或论文原环境。"
+    },
+    "real_data": null,
+    "second_dataset": null
+  }
+}

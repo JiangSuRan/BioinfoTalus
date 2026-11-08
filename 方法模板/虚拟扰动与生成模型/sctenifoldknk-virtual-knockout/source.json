@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "id": "sctenifoldknk-virtual-knockout",
+  "title": "scTenifoldKnk 单细胞基因调控网络构建与单基因虚拟敲除（Virtual KO）差异调控检验",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "R",
+  "tags": [
+    "scTenifoldKnk",
+    "虚拟敲除",
+    "基因调控网络",
+    "流形对齐",
+    "R"
+  ],
+  "paper": {
+    "repository": "https://github.com/cailab-tamu/scTenifoldKnk.git",
+    "figure": "R/scTenifoldKnk.R（scTenifoldKnk 主函数与文档，提取 1–88 行接口定义与调用规范）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "scTenifoldKnk",
+      "path": "R/scTenifoldKnk.R",
+      "sha256": "507e4ce1ad6b27c802f2ab0a827152d6141b18dd401149c7ae201bee966e08ea",
+      "lines": [
+        1,
+        88
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/count_matrix.rds",
+      "object": "矩阵或稀疏 dgCMatrix（基因 × 细胞，原始 counts）",
+      "requirements": "行名为基因符号；目标基因在行名中；建议至少 500 细胞（子采样下限）与数百基因",
+      "evidence": "函数文档 countMatrix 参数说明（cells as columns, genes as rows, raw counts）推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scTenifoldKnk",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scTenifoldNet",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "计数矩阵未归一化（函数内置 qc 与 cpmNormalization）；gKO 替换为实际目标基因符号。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sctenifoldknk_res.rds",
+      "content": "结果列表：tensorNetworks（WT 去噪权重网络）、manifoldAlignment（WT/KO 联合低维坐标）与 diffRegulation"
+    },
+    {
+      "path": "results/virtual_ko_diff_regulation.csv",
+      "content": "差异调控基因表：gene、distance 与校正后 p 值（及方向预测列），按 distance 降序为受敲除影响最大的基因"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "qc = TRUE（内置质控：文库大小/离群细胞/基因检出率/线粒体比例）",
+      "basis": "任务规范设定（源函数默认 qc=TRUE）；细粒度阈值（qc_minLibSize 等）按数据调整"
+    },
+    {
+      "setting": "nc_nNet = 10, nc_nCells = 500",
+      "basis": "来源代码示例与任务规范设定；子采样网络数与每次子采样细胞数决定稳定性与耗时",
+      "note": null
+    },
+    {
+      "setting": "gKO = \"TargetGene\"（占位）",
+      "basis": "任务规范字面；实际运行替换为目标基因符号，多基因共同敲除传字符向量"
+    }
+  ],
+  "adaptation": [
+    "源文件为包函数定义（roxygen 文档 + 分支实现）；按任务规范转写为从读取矩阵到结果落盘的线性调用脚本。",
+    "其余参数（张量分解、流形对齐维度、经验零分布等）交给包默认；多核由 nCores 参数按机器设置。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "主成分回归网络对低细胞数基因稀疏敏感；差异调控 p 值经验分布假设在大基因集上才稳定。",
+    "虚拟敲除结果为网络拓扑层面推断，不等于真实扰动实验的方向与幅度；建议与 Perturb-seq 或 GEARS 预测交叉验证。"
+  ],
+  "code_sha256": {
+    "analysis.R": "191af07c779ccbf59dac522884162e2cacdbe047729812966135cb8ce00db7f3"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "id": "cell2location-spatial-mapping",
+  "title": "cell2location 单细胞参考回归模型估计与空间贝叶斯反卷积",
+  "kind": "method",
+  "method_type": "反卷积与细胞组成",
+  "language": "Python",
+  "tags": [
+    "cell2location",
+    "Visium",
+    "空间反卷积",
+    "贝叶斯后验",
+    "scvi-tools"
+  ],
+  "paper": {
+    "repository": "https://github.com/YosefLab/cell2location (上游)；应用来源为 spRNAseq-analysis-of-ATC-coexisting-with-DTC 仓库 Step6.Cell2location.py",
+    "figure": "Step6.Cell2location.py（ATC 与 DTC 共存空间转录组 cell2location 映射，全文件 161 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "spRNAseq-analysis-of-ATC-coexisting-with-DTC",
+      "path": "Step6.Cell2location.py",
+      "sha256": "8160f8343ccea9bc652cd314f0604930ca94400b28bb8432deb9c37aa16e0dfb",
+      "lines": [
+        1,
+        161
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/total.singlecell.h5ad",
+      "object": "AnnData（原始计数）",
+      "requirements": "obs 含 Samples（批次）与 cell_type（细胞类型标签）；X 为原始 counts",
+      "evidence": "RegressionModel.setup_anndata(batch_key='Samples', labels_key='cell_type') 接口推断"
+    },
+    {
+      "path": "Data/st_sample.h5ad",
+      "object": "AnnData（空间转录组）",
+      "requirements": "layers 含 raw_count（未处理计数）；obsm 含 spatial 坐标；基因符号与参考一致（小鼠用 mt- 前缀）",
+      "evidence": "Cell2location.setup_anndata(layer=\"raw_count\") 与 var['MT_gene'].startswith('mt-') 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "cell2location",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "GPU 推荐（8 空间样本 x 20000 epoch 训练量大）；参考与空间数据基因符号同一体系。"
+  ],
+  "outputs": [
+    {
+      "path": "results/st_cell2location_res.h5ad",
+      "content": "空间反卷积结果：obs 各细胞类型列与 obsm['q05_cell_abundance_w_sf']（每 spot 每类型细胞丰度 5% 下界后验）"
+    },
+    {
+      "path": "results/sc_cell2location.h5ad",
+      "content": "参考签名结果：varm['means_per_cluster_mu_fg_*'] 每细胞类型参考基因表达（含 q05/q50/q95 分位数）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "filter_genes(cell_count_cutoff=5, cell_percentage_cutoff2=0.03, nonz_mean_cutoff=1.12)",
+      "basis": "来源代码设定；cell2location 教程默认，保留足够覆盖度的基因"
+    },
+    {
+      "setting": "N_cells_per_location = 30, detection_alpha = 20",
+      "basis": "来源代码设定；预期 spot 细胞数与敏感度先验，迁移时按组织密度与平台调整"
+    },
+    {
+      "setting": "RegressionModel 250 epoch / Cell2location 20000 epoch，训练后采样 1000",
+      "basis": "来源代码设定；空间模型 ELBO 收敛慢，需长训练"
+    },
+    {
+      "setting": "线粒体基因移入 obsm['MT'] 单独建模再剔除",
+      "basis": "cell2location 官方建议；线粒体高表达不适合作为反卷积特征"
+    }
+  ],
+  "adaptation": [
+    "将 ModTrain/Convolution 两函数拆包为线性脚本；移除 8 个空间样本的 zip 循环（模板单样本，多样本在外层循环调用）、mpl.rc_context 逐类型 sc.pl.spatial 出图段与 mod.view_anndata_setup/plot_history 诊断。",
+    "inf_aver 提取保留 varm/var 双分支的第一支；去掉无用参数 scmodsig。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "N_cells_per_location 与 detection_alpha 先验影响幅度估计，设置失当时丰度系统性偏移；参考集未覆盖类型无法估计。",
+    "q05 为保守下界，正式丰度解读宜同时导出 q50/q95。"
+  ],
+  "code_sha256": {
+    "analysis.py": "d1dd886fc395265d15217e14c6b14f3d0adb36dd1f6881ca0f1230d25a9e5b80"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "id": "coxph-survival-signature-modeling",
+  "title": "临床队列单因素/多因素 Cox 比例风险回归（coxph）与预后风险评分建模",
+  "kind": "method",
+  "method_type": "Bulk与队列建模",
+  "language": "R",
+  "tags": [
+    "survival",
+    "coxph",
+    "Cox回归",
+    "预后模型",
+    "生存分析"
+  ],
+  "paper": {
+    "repository": "https://github.com/Aleksobrad/single-cell-rcc-pipeline.git",
+    "figure": "bulkRNASeq_survival_analysis.R（RCC 队列肿瘤巨噬细胞评分与复发生存分析，全文件 1–181 行的 coxph 段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "single-cell-rcc-pipeline",
+      "path": "bulkRNASeq_survival_analysis.R",
+      "sha256": "9caae034caf17ef32838170fcc670cb3903b6b9e554f7b2d7a86b73d3043281b",
+      "lines": [
+        1,
+        181
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/clinical_survival.csv",
+      "object": "data.frame（每患者一行）",
+      "requirements": "含 Time_to_recurrence_months（随访月）、recurrence（0/1 结局）与候选协变量（Gender、Tumor_size_cm、Grade、Stage、TumorMacrophageGSEA 分子评分）列",
+      "evidence": "源码 recurrence_annotation 表与 clinical_dat$SurvObj <- with(..., Surv(Time_to_recurrence_months, recurrence)) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "survival",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "随访终点与删失定义已明确；事件数相对变量数充足（每变量 >= 10 事件的经验法则）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cox_regression_results.csv",
+      "content": "单/多因素 Cox 回归汇总表：变量、HR、95% CI 上下限、系数、Pval 与 BH 校正 adj.Pval"
+    },
+    {
+      "path": "results/clinical_with_risk_score.rds",
+      "content": "追加 risk_score（多因素线性预测子）的队列表，供 KM 分组与时间依赖 ROC 下游使用"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "单因素逐变量 + 多因素全候选变量联合建模",
+      "basis": "临床建模惯例扩展（源码为单个小模型 coxph(SurvObj ~ ., data[,c(10,11)])）；多因素未做逐步筛选，解释时注意共线"
+    },
+    {
+      "setting": "FDR 校正 BH 应用于 Pval 列",
+      "basis": "任务规范要求的多重检验校正；单因素族内的校正而非全表联合"
+    },
+    {
+      "setting": "risk_score = predict(type = \"lp\")",
+      "basis": "标准 Cox 线性预测子（系数加权和）；源码以 GSEA 富集分手工高低分组，此处给出连续评分供自选截断"
+    }
+  ],
+  "adaptation": [
+    "移除上游单细胞 FindAllMarkers 签名提取、kallisto 计数归一化与 PCA 预览、DESeq2、atools GSEA、ggforest 森林图、ggsurvplot KM 曲线与 pheatmap 段。",
+    "coxph 拟合、conf.int/coefficients 提取逻辑保留源码字段口径（HR 与 CI 取 conf.int 第 1/3/4 列、P 取 coefficients 第 5 列）并新增 BH 校正、批量单因素与风险评分。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Cox 模型假设比例风险（PH），评分与时间交互或随访模式变化时应做 Schoenfeld 残差检验；小事件数队列（源码仅 8 样本 6 事件）的估计极不稳定。",
+    "分子评分若来自同一队列训练集存在乐观偏倚，需外部验证。"
+  ],
+  "code_sha256": {
+    "analysis.R": "47082cebc838891bfbe3a74bb4ed5117594452be92154c841d3515c1238bf921"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

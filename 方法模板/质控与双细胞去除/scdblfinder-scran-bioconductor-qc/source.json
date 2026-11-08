@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "scdblfinder-scran-bioconductor-qc",
+  "title": "scDblFinder 逐样本双细胞检测与 scran 去卷积大小因子归一化（SingleCellExperiment 体系）",
+  "kind": "method",
+  "method_type": "质控与双细胞去除",
+  "language": "R",
+  "tags": [
+    "scDblFinder",
+    "scran",
+    "双细胞检测",
+    "大小因子",
+    "SingleCellExperiment"
+  ],
+  "paper": {
+    "repository": "https://github.com/plger/scDblFinder (上游)；应用来源为 PDAC_Nature_2023 仓库小鼠 KPC 预处理",
+    "figure": "scRNAseq/Mouse/Timecourse_KPC/Pre-processing.R（scDblFinder 逐样本双细胞过滤段，1–40 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "PDAC_Nature_2023",
+      "path": "scRNAseq/Mouse/Timecourse_KPC/Pre-processing.R",
+      "sha256": "bf2888a146cb0e127d59930f3c3b61a1359de193bbd5399fb52742bf187a7c7a",
+      "lines": [
+        1,
+        40
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/kpc_timecourse_seurat.rds",
+      "object": "Seurat 对象（多样本合并）",
+      "requirements": "counts 层原始计数；obs 含 orig.ident（样本）；小鼠基因 mt-/Rp 前缀",
+      "evidence": "源码 Read10X + merge + scDblFinder(sub@assays$RNA@counts, dbr = 0.07) 逐样本循环推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scDblFinder",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scran",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SingleCellExperiment",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "样本内细胞数建议 ≥ 500（模拟双细胞训练需要）；人源数据 mt- 大写正则需调整。"
+  ],
+  "outputs": [
+    {
+      "path": "results/kpc_qc_dblfiltered.rds",
+      "content": "质控与双细胞过滤后的对象：obs 含 scDblFinder.score 与 is.doublet"
+    },
+    {
+      "path": "results/scdblfinder_results.csv",
+      "content": "逐细胞双细胞分类/得分表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "scDblFinder(dbr = 0.07) 逐样本",
+      "basis": "来源代码设定；期望双细胞率按 10x 载量设定，逐样本避免跨样本聚类伪双细胞"
+    },
+    {
+      "setting": "预过滤 percent.mt < 25 & nCount > 1000 & nFeature > 200",
+      "basis": "来源代码设定（小鼠 KPC 时间序列实测阈值）"
+    },
+    {
+      "setting": "scran quickCluster + computeSumFactors",
+      "basis": "scran 标准去卷积流程（源码 Guan_et_al_2022 同族用法补全）；池化去卷积稳健估计大小因子"
+    }
+  ],
+  "adaptation": [
+    "源码 eval(parse(text=...)) 动态变量名拼接改为显式 rbind 循环（语义等价、可读）；4 个 GSM 样本读取段移至上游合并对象。",
+    "scran 大小因子段按任务规范补全（PDAC 源码未含，取同生态标准流程）；移除 CellCycleScoring 与 CC.Difference（研究特定下游）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "dbr=0.07 为经验值，实际按试剂盒 multiplet 率调整；scDblFinder 在极稀有亚群内可能误判同型双细胞。",
+    "computeSumFactors 对极端大小差异（如大 B 细胞 vs 小淋巴细胞）收敛不佳，需检查 size factor 分布。"
+  ],
+  "code_sha256": {
+    "analysis.R": "8a17188d56db351363994df142bda138f22cca944bbbc2f27613fca8a2f2efef"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "squidpy-spatial-nhood-cooccurrence",
+  "title": "Squidpy 空间邻接图构建、邻域富集检验（nhood_enrichment）与共定位分析",
+  "kind": "method",
+  "method_type": "空间生态位与微环境",
+  "language": "Python",
+  "tags": [
+    "squidpy",
+    "scanpy",
+    "空間邻域富集",
+    "spatial_neighbors",
+    "co_occurrence"
+  ],
+  "paper": {
+    "repository": "https://github.com/IzarLab/Melanoma_Brain_Metastasis.git",
+    "figure": "Spatial_analysis/rctd_mbpm_puckdata_squidpy.py（黑色素瘤脑转移 Slide-seq 细胞类型共定位分析，全文件 1–119 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Melanoma_Brain_Metastasis",
+      "path": "Spatial_analysis/rctd_mbpm_puckdata_squidpy.py",
+      "sha256": "aaebc12b7af28ccf13b71f690f4030e52289c28ba8f4e362ca8f83acf7572e15",
+      "lines": [
+        1,
+        119
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/spatial_input.h5ad",
+      "object": "AnnData（空间单细胞数据）",
+      "requirements": "obsm 含空间坐标（spatial 键）；obs 含 cluster 列（分类细胞类型标签，来源研究为 RCTD 主类型分配）",
+      "evidence": "sq.gr.spatial_neighbors(adata, coord_type=\"generic\") 使用默认 spatial 键与 sq.gr.nhood_enrichment(cluster_key=\"cluster\") 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "squidpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "细胞类型标签已就绪（可直接为聚类或 RCTD/Tangram 分配结果）；坐标为绝对尺度（µm 或像素）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/spatial_nhood.h5ad",
+      "content": "含空间邻接图（obsp connectivity/distances）、uns 中 cluster_nhood_enrichment（zscore 与 count 矩阵）与 cluster_co_occurrence（距离区间共定位概率）的 AnnData"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "coord_type = \"generic\"",
+      "basis": "来源代码设定；非六角/方格平台（Slide-seq 等）用通用 Delaunay/半径建图，网格平台（Visium）可改 \"hex\"/\"square\" 获得精确邻接"
+    },
+    {
+      "setting": "nhood_enrichment 后将 zscore 矩阵 NaN 置 0",
+      "basis": "来源代码逐元素循环置 0 的等价实现；某类型缺失邻居时 zscore 为 NaN，置 0 后矩阵可整体用于聚类与汇总"
+    },
+    {
+      "setting": "co_occurrence 默认距离区间",
+      "basis": "任务规范指定的补充计算（源码为 Ripley's L 聚集统计，绘图段剥离）；共定位概率随距离衰减曲线可进一步自定义区间"
+    }
+  ],
+  "adaptation": [
+    "移除 aws s3 下载、pickle 读取、RCTD 标签 txt 解析与 obs 匹配（移至上游输入准备）及 16 个样本外层循环。",
+    "剥离全部 PdfPages 绘图、plt.show 交互、sq.pl 私有接口绘图与跨样本共定位频次汇总段。",
+    "zscore 的 NaN 逐元素循环改为 np.nan_to_num 等价向量化；Ripley's L 段按任务规范替换为 co_occurrence 计算。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "nhood_enrichment 的 zscore 基于标签随机重排零分布，稀疏类型（细胞数极少）的富集分数不稳定。",
+    "co_occurrence 概率对距离区间切分敏感，样本细胞密度差异大时跨样本比较需标准化。"
+  ],
+  "code_sha256": {
+    "analysis.py": "d4346ffed36c5437bf4aefb15d53a5be741d07937d33ec68d1e056e6be26c02b"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

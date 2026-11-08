@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "pulsar-multicellular-donor-representation",
+  "title": "PULSAR 多细胞图谱编码为供体级表征与疾病 logistic 分类",
+  "kind": "method",
+  "method_type": "单细胞基础大模型",
+  "language": "Python",
+  "tags": [
+    "PULSAR",
+    "供体嵌入",
+    "UCE表征",
+    "疾病分类",
+    "Transformer"
+  ],
+  "paper": {
+    "repository": "https://github.com/pinellolab/PULSAR (上游)；应用来源为 PULSAR 仓库 lupus 分类教程",
+    "figure": "examples/example_lupus_classification.ipynb（狼疮供体分类，单元 3–19）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "PULSAR",
+      "path": "examples/example_lupus_classification.ipynb",
+      "sha256": "023962e6b93079c8b6c1d997cd1e74896e5fbc38891e728faf293b832d28b4a5",
+      "lines": [
+        1,
+        175
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/lupus_uce_adata.h5ad",
+      "object": "AnnData（含 UCE/预训练模型嵌入或表达）",
+      "requirements": "obs 含 donor_id 与 disease 列；X 与 PULSAR 输入空间匹配（UCE 嵌入或经模型编码的表达）",
+      "evidence": "extract_donor_embeddings_from_h5ad(adata, donor_id_key, model) 接口推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "pulsar",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scikit-learn",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "HuggingFace 模型（KuanP/pulsar-pbmc）可下载；GPU 必需（bfloat16）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/pulsar_donor_embeddings.npz",
+      "content": "供体 × 嵌入矩阵 + 标签 + 供体 ID"
+    },
+    {
+      "path": "results/pulsar_classification_report.txt",
+      "content": "测试集准确率与分类报告（precision/recall/F1）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "sample_cell_num = 1024（每供体采样细胞数）",
+      "basis": "来源代码设定；供体嵌入由采样细胞嵌入聚合，样本量与方差权衡"
+    },
+    {
+      "setting": "PULSAR bfloat16 + eval 模式",
+      "basis": "来源代码设定；推理显存减半"
+    },
+    {
+      "setting": "LogisticRegression(max_iter=1000, class_weight='balanced') + 分层 80/20",
+      "basis": "来源代码设定；供体级分类基线（非深度头）"
+    }
+  ],
+  "adaptation": [
+    "提取 notebook 单元 3–19 线性化；移除 print 诊断、嵌入结构示例与 seaborn 图（训练/测试分布直方图）。",
+    "指标计算精简为 accuracy + classification_report 落盘；嵌入集合 npz 归档。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "供体分类的功效受供体数限制（几十级时交叉验证方差大）；采样嵌入聚合对稀有细胞类型覆盖敏感。",
+    "预训练模型人群偏移（训练队列 vs 目标队列）需在嵌入空间做域检查。"
+  ],
+  "code_sha256": {
+    "analysis.py": "bb08da562427d306b6bdd4ac4c79aefe18d7ac776da33ff27a4325ee9750c6a1"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

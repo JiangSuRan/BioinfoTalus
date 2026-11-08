@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "id": "glmer-singlecell-dynamic-eqtl",
+  "title": "lme4 (glmer) 单细胞分辨率拟时序动态 eQTL（Genotype × Pseudotime 交互效应）广义线性混合模型检验",
+  "kind": "method",
+  "method_type": "群体遗传与xQTL",
+  "language": "R",
+  "tags": [
+    "lme4",
+    "glmer",
+    "动态eQTL",
+    "拟时序交互",
+    "广义线性混合模型",
+    "R"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "Trans-eQTL_and_Dynamic-eQTL/Dynamic-eQTL/20250123_run_scdynamicqtl.r（CIMA 图谱单细胞动态 eQTL 混合模型检验，全文件 1–24 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "Trans-eQTL_and_Dynamic-eQTL/Dynamic-eQTL/20250123_run_scdynamicqtl.r",
+      "sha256": "0e495b74923dd5cd2133c54681f34b12cd571e3ee05be09a7f2c900cb60e7279",
+      "lines": [
+        1,
+        79
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/dynamic/{celltype}/{gene}.csv",
+      "object": "data.frame（每细胞一行）",
+      "requirements": "含 E（该基因计数）、G（顺式领先变异剂量）、ptime（拟时序）；行名与协变量表一致",
+      "evidence": "源码 phenotype <- read.csv({gene}.csv) 与 cbind(phenotype, cov_df) 合并推断"
+    },
+    {
+      "path": "Data/dynamic/{celltype}_cov_df.csv",
+      "object": "data.frame（细胞级协变量）",
+      "requirements": "含 sample（供体）、Age、sex、total_counts、pct_counts_mt、PC1/PC2（基因型）、mRNA_PC1-5（表达 PC）、ptime",
+      "evidence": "源码 glmer 公式各项与 cov_df 读取推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "lme4",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "glue",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "拟时序已计算（monocle/scVelo 等）、领先变异剂量已按细胞展开；批量基因检验需在 bash 层循环调用本流程并合并结果。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sc_dynamic_eqtl_lrt.csv",
+      "content": "动态 eQTL 检验结果行：细胞类型、基因、交互项 beta 与标准误、LRT 卡方与 P 值"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "PME 模型：poisson 族 + 个体随机截距 + nAGQ = 0 + nloptwrap",
+      "basis": "来源代码设定；泊松适配 UMI 计数，伪似然避免每步随机积分，是大规模单细胞的算力折中"
+    },
+    {
+      "setting": "协变量：年龄/性别/log 深度（scale）/MT 比例/基因型 PC×2/表达 PC×5",
+      "basis": "来源代码设定；表达 PC 吸收细胞状态残余混杂"
+    },
+    {
+      "setting": "LRT = anova(null, full)（无交互 vs 含 G×ptime）",
+      "basis": "来源代码设定；交互项显著性即基因型效应随拟时序变化（动态调控）的证据"
+    }
+  ],
+  "adaptation": [
+    "移除 commandArgs 的 celltype_gene 参数解析与逐基因 txt 单值输出、print 进度；改为脚本内显式指定并单行 csv 输出。",
+    "按任务规范新增交互项 beta 与标准误提取（fixef/vcov）；模型公式与控制参数逐字保留。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "泊松 GLMM 无过散参数，UMI 过散时 LRT 偏激进；敏感性可用负二项（glmmTMB）或观察方差膨胀。",
+    "单基因单模型计算重，全基因组动态 eQTL 需并行化与多重检验校正（BH/FDR 在合并后统一计算）；拟时序刻度依赖上游方法的选择。"
+  ],
+  "code_sha256": {
+    "analysis.R": "846e166d19b657615c70745ebff1ccc3cee9b4367a925bac96a12301dc26ea40"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

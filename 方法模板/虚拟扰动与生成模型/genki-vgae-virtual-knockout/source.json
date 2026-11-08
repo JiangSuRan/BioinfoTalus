@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "genki-vgae-virtual-knockout",
+  "title": "GenKI 变分图自编码器（VGAE）基因调控网络虚拟敲除与差异响应基因排序",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "GenKI",
+    "VGAE",
+    "虚拟敲除",
+    "KL距离",
+    "GRN"
+  ],
+  "paper": {
+    "repository": "https://github.com/hongruhu/GenKI (上游)；应用来源为 GenKI 仓库 notebook/Example.ipynb",
+    "figure": "notebook/Example.ipynb（小胶质细胞 TREM2 虚拟敲除示例，全 86 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "GenKI",
+      "path": "notebook/Example.ipynb",
+      "sha256": "9ac70f4e8ee36a02a0c983f22dbce90e6be2bde37954e023933cce0b20d5a1c7",
+      "lines": [
+        1,
+        86
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/microglial_WT.h5ad",
+      "object": "AnnData",
+      "requirements": "X 为计数/表达；obs 含 ident（细胞类型列，可 None 全细胞）",
+      "evidence": "build_adata(...) 与 DataLoader(obs_label='ident') 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "GenKI",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch_geometric",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ray",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "GRN 构建缓存目录可写（results/GRNs）；GPU 可加速 VGAE 训练。"
+  ],
+  "outputs": [
+    {
+      "path": "results/genki_virtual_ko_rank.csv",
+      "content": "按 WT/KO 潜空间 KL 距离排序的全基因组差异响应基因表"
+    },
+    {
+      "path": "results/genki_permutation_summary.csv",
+      "content": "置换检验 p 值汇总（nPerm=1000 的对照分布）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "DataLoader(target_gene=['TREM2'], rebuild_GRN=True, n_cpus=8)",
+      "basis": "来源代码设定；pcNet 主成分回归网络 + 目标基因行置零构造 KO 图"
+    },
+    {
+      "setting": "VGAE epochs=100, lr=7e-4, beta=1e-4, seed=8096",
+      "basis": "来源代码 hyperparams 设定"
+    },
+    {
+      "setting": "get_distance(by='KL') + permutation_test(nPerm=1000)",
+      "basis": "来源代码设定；KL 散度度量潜表示差异，置换给 p 值"
+    }
+  ],
+  "adaptation": [
+    "提取 notebook 全部代码单元线性化；移除 %autoreload 魔法、print 诊断与 save_model 注释行。",
+    "permutation_test 参数（nPerm/type2/save_path）按包 API 补全（notebook 仅注释提及）；GRN 缓存目录改 results/。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "VGAE 重构基于 GRN 拓扑+表达特征，KO 效应为网络传播的潜空间位移，非因果转录后果；与 scTenifoldKnk/Perturb-seq 交叉验证。",
+    "置换检验计算开销 = nPerm x 重训，正式分析可降至数百次并报告 CI。"
+  ],
+  "code_sha256": {
+    "analysis.py": "1005a97dea9f6310cefb47f778e52b4ab8dcca911977f4f1a8de040a1cb78501"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

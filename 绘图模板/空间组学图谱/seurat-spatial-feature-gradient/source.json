@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "seurat-spatial-feature-gradient",
+  "title": "空间转录组连续特征定制渐变色映射图（SpatialFeaturePlot + ggplot2）",
+  "kind": "plot",
+  "plot_type": "空间组学图谱",
+  "language": "R",
+  "tags": [
+    "Seurat",
+    "SpatialFeaturePlot",
+    "空间转录组",
+    "ggplot2"
+  ],
+  "paper": {
+    "repository": "https://github.com/lcy1364/Cortex-Atlas-Code.git",
+    "figure": "src/fig6/fig6i.R（Cortex Atlas 图 6i 空间域标记基因渐变面板，全文件 1–64 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Cortex-Atlas-Code",
+      "path": "src/fig6/fig6i.R",
+      "sha256": "02b6feadd1b2d23b9e2142de4b2c6000d4292473cc097cf5f4650c61b98dcca3",
+      "lines": [
+        1,
+        64
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/spatial_seurat.rds",
+      "object": "Seurat 对象（Stereo-seq/Visium 切片）",
+      "requirements": "含 scale.data 层（连续打分用 z 尺度）与命名切片（images 名称如 slice1）；特征基因在行名中",
+      "evidence": "源码 SpatialFeaturePlot(seu_merge, images=..., slot=\"scale.data\", pt.size.factor=3, alpha=c(0,1)) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "purrr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "对象已完成 ScaleData；切片图像方向需要 coord_flip + scale_y_reverse 校正（大切片竖向组织）。"
+  ],
+  "outputs": [
+    {
+      "path": "result/spatial_feature_panel.pdf",
+      "content": "单行多基因空间表达面板：透明度-表达双值映射的连续渐变点图，坐标翻转适配切片方向"
+    }
+  ],
+  "adaptation": [
+    "将源码 L4a/L4b/L4c 三组、双切片重复的 6 次绘制精简为单切片单基因列表一次绘制。",
+    "slot = \"scale.data\" 更新为 Seurat v5 兼容的 layer = \"scale.data\"；ggsave 改显式 filename/plot/width/height/units，png 输出改 pdf。"
+  ],
+  "code_sha256": {
+    "plot.R": "ec50bc2096c9f44dba1b012b3cc60b1c5489b709554ad0e51e1b617a1e872afb"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

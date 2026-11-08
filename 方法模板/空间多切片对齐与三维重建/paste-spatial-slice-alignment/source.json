@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "id": "paste-spatial-slice-alignment",
+  "title": "PASTE 融合 Gromov-Wasserstein 最优传输空间切片两两对齐与坐标重排",
+  "kind": "method",
+  "method_type": "空间多切片对齐与三维重建",
+  "language": "Python",
+  "tags": [
+    "PASTE",
+    "PASTE2",
+    "最优传输对齐",
+    "切片堆叠",
+    "Visium"
+  ],
+  "paper": {
+    "repository": "https://github.com/raphael-group/paste (上游)；应用来源为 ST_subclone_publication 仓库 Figure5/1_run_PASTE2/src/1_runPASTE.py",
+    "figure": "Figure5/1_run_PASTE2/src/1_runPASTE.py（PDAC 相邻切片 PASTE2 部分对齐，52–141 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "ST_subclone_publication",
+      "path": "Figure5/1_run_PASTE2/src/1_runPASTE.py",
+      "sha256": "bc2ae245c8bc2e9270829cc9de521517a6b7663bb1b8bb3909f7d2030c80bc4a",
+      "lines": [
+        52,
+        141
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/slice1/outs 与 Data/slice2/outs",
+      "object": "10x Visium 输出目录（相邻两切片）",
+      "requirements": "spaceranger outs 结构；PASTE2 需要 obsm['rgb']（本模板用 spatial 坐标占位，含 HE 图时用真 RGB）",
+      "evidence": "源码 load_and_preprocess 与 slice.obsm['rgb'] = slice.obsm['spatial'] 占位推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "paste",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "paste2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "squidpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "paste2 源码路径需可导入（pip 安装或 sys.path 指向仓库 src）；GPU/OT 求解器可加速。"
+  ],
+  "outputs": [
+    {
+      "path": "results/paste2_partial_pairwise.npy",
+      "content": "切片 1 × 切片 2 软最优传输匹配矩阵 pi"
+    },
+    {
+      "path": "results/paste2_new_tissue_positions_slice{1,2}.csv",
+      "content": "对齐前后坐标表（barcode/in_tissue/array_row/array_col/原坐标/新坐标），可直接替换 tissue_positions 用于 3D 堆叠"
+    },
+    {
+      "path": "results/paste2_alignment.pdf",
+      "content": "两切片按 pi 对齐后的叠加散点图"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "alpha = 0.1, dissimilarity = 'kl'",
+      "basis": "来源代码设定；alpha 小表示以空间 GW 成本为主导（跨组织形态优先），KL 为表达相似度度量"
+    },
+    {
+      "setting": "PASTE2 partial_pairwise_align（部分对齐）",
+      "basis": "来源代码选用；两切片 spot 数不等或组织覆盖不完全时比 PASTE1 全对齐更合适，需 obsm['rgb']"
+    },
+    {
+      "setting": "最小计数过滤 genes 15 / spots 100",
+      "basis": "来源代码 load_and_preprocess 设定"
+    }
+  ],
+  "adaptation": [
+    "移除 optparse 参数解析、run_part 分支（PASTE2-histology 分支保留可按同型调用 partial_pairwise_align_histology）、缓存守卫与 print 日志。",
+    "sys.path.append(paste2_path) 本地源码引用改为 pip 包导入；绘图段按 CORE 保留单张 pdf 落盘。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "部分对齐质量受 alpha 与组织重叠比例影响；形态学缺失（obsm['rgb'] 占位为坐标）时退化到表达-空间联合对齐。",
+    "软匹配 pi 非一一对应，精确 spot 级对应需取行/列最大值并核对置信分布。"
+  ],
+  "code_sha256": {
+    "analysis.py": "4fed86fed15886479da7bb12ef8edcc685be13c33f2cae71c80aab2c05d29d6d"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

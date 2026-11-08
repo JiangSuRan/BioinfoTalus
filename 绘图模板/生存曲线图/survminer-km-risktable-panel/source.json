@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "id": "survminer-km-risktable-panel",
+  "title": "Kaplan-Meier 生存曲线与风险表组合图（survminer / ggplot2）",
+  "kind": "plot",
+  "plot_type": "生存曲线图",
+  "language": "R",
+  "tags": [
+    "survminer",
+    "ggsurvplot",
+    "生存分析",
+    "Kaplan-Meier",
+    "ggplot2"
+  ],
+  "paper": {
+    "repository": "code",
+    "figure": "code/w.step1.Figure5.TCGA_survival.R（泛癌 T 细胞图谱 TCGA 免疫类型生存分析，全文件 1–107 行的 KM 曲线段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "code",
+      "path": "code/w.step1.Figure5.TCGA_survival.R",
+      "sha256": "2c74406c1d42e0817c2ee18db0066e49999dccd7c74bd050082581d5555ac6fa",
+      "lines": [
+        1,
+        107
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/survival_metadata.csv",
+      "object": "data.frame（每样本一行）",
+      "requirements": "含 OS（0/1 结局）、OS.time（天）、immuneType（分组变量）列；分组已完成筛选（源码另做了癌种/分期子集）",
+      "evidence": "源码 dat 列选择（OS, OS.time, immuneType）与 survfit(Surv(OS.time, OS) ~ immuneType) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "survminer",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "survival",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggsci",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "样本分组已确定且每组事件数足够；生存时间以天计（脚本内换算为月）。"
+  ],
+  "outputs": [
+    {
+      "path": "result/km_survival.pdf",
+      "content": "KM 生存曲线 + 底部风险表组合图：log-rank p 值、jco 配色分组曲线与各组各时点风险人数"
+    }
+  ],
+  "adaptation": [
+    "移除上游 TCGA 免疫分型表清理（癌种合并、Stage I 子集、低死亡数癌种剔除）、逐癌种 Cox 回归与 meta 森林图段，仅保留分组 KM 曲线绘图。",
+    "pdf(print(p)) 设备直绘改为任务规范要求的 ggsave(plot = print(p)) 组合图保存。"
+  ],
+  "code_sha256": {
+    "plot.R": "0daefb1d88049b538b4a3197cadc4d3d1995b57a5ee746bb489ebe53bf107eae"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

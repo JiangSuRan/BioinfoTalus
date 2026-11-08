@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "prnet-chemical-perturbation",
+  "title": "PRnet 化学分子结构条件化的单细胞药物扰动转录响应预测",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "PRnet",
+    "药物扰动",
+    "sci-Plex",
+    "深度学习",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/Perturbation-Response-Prediction/PRnet.git",
+    "figure": "analysis_sciplex.py（PRnet sci-Plex 扰动预测评估，全文件 1–95 行；模型调用对应同仓 test_sciplex.py）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "PRnet",
+      "path": "analysis_sciplex.py",
+      "sha256": "a9a61c490e4413d3d31ed8e26d19d5e88291f3f8b140af7eb078b334f572f406",
+      "lines": [
+        1,
+        140
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/Sci_Plex.h5ad",
+      "object": "AnnData（sci-Plex 药物扰动数据集）",
+      "requirements": "obs 含 cov_drug（细胞类型_药物）标签与 split 列（random_split_0 等）；X 为原始计数（脚本内 normalize_total + log1p）",
+      "evidence": "test_sciplex.py 的 sc.read(Sci_Plex.h5ad) + 归一化 + PRnetTrainer(obs_key='cov_drug') 与 analysis_sciplex.py 的 y_pre/x_true/cov_drug 数组读取推断"
+    },
+    {
+      "path": "Data/sciplex_best_epoch_all.pt",
+      "object": "PRnet 训练好的检查点",
+      "requirements": "架构超参（x_dimension=5000、drug_dimension=1024 等）与训练一致",
+      "evidence": "trainer.test('./checkpoint/sciplex_best_epoch_all.pt') 的检查点加载约定推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "PRnet 已在目标（或 LINCS 预训练）上训练；留出划分（split_key）确定未见化合物/剂量组合。"
+  ],
+  "outputs": [
+    {
+      "path": "results/prnet_predictions.h5ad",
+      "content": "留出条件的预测转录响应 AnnData：行为 cov_drug 条件细胞、列为 landmark 基因预测值；results/prnet/ 下同时落盘 y_pre/y_true 数组供指标计算"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "x_dimension = 5000（LINCS landmark 基因）, drug_dimension = 1024",
+      "basis": "来源代码设定；landmark 基因空间与药物结构编码维度须与训练一致"
+    },
+    {
+      "setting": "归一化 normalize_total + log1p（在训练/预测两侧一致执行）",
+      "basis": "来源代码设定；预测值因此处于 log1p 尺度，比较真实值前须同尺度"
+    },
+    {
+      "setting": "loss = [\"GUSS\"], comb_num = 1",
+      "basis": "来源代码设定；高斯似然损失对连续表达回归"
+    }
+  ],
+  "adaptation": [
+    "源 analysis 脚本只做预测数组的分组均值与 pearson/r2 指标计算；按任务规范补全同仓 test_sciplex.py 的数据读取、归一化与 PRnetTrainer 加载/测试链路，使模板可独立预测。",
+    "移除 argparse、条件均值指标计算与 matplotlib 评估绘图；预测数组新增 AnnData 组装落盘。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "对未见药物外推依赖分子结构编码的化学空间邻近性，结构新颖的分子预测可靠性低。",
+    "预测为条件级均值响应，不建模单细胞水平的响应异质性；剂量-响应关系需分条件单独评估。"
+  ],
+  "code_sha256": {
+    "analysis.py": "14742ce6f45dbf45801fb4c6a4a6dd871153819bdc1aa156940fbee6d83cfa62"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

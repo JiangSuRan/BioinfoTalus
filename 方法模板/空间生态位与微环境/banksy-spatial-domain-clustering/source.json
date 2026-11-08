@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "banksy-spatial-domain-clustering",
+  "title": "BANKSY 空间感知聚类（自身表达 + 邻域均值）与 CosMX 单细胞空间域识别",
+  "kind": "method",
+  "method_type": "空间生态位与微环境",
+  "language": "Python",
+  "tags": [
+    "BANKSY",
+    "空间聚类",
+    "CosMX",
+    "邻域加权",
+    "Leiden"
+  ],
+  "paper": {
+    "repository": "https://github.com/prabhakarlab/Banksy_py (上游)；应用来源为 CODEX_SCLC 仓库 script/cosmx_code.ipynb",
+    "figure": "script/cosmx_code.ipynb（SCLC CosMX BANKSY 空间域聚类，单元 1–4）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CODEX_SCLC",
+      "path": "script/cosmx_code.ipynb",
+      "sha256": "81e1411ae112fe2017affcf803dcf6c302cfb148acdf5115970baf1d34ca2dd3",
+      "lines": [
+        1,
+        79
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cosmx_sample.h5ad",
+      "object": "AnnData（CosMX 单细胞计数）",
+      "requirements": "X 为原始计数；obs 含 x_slide_mm/y_slide_mm 坐标、nCount_negprobes（负控探针计数）、sample 列",
+      "evidence": "源码 coord_keys 与负控过滤条件推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "banksy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "squidpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "Banksy_py 本地克隆于 ./Banksy_py 或已 pip 安装（本模板保留 sys.path 追加写法）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/banksy_clustered.h5ad",
+      "content": "含 obs['banksy_leiden'] 空间域标签与 obsm['X_umap']（BANKSY PCA 20 维 UMAP）的 AnnData"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "k_geom = 8, nbr_weight_decay = 'scaled_gaussian', max_m = 1",
+      "basis": "来源代码设定；8 近邻高斯衰减权重，m=1 仅含邻域均值项（m=1.5 加方位梯度）"
+    },
+    {
+      "setting": "lambda = 0.1（空间感知弱权重）",
+      "basis": "来源代码设定；lambda 越小越偏重自身表达，0.1-0.5 常用，可扫多分辨率"
+    },
+    {
+      "setting": "pca_dims = [20], Leiden resolution = 1, partition_seed = 1234, match_labels = True",
+      "basis": "来源代码设定；match_labels 跨分辨率对齐簇编号"
+    },
+    {
+      "setting": "质控：负控探针 < 10% 总计数 且 counts/feature > 1",
+      "basis": "来源代码设定；CosMX 特有的非特异性结合过滤"
+    }
+  ],
+  "adaptation": [
+    "提取 notebook 单元 1–4；移除 Scanpy 对照聚类段（单元 3 的 scale/pca/umap/leiden 与 BANKSY 平行比较）与 squidpy co_occurrence/绘图段（单元 5）。",
+    "adata.obs['predicted_doublet']==False 的链式过滤保留语义；results_df 表格未导出（可按需落盘）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "BANKSY 空间域对 k_geom 与 lambda 敏感：组织密度不均时固定近邻数导致邻域尺度漂移；建议扫 lambda 0.1-0.5 复核稳定性。",
+    "match_labels 跨分辨率对齐在簇剧烈分裂时不保证编号稳定。"
+  ],
+  "code_sha256": {
+    "analysis.py": "6941f0c152d1be2ac54f1e5e53e959fffdcd577dac46bc90ec53794b192a7dea"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

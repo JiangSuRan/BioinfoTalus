@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "id": "scglue-unpaired-multiomics-integration",
+  "title": "scGLUE 非配对单细胞转录组（scRNA-seq）与染色质可及性（scATAC-seq）先验引导图整合及标签迁移",
+  "kind": "method",
+  "method_type": "多组学整合与迁移",
+  "language": "Python",
+  "tags": [
+    "scglue",
+    "GLUE",
+    "多组学整合",
+    "scRNA-seq",
+    "scATAC-seq",
+    "标签迁移"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "Multiomics_integration/single_cell_integration_and_cell_type_transfer.py（CIMA 图谱非配对整合与注释迁移，全文件 1–115 行核心段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "Multiomics_integration/single_cell_integration_and_cell_type_transfer.py",
+      "sha256": "f93815d9254232642f1da29295bf5a6e8bdbd6628d2e0d06687faa37fd20df62",
+      "lines": [
+        1,
+        165
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna.h5ad",
+      "object": "AnnData（已注释 scRNA 参考）",
+      "requirements": "含 counts 层、X_pca、highly_variable 与 sample 列；obs 含 cell_type_l4 标签列；var 可由 GTF 注释 chrom/chromStart/chromEnd",
+      "evidence": "源码 configure_dataset(rna, \"NB\", use_layer=\"counts\", use_rep=\"X_pca\", use_batch='sample') 与 transfer_labels(rna, atac, \"cell_type_l4\") 推断"
+    },
+    {
+      "path": "Data/scatac.h5ad",
+      "object": "AnnData（peak 级 scATAC）",
+      "requirements": "var 含 chrom/chromStart/chromEnd（peak 坐标）与 highly_variable；obs 含 sample 列",
+      "evidence": "源码 rna_anchored_guidance_graph(rna, atac) 与 lsi(atac) 的接口要求推断"
+    },
+    {
+      "path": "Data/V3_genes.gtf",
+      "object": "GTF 基因注释",
+      "requirements": "gene_name 属性与 rna.var_names 一致",
+      "evidence": "源码 get_gene_annotation(rna, gtf=..., gtf_by=\"gene_name\") 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scglue",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "RNA 侧已完成 PCA 与细胞类型注释；ATAC 侧 peak 坐标规范（chrom-start-end）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/atac_glue_annotated.h5ad",
+      "content": "含 obsm['X_glue'] 联合嵌入与迁移的 cell_type_l4（含 transfer_* 置信列）的 scATAC AnnData"
+    },
+    {
+      "path": "results/glue_model.dill",
+      "content": "训练好的 GLUE 模型，可加载对新的同类数据 encode_data"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "LSI n_components = 100, n_iter = 15（ATAC 侧表征）",
+      "basis": "来源代码设定；迭代 LSI 收敛更稳"
+    },
+    {
+      "setting": "两侧 NB 似然 + use_highly_variable + use_batch='sample'",
+      "basis": "来源代码设定；计数分布适配负二项，批次列在编码器中显式建模"
+    },
+    {
+      "setting": "h_dim = 512, data_batch_size = 8192, random_seed = 666",
+      "basis": "来源代码设定；大图谱高维嵌入与大批次加速"
+    }
+  ],
+  "adaptation": [
+    "移除上游 0.5 抽样（backed 读入 + copy 落盘）、cupy/rmm GPU 配置与 UMAP 可视化/抽样绘图段。",
+    "移除 integration_consistency 评估与 seaborn 曲线图（评估性输出）；保留引导图构建、配置、训练、嵌入提取与标签迁移主链。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/），新增 glue 模型保存。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "非配对整合依赖引导图的先验完备性：未挂接 peak 的基因不参与跨组学对齐；TSS 邻近挂接忽略构象远端调控。",
+    "标签迁移为 kNN 投票，参考集未覆盖的细胞类型无法迁移且置信度低；应检查 transfer 后的置信分布。"
+  ],
+  "code_sha256": {
+    "analysis.py": "909e5532a57d7a0b9729e48057357c7f8b94157cc01154a23475b3a8b712c978"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

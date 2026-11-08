@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "id": "destvi-continuous-spatial-deconv",
+  "title": "DestVI 条件 VAE 单细胞亚群状态建模与空间连续反卷积",
+  "kind": "method",
+  "method_type": "反卷积与细胞组成",
+  "language": "Python",
+  "tags": [
+    "DestVI",
+    "CondSCVI",
+    "scvi-tools",
+    "连续反卷积",
+    "Visium"
+  ],
+  "paper": {
+    "repository": "https://github.com/YosefLab/DestVI (上游)；应用来源为 PDAC_Nature_2023 仓库 Visium notebook",
+    "figure": "Visium/Nature2023_Mouse_PDAC_Visium_DestVI_analysis.ipynb（PDAC 小鼠模型 Visium 亚群状态反卷积，单元 1–11）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "PDAC_Nature_2023",
+      "path": "Visium/Nature2023_Mouse_PDAC_Visium_DestVI_analysis.ipynb",
+      "sha256": "ac98ac8a72b3ad5ecc3e6732530af1f14f7b72321bece347fa673892ae42e83e",
+      "lines": [
+        1,
+        72
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scRNA_sample.h5ad",
+      "object": "AnnData（原始计数）",
+      "requirements": "X 为原始 counts；obs 含 Annotation（细胞类型标签）列",
+      "evidence": "CondSCVI.setup_anndata(layer=\"counts\", labels_key=\"Annotation\") 推断"
+    },
+    {
+      "path": "Data/visium_sample.h5ad",
+      "object": "AnnData（Visium 切片）",
+      "requirements": "X 为原始 counts；obsm 含 spatial 坐标",
+      "evidence": "DestVI.setup_anndata(layer=\"counts\") 与 obsm['spatial'] 转换步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scvi-tools",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "destvi-utils",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "参考与空间基因符号同一体系；GPU 推荐（DestVI 2500 epoch）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/destvi_spatial.h5ad",
+      "content": "含 obsm['proportions']（spot × 亚群连续比例）与每个亚群 {ct}_gamma 潜变量的空间 AnnData"
+    },
+    {
+      "path": "results/CellProp_DestVI.csv",
+      "content": "每 spot 亚群比例表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "G = 2000 HVG（seurat_v3，counts 层）",
+      "basis": "来源代码设定；DestVI 在共享 HVG 上建模"
+    },
+    {
+      "setting": "CondSCVI weight_obs = False",
+      "basis": "来源代码设定；不按细胞类型丰度加权（类平衡训练），亚群稀有型需更多参考时改 True"
+    },
+    {
+      "setting": "DestVI max_epochs = 2500",
+      "basis": "来源代码设定；空间模型训练轮数较大"
+    },
+    {
+      "setting": "destvi_utils.automatic_proportion_threshold(kind_threshold='primary')",
+      "basis": "来源代码设定；按比例分布自动定亚群存在阈值（MonoMacro 手工覆写 0.1 为研究特定设定）"
+    }
+  ],
+  "adaptation": [
+    "提取 notebook 单元 1–11 线性化；移除 ELBO 曲线绘图、SelectedSpots.csv 的 spot 子集（研究特定预筛选）、notebook 后半部分的自定义 hotspot/样条插值工具函数副本（destvi_utils 包内已有）。",
+    "新增结果 h5ad 落盘；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "DestVI 假设每亚群内部状态可由单细胞 gamma 空间刻画，亚群异质性极强时近似不足；gamma 解读需结合 marker 表达。",
+    "连续比例对参考细胞类型粒度敏感；标签嵌套（亚型 vs 主类）会稀释比例。"
+  ],
+  "code_sha256": {
+    "analysis.py": "8b2731ebd8ecbe386ac9c4241af3c72f3d3537936eb46921818bf68335697292"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

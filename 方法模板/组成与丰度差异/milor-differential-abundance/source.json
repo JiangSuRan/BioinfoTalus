@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "id": "milor-differential-abundance",
+  "title": "miloR 单细胞 KNN 邻域构建与协变量校正的差异丰度检验",
+  "kind": "method",
+  "method_type": "组成与丰度差异",
+  "language": "R",
+  "tags": [
+    "miloR",
+    "SingleCellExperiment",
+    "差异丰度",
+    "KNN邻域",
+    "SpatialFDR"
+  ],
+  "paper": {
+    "repository": "https://github.com/KeiNishim/MPA_scRNAseq",
+    "figure": "Fig.2_3 Monocyte milo.R（单核细胞差异丰度分析，对应论文 Fig.2/3，提取 10–48 行核心流程）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "MPA_scRNAseq",
+      "path": "scripts/Fig.2_3 Monocyte milo.R",
+      "sha256": "c1cb08927cdc91cca50dd8f337f49cb9f2ce61cefde9f8020c4d522bfa6832da",
+      "lines": [
+        10,
+        48
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/monocyte_seurat.rds",
+      "object": "Seurat 对象",
+      "requirements": "已存储名为 REF.SPCA 的 30 维降维结果（reduction）；meta.data 需含 sample（样本编号）、class（分组）、age（数值协变量）与 seurat_clusters（细胞类型注释）列",
+      "evidence": "buildGraph / makeNhoods / calcNhoodDistance / testNhoods 的 reduced.dim = \"REF.SPCA\" 与 d = 30，以及 traj_design 从 colData 提取 sample/class/age 的步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "miloR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SingleCellExperiment",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游已在目标细胞群内完成监督降维并存储为 REF.SPCA；样本级协变量表完整（每个 sample 唯一一行的 class 与 age 取值）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/milo_object.rds",
+      "content": "Milo 对象：含 KNN 图、邻域索引与计数、邻域距离及邻域图（buildNhoodGraph）"
+    },
+    {
+      "path": "results/milo_da_results.csv",
+      "content": "每邻域一行的差异丰度结果表：logFC、PValue、SpatialFDR，及 annotateNhoods 附加的 seurat_clusters 邻域注释均值"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "buildGraph k = 10, d = 30, reduced.dim = \"REF.SPCA\"",
+      "basis": "来源代码设定；k 决定邻域尺度（偏小分辨率高、统计功效低），d 须与所用降维维度一致"
+    },
+    {
+      "setting": "makeNhoods prop = 0.1, refined = TRUE",
+      "basis": "来源代码设定；抽样比例控制邻域数量，refined 重定位使邻域覆盖更均匀"
+    },
+    {
+      "setting": "testNhoods design = ~ age + class",
+      "basis": "来源代码设定；将年龄作为协变量校正后检验 class 差异，协变量结构随研究设计调整"
+    },
+    {
+      "setting": "annotateNhoods coldata_col = \"seurat_clusters\"",
+      "basis": "来源代码设定；仅用于结果解释的邻域注释列，随注释体系更名"
+    }
+  ],
+  "adaptation": [
+    "traj_design 改为从 colData(traj_milo) 的 sample/class/age 三列去重提取并设行名为 sample，替换原脚本手工 cbind 硬编码年龄向量与 class 向量的做法。",
+    "移除 plotUMAP、plotNhoodGraphDA、plotDAbeeswarm 等全部绘图与 head() 预览、da_results 因子重排（属图注排版）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/），保存 Milo 对象与差异丰度结果表两项产物。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "miloR 检验的是细胞丰度组成差异而非表达差异；k 与 prop 影响检验粒度，需检查邻域大小分布（median 接近 k 为宜）。",
+    "结论依赖实验设计的重复数与组间平衡性；age 缺失或与 class 共线时设计矩阵退化。"
+  ],
+  "code_sha256": {
+    "analysis.R": "8d809de5017d8beb484333c63f76f9c129c2d66442cad81309502e99fff56b57"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

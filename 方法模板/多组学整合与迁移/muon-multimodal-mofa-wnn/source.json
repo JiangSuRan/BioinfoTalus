@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "muon-multimodal-mofa-wnn",
+  "title": "muon 多视图（LIANA 通讯视图）构建与 MOFA+ 多组学因子分解",
+  "kind": "method",
+  "method_type": "多组学整合与迁移",
+  "language": "Python",
+  "tags": [
+    "muon",
+    "MOFA",
+    "LIANA多视图",
+    "因子分解",
+    "MuData"
+  ],
+  "paper": {
+    "repository": "https://github.com/saezlab/liana-py (上游 lianaplus_manuscript)；来源为 lianaplus_manuscript 仓库分类管线",
+    "figure": "notebooks/classification/classify_utils.py 的 run_mofatalk 函数（40–100 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "lianaplus_manuscript",
+      "path": "notebooks/classification/classify_utils.py",
+      "sha256": "5d426b583958671045dd2361ca95392593daba9c00badfbfe791a96f06077803",
+      "lines": [
+        54,
+        100
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/ccc_annotated.h5ad",
+      "object": "AnnData（逐样本 LIANA 结果已写入 adata.uns['liana_res']）",
+      "requirements": "obs 含 sample 与 condition；uns[score_key] 为每样本 LR 排名/得分长表",
+      "evidence": "li.multi.lrs_to_views(adata, sample_key, score_key, uns_key=score_key) 接口推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "muon",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "liana",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "mofapy2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游已按样本运行 liana_wrap 并存入 uns（score_key 指定）；mofapy2 已安装。"
+  ],
+  "outputs": [
+    {
+      "path": "results/mofa/liana_mofa.hdf5",
+      "content": "MOFA 模型文件：各视图（条件/LR 模块）权重与因子"
+    },
+    {
+      "path": "results/mofa/factor_scores.csv",
+      "content": "样本 × 因子得分表（X_mofa），供条件分类/回归下游"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "lrs_to_views lr_prop = 0.33, lrs_per_sample = 3, lrs_per_view = 15, samples_per_view = 5, lr_fill = 0",
+      "basis": "来源代码设定；视图稀疏过滤与缺失填充规则"
+    },
+    {
+      "setting": "mu.tl.mofa use_obs = 'union', convergence_mode = 'medium', n_factors = 10, seed = 1337",
+      "basis": "来源代码设定；union 对齐样本、中等收敛加速"
+    },
+    {
+      "setting": "factor_scores 经 li.ut.get_factor_scores 提取",
+      "basis": "来源代码设定；带 NORM 归一化的因子得分"
+    }
+  ],
+  "adaptation": [
+    "run_mofatalk 函数拆包为线性脚本；移除 INVERSE_FUN 条件反转分支、gpu_mode、条件编码 y 与 adata.uns['mofa_res'] 回写（模板直接落盘 csv/hdf5）。",
+    "dataset_name 目录分支合并为 results/mofa/。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "视图样本数少时 MOFA 因子不稳定（建议每视图 ≥15 样本）；LR 视图稀疏填充 0 会引入人为协变。",
+    "因子-条件关联仅为相关性，不做因果声明。"
+  ],
+  "code_sha256": {
+    "analysis.py": "5e154c805a6a59c5c7676ab5cc38da90fbd24a15042cea70a1484fbe275385fb"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

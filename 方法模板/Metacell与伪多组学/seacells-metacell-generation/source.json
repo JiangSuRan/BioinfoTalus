@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "seacells-metacell-generation",
+  "title": "SEACells 基于低维流形核矩阵的单细胞 Metacell 聚合与伪多组学构建",
+  "kind": "method",
+  "method_type": "Metacell与伪多组学",
+  "language": "Python",
+  "tags": [
+    "SEACells",
+    "Metacell",
+    "scATAC-seq",
+    "scRNA-seq",
+    "流形聚合",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "Pseudo_Metacell_Multiomics/Metacell_Generation.py（CIMA 图谱逐样本逐细胞类型 Metacell 生成，全文件 1–129 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "Pseudo_Metacell_Multiomics/Metacell_Generation.py",
+      "sha256": "36bc5999dc92d1f224022f18f9e08c432cd0b91443e2779d5cbdb5611e8ee619",
+      "lines": [
+        1,
+        149
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sc_input.h5ad",
+      "object": "AnnData（单细胞计数矩阵）",
+      "requirements": "X 为原始计数（scATAC peak 或 scRNA counts）；行细胞 × 列基因/峰；同一类型细胞（分群构建应在上游拆分）",
+      "evidence": "源码 tfidf(temp_celltype_adata.X) 与 summarize 的 counts 聚合推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "SEACells",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scikit-learn",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scipy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "细胞数 >= 100（源码小群直接并单 metacell）；如分样本分类型构建需在上游循环调用本流程。"
+  ],
+  "outputs": [
+    {
+      "path": "results/metacell_summarized.h5ad",
+      "content": "Metacell 级聚合 AnnData：obs_names 为 SEACell 标签、X 为成员细胞计数求和；原对象 obs 附 SEACell 归属（可另行导出）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "TF-IDF + log1p(x*1e4) + 随机 SVD 50 维 LSI（行标准化）",
+      "basis": "来源代码设定；稀疏计数的标准潜语义表征，标准化后核矩阵不受深度影响"
+    },
+    {
+      "setting": "n_SEACells = floor(n_cells/50) + 1",
+      "basis": "来源代码设定（每约 50 个细胞一个 metacell）；分辨率随研究目标调整"
+    },
+    {
+      "setting": "n_waypoint_eigs = 10（任务规范，源码取 4）、convergence_epsilon = 1e-5、fit(min_iter=10, max_iter=100)",
+      "basis": "任务规范设定；waypoint 特征数影响初始化覆盖度，迭代上限由收敛 epsilon 控制"
+    }
+  ],
+  "adaptation": [
+    "移除外层逐样本逐细胞类型双循环（assigning_metacell_labels 包装）、n_obs<100 的小群兜底分支与 tqdm 进度。",
+    "保留 tfidf/LSI 构造逐字逻辑（含稀疏分支）；自定义 summarize_by_SEACell_modified 换回包内置 core.summarize_by_SEACell。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Metacell 边界由流形核决定，连续过渡态可能被硬性划分；小群（<100 细胞）建议沿用源码并入单 metacell 的策略。",
+    "聚合为求和（伪 bulk），metacell 级分析不可回溯单细胞水平异质性；稀有亚群需提高分辨率（减小 50 细胞/单位）。"
+  ],
+  "code_sha256": {
+    "analysis.py": "23df352d82191f28145fd91d786bbc38372debd3da4d2e3dbabeaf5b71c2271c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

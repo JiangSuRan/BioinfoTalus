@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "spotlight-nmf-spatial-deconv",
+  "title": "SPOTlight seeded NMF 空间转录组反卷积与空间饼图权重导出",
+  "kind": "method",
+  "method_type": "反卷积与细胞组成",
+  "language": "R",
+  "tags": [
+    "SPOTlight",
+    "NMF",
+    "空间反卷积",
+    "Seurat",
+    "scatterpie"
+  ],
+  "paper": {
+    "repository": "https://github.com/MarcElosua/Cercias (上游)；应用来源为 LianLab_CRCLM 仓库 ST-seq_data_analysis.R",
+    "figure": "ST-seq_data_analysis.R（CRC 肝转移 Visium SPOTlight 反卷积段，40–80 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "LianLab_CRCLM",
+      "path": "ST-seq_data_analysis.R",
+      "sha256": "492d5f8af0d764ebd6635822f50e2525e3fa16b9f895e0eedc7a0ed8bf4a3644",
+      "lines": [
+        40,
+        80
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sc_reference_seurat.rds",
+      "object": "Seurat 对象（单细胞参考）",
+      "requirements": "meta.data 含 subclass（细胞类型标签）列；counts 可用（标记基因计算）",
+      "evidence": "源码 spotlight_deconvolution(se_sc, clust_vr = 'subclass') 推断"
+    },
+    {
+      "path": "Data/visium_seurat.rds",
+      "object": "Seurat 对象（Visium 切片）",
+      "requirements": "Spatial assay 含原始 counts",
+      "evidence": "源码 counts_spatial = se_sp@assays$Spatial@counts 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "SPOTlight",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "参考细胞类型注释完成；空间与参考基因符号同一体系。"
+  ],
+  "outputs": [
+    {
+      "path": "results/spotlight_seurat.rds",
+      "content": "权重写回 metadata 的空间对象：各细胞类型列（0-1 权重）与 spotlight.cluster 主导类型因子"
+    },
+    {
+      "path": "results/spotlight_deconvolution_weights.csv",
+      "content": "spot × 细胞类型反卷积权重表与主导类型列"
+    },
+    {
+      "path": "results/spotlight_scatterpie.pdf",
+      "content": "每 spot 细胞类型组成饼图叠加在空间坐标上"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "cl_n = 100, hvg = 3000, transf = 'uv', method = 'nsNMF', min_cont = 0.05",
+      "basis": "来源代码设定；每聚类采 100 细胞构建种子、3000 HVG 特征空间、非平滑 NMF、最小贡献 0.05 过滤"
+    },
+    {
+      "setting": "主导类型 = 权重行 which.max",
+      "basis": "来源代码设定；排除末尾 res_ss 残差列"
+    }
+  ],
+  "adaptation": [
+    "移除 percentplot_spatial_decon 自定义函数调用、HE 图片路径参数、SpatialDimPlot 与标签 csv 导出等绘制段；cluster_markers_all 补全为 FindAllMarkers 调用（源码在其上游已算好）。",
+    "spatial_scatterpie 保留但去掉 img_path（模板不含 HE 图），colors 参数移除。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "seeded NMF 对种子聚类标签敏感，亚型过细时权重矩阵列冗余；min_cont 过滤使稀有小群权重归零。",
+    "反卷积结果为相对组成，未建模 spot 内细胞数差异。"
+  ],
+  "code_sha256": {
+    "analysis.R": "a7638a5528237f9f8f3fa7e89064094c2750d94c38c19efafd680f8b9391d6ad"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

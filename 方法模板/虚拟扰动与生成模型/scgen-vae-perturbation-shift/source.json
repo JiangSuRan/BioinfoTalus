@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "scgen-vae-perturbation-shift",
+  "title": "scGen 变分自编码器潜在空间向量算术跨细胞类型扰动响应预测",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "scGen",
+    "scvi-tools",
+    "VAE",
+    "扰动预测",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/theislab/scgen.git",
+    "figure": "docs/tutorials/scgen_perturbation_prediction.ipynb（scGen 官方扰动预测教程，前 60 行代码单元）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "scgen",
+      "path": "docs/tutorials/scgen_perturbation_prediction.ipynb",
+      "sha256": "f67c812843eac6456cac266af982b49b53d147413a77d92396fe370871c5217c",
+      "lines": [
+        1,
+        60
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/train_kang.h5ad",
+      "object": "AnnData（含对照与刺激细胞）",
+      "requirements": "obs 含 condition（control/stimulated）与 cell_type 列；目标细胞类型的刺激态可缺失（这正是要预测的）",
+      "evidence": "源码 setup_anndata(batch_key=\"condition\", labels_key=\"cell_type\") 与 predict(ctrl_key='control', stim_key='stimulated', celltype_to_predict='CD4T') 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scgen",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scvi-tools",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "训练集中至少一种细胞类型具备对照与刺激双态（用于估计扰动向量 delta）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scgen_predicted.h5ad",
+      "content": "预测的扰动后细胞 AnnData（condition 列标记 pred），表达尺度与训练数据一致"
+    },
+    {
+      "path": "results/scgen_model.pt",
+      "content": "训练好的 SCGEN 模型权重，供后续 predict/batch_removal 复用"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "batch_key = \"condition\", labels_key = \"cell_type\"",
+      "basis": "来源代码设定；扰动条件作为 VAE 批次变量，细胞类型作为标签"
+    },
+    {
+      "setting": "max_epochs = 100, batch_size = 32, early_stopping_patience = 25",
+      "basis": "来源代码设定；大图谱数据可提高 epochs 上限由早停控制"
+    },
+    {
+      "setting": "delta 由全体细胞估计（obs_key 默认 \"all\"）",
+      "basis": "来源代码默认；已知相近细胞类型时可限定 delta 估计来源以提高精度（教程 cell 21 的用法）"
+    }
+  ],
+  "adaptation": [
+    "移除 Colab 安装单元、潜在空间 UMAP 可视化、PCA/小提琴/回归均值图评估段与 rank_genes_groups 差异基因提取。",
+    "保留 setup_anndata -> 模型初始化 -> train -> predict 主链；新增模型保存与预测 h5ad 落盘。",
+    "训练集中的子集剔除（移除受激 CD4T）为教程的留出评估设计，模板假定输入已按需准备。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "向量算术假设扰动响应在细胞类型间线性可迁移，对细胞类型特异性通路（如仅髓系表达的受体介导的响应）预测有偏。",
+    "预测质量依赖训练集对扰动条件双态的覆盖；未见扰动类型无法外推。"
+  ],
+  "code_sha256": {
+    "analysis.py": "4db371c13c89a8bbf19d0467e41a05eb57ec10e576ff364494bda8326665bf4c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

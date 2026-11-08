@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "celcomen-spatial-causal-gnn",
+  "title": "Celcomen 因果图神经网络细胞间/细胞内基因-基因调控学习与空间反事实扰动",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "Celcomen",
+    "因果GNN",
+    "空间反事实",
+    "基因-基因调控",
+    "Xenium"
+  ],
+  "paper": {
+    "repository": "https://github.com/tantrayaslab/celcomen (上游)；应用来源为 celcomen 仓库 Xenium 教程",
+    "figure": "Tutorial_Celcomen_on_Xenium.ipynb（GBM Xenium 上 Celcomen 训练与 simcomen 反事实，单元 1–16）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "celcomen",
+      "path": "Tutorial_Celcomen_on_Xenium.ipynb",
+      "sha256": "a2da9137a92fd48033ea300903edda5b2cf12be1e56778786a544b6c9af0af57",
+      "lines": [
+        1,
+        272
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/xenium/cell_feature_matrix.h5 与 cells.csv.gz",
+      "object": "10x Xenium 输出",
+      "requirements": "counts h5 + 质心坐标表；同一次 run 条码一致",
+      "evidence": "源码 sc.read_10x_h5 与 cells.csv.gz 的 x_centroid/y_centroid 读取推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "celcomen",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "GPU 推荐；空间子集（坐标窗）为示例切片范围，按目标区域调整。"
+  ],
+  "outputs": [
+    {
+      "path": "results/celcomen_model.pt",
+      "content": "训练后的 Celcomen 权重（g2g 细胞间/细胞内矩阵）"
+    },
+    {
+      "path": "results/celcomen_loss.png 与 expr.h5ad",
+      "content": "训练损失曲线与预处理后的表达对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "get_dataset_loaders k = 6, distance = 15",
+      "basis": "来源代码设定；空间 kNN 图参数决定\"邻居\"定义"
+    },
+    {
+      "setting": "celcomen lr = 1e-1, zmft = 1e-1, epochs = 200, seed = 0",
+      "basis": "来源代码设定；zmft 为零平均场先验标量"
+    },
+    {
+      "setting": "simcomen 反事实：g2g 权重从训练模型克隆，sphex 由原始表达计算",
+      "basis": "来源代码单元 15-16 设定；扰动目标基因置零后采样邻域响应"
+    }
+  ],
+  "adaptation": [
+    "提取 notebook 单元 1–16 线性化；移除扰动空间可视化（sc.pl.spatial）与 tqdm 采样循环（完整反事实采样循环依赖注释段 mask/gene_idx 逻辑，模板保留 simcomen 模型装配）。",
+    "expr 稀疏转稠密处理补全；损失曲线与模型权重落盘。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "因果图断言依赖零平均场假设与 kNN 邻域忠实性；反事实采样结果应与真实扰动实验（如有）对照。",
+    "全基因 HVG 训练（n=var 数）时 g2g 矩阵 O(n^2)，>1 万基因需子集。"
+  ],
+  "code_sha256": {
+    "analysis.py": "83ebd4203a228c521a90d2dda889f17b7d1f7310c3f3b5ecf849d22a7d8e88cd"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

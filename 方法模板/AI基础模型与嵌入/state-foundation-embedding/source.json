@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "id": "state-foundation-embedding",
+  "title": "STATE (Arc Institute) 单细胞状态基础模型嵌入推理",
+  "kind": "method",
+  "method_type": "AI基础模型与嵌入",
+  "language": "Python",
+  "tags": [
+    "STATE",
+    "ArcInstitute",
+    "单细胞基础模型",
+    "嵌入推理",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/ArcInstitute/State.git",
+    "figure": "src/state/emb/inference.py（STATE 嵌入推理模块，提取 1–150 行模型加载段与 186–259 行 encode_adata）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "State",
+      "path": "src/state/emb/inference.py",
+      "sha256": "ef376f74e8cd5dea785cb4aa1f284a4665cc2032a510847795a1d63806548b17",
+      "lines": [
+        1,
+        150
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cells.h5ad",
+      "object": "AnnData",
+      "requirements": "X 为 CSR 或稠密计数矩阵；var 基因列自动检测（与模型蛋白嵌入键重叠最高的列/索引）",
+      "evidence": "源码 encode_adata 的 _convert_to_csr 与 _auto_detect_gene_column 逻辑推断"
+    },
+    {
+      "path": "Data/state_model.ckpt",
+      "object": "STATE 预训练 Lightning 检查点",
+      "requirements": "检查点内嵌 cfg_yaml 配置（或外部提供）；可含打包蛋白嵌入字典",
+      "evidence": "源码 load_model 的 cfg_yaml/hyper_parameters 提取与 StateEmbeddingModel.load_from_checkpoint 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "state",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "STATE 检查点已获取；GPU 可用性决定精度配置（bf16/fp32 自动）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/state_emb.h5ad",
+      "content": "含 obsm['X_state'] 的 AnnData：细胞状态嵌入（模型嵌入与数据集嵌入沿列拼接），元数据原样保留"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "emb_key = \"X_state\"",
+      "basis": "任务规范命名（源码默认 X_emb）；h5 追加写机制支持后续批次扩展"
+    },
+    {
+      "setting": "默认 batch_size 与精度（不显式覆盖）",
+      "basis": "源码默认按检查点配置；显存富余时可传 batch_size 提速"
+    }
+  ],
+  "adaptation": [
+    "将 Inference 类的两步（load_model -> encode_adata）以最小脚本调用（官方即设计为可编程接口）。",
+    "移除 LanceDB 向量库可选段、decode 反解与日志；输出路径按项目根相对路径。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "嵌入质量依赖检查点蛋白嵌入对输入基因的覆盖（未覆盖基因记零嵌入）；跨版本检查点的嵌入空间不可混用。",
+    "encode_adata 以 h5 追加写实现，重复运行同一路径会沿行拼接，重跑前应清理输出。"
+  ],
+  "code_sha256": {
+    "analysis.py": "5f30aacfaaa5728935f7d7b71f3fed9b4e3e82c18bc39b8b6e1adb0ca37c8bd3"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

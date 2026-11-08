@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "id": "impa-morphological-perturbation-gan",
+  "title": "IMPA 风格迁移生成模型预测药物/遗传扰动下的高内涵细胞形态表型转换",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "IMPA",
+    "风格迁移",
+    "形态扰动",
+    "BBBC021",
+    "生成模型"
+  ],
+  "paper": {
+    "repository": "https://github.com/theislab/impa (上游)；应用来源为 IMPA 仓库 tutorial notebook",
+    "figure": "tutorial/transform_cells_bbbc021_six_drugs.ipynb（BBBC021 六药物形态翻译，单元 3–19）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "IMPA",
+      "path": "tutorial/transform_cells_bbbc021_six_drugs.ipynb",
+      "sha256": "264e06608abb6ba4cbbad686ac11ba991a1c0942ae53d2ee0cf2ab3f3b8d26a0",
+      "lines": [
+        1,
+        94
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/impa_config/bbbc021_six.yaml",
+      "object": "IMPA YAML 配置",
+      "requirements": "image_path/data_index_path/embedding_path（相对路径在脚本内修正）；n_channels 等模型超参",
+      "evidence": "源码 yaml.safe_load + OmegaConf.create + 路径前缀拼接推断"
+    },
+    {
+      "path": "Data/checkpoints/bbbc021_six/",
+      "object": "IMPA 训练检查点目录",
+      "requirements": "与 config 对应的训练权重（200 epoch）",
+      "evidence": "solver._load_checkpoint(200) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "IMPA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pytorch-lightning",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "omegaconf",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "BBBC021 或目标图像数据集已就位；RDKit 药物结构嵌入文件有效。"
+  ],
+  "outputs": [
+    {
+      "path": "results/impa_transformed_phenotypes.pt",
+      "content": "药物 -> 变换后形态表征（图像张量或降维嵌入）字典"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "CellDataLoader(args) + IMPAmodule(args, checkpoint_dir, dataloader)",
+      "basis": "来源代码设定；数据加载与求解器装配由 config 驱动"
+    },
+    {
+      "setting": "solver.forward(batch) 返回 y_hat（翻译后表征）",
+      "basis": "来源代码推断（tutorials 调用 forward 输出变换表征）；未见药物以嵌入向量条件化"
+    }
+  ],
+  "adaptation": [
+    "提取 notebook 单元 3–19 线性化；移除 seaborn 表征散点/UMAP 评估段（t-SNE 比较真实 vs 变换）与 print(config) 诊断。",
+    "val 循环的逐药物收集逻辑按源码 forward 输出结构补全；结果 torch.save 归档。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "形态翻译质量依赖训练集药物/剂量覆盖；未见化学骨架外推能力有限。",
+    "forward 输出字段名（y_hat）随 IMPA 版本可能变化，使用前核对 solver API。"
+  ],
+  "code_sha256": {
+    "analysis.py": "b839c18a647450730c515440660a067bfdeed479452e9d49350cd8c282c01a99"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

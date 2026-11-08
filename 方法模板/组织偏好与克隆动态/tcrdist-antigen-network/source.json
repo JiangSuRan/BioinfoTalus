@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "id": "tcrdist-antigen-network",
+  "title": "tcrdist CDR3β 距离矩阵构建阈值邻接网络与 Louvain 抗原特异性 TCR 聚落识别",
+  "kind": "method",
+  "method_type": "组织偏好与克隆动态",
+  "language": "Python",
+  "tags": [
+    "tcrdist",
+    "TCR距离网络",
+    "Louvain社区",
+    "抗原特异性",
+    "CDR3"
+  ],
+  "paper": {
+    "repository": "https://github.com/kmayerb/tcrdist3 (上游)；应用来源为 COVID19-vaccine-paper-code 仓库 4_TCR_analysis",
+    "figure": "4_TCR_analysis/3_TCR_Cluster_python.py（疫苗反应 TCR 序列网络聚类，1–110 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "COVID19-vaccine-paper-code",
+      "path": "4_TCR_analysis/3_TCR_Cluster_python.py",
+      "sha256": "04459d31af5eb30b2f4aaf56695e62e3126d69685b7506ee1239ca82ca271508",
+      "lines": [
+        1,
+        110
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/tcell_tcr_meta_filter.csv",
+      "object": "data.frame（每克隆一行）",
+      "requirements": "列含 cdr3_b_aa、v_b_gene、j_b_gene、count、ct_level_4（细胞类型）、Condition、Donor、barcode",
+      "evidence": "源码 clone_cols 与 TCRrep(cell_df=...) 接口推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "tcrdist",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pwseqdist",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "networkx",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "python-louvain",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "TCR 克隆表已按细胞类型与条件注释；pw_beta 全距离矩阵在克隆数 > 1 万时内存开销大（源码注释 1 万上限）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/tcrdist_network_edges.csv",
+      "content": "阈值内边列表：节点对、tcrdist 距离、CDR3 序列对、克隆计数、条件与邻域度"
+    },
+    {
+      "path": "results/tcrdist_network_nodes.csv",
+      "content": "节点表：CDR3/V 基因/计数/条件与 Louvain 社区编号（按社区规模降序重排）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "edge_threshold = 24（tcrdist 半径）",
+      "basis": "来源代码函数参数（调用处按 TCR 类别选定）；半径过小切断真实抗原关联，过大引入背景噪声"
+    },
+    {
+      "setting": "weight = (threshold - dist) / threshold",
+      "basis": "来源代码设定；距离越近权重越大供社区检测使用"
+    },
+    {
+      "setting": "Louvain resolution = 1（默认）",
+      "basis": "来源代码函数参数；高 resolution 产生更多小社区"
+    },
+    {
+      "setting": "V/J 基因补 *01 后缀",
+      "basis": "来源代码设定；tcrdist 基因名需带等位后缀"
+    }
+  ],
+  "adaptation": [
+    "将 Tcrrep_and_sequance_network 函数拆包为线性脚本；移除 graphviz neato 布局与网络可视化段（matplotlib 绘图）、颜色分配与 print 诊断。",
+    "节点/边表统一落盘 results/；社区编号保留按规模重排逻辑。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "仅使用 beta 链（chains=['beta']）；双链距离更特异但需配对数据。半径与 resolution 是社区划分的强参数，建议扫参并核对社区内共享 V 基因富集。",
+    "纯序列网络不保证抗原特异性：公共 MAV/自身反应序列可能聚成大簇。"
+  ],
+  "code_sha256": {
+    "analysis.py": "1f628374b180e13047b6faa02aa3b27465acca73fd486ed979c72d7d2408a322"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

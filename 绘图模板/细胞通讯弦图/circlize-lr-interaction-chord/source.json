@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "id": "circlize-lr-interaction-chord",
+  "title": "circlize 配体-受体细胞通讯方向性多层弦图（chordDiagram）",
+  "kind": "plot",
+  "plot_type": "细胞通讯弦图",
+  "language": "R",
+  "tags": [
+    "circlize",
+    "chordDiagram",
+    "细胞通讯",
+    "弦图",
+    "配体受体"
+  ],
+  "paper": {
+    "repository": "https://github.com/sestanlab/Macaque_corticogenesis_scRNA-seq.git",
+    "figure": "MF3-related/LR_interaction/plot.circle.R（灵长类皮层发生配受体互作弦图，全文件 1–66 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Macaque_corticogenesis_scRNA-seq",
+      "path": "MF3-related/LR_interaction/plot.circle.R",
+      "sha256": "52278f527c0bc0b76d35227d065777c7c022e802ccdda16bb84733ec4f77cac8",
+      "lines": [
+        1,
+        66
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/lr_links.csv",
+      "object": "data.frame（from, to, pval 三列）",
+      "requirements": "from/to 为源码 cluster_pair 按 | 拆分的发送/接收细胞群名；pval 为配受体对通讯显著性",
+      "evidence": "源码 reshape2::melt(pval_use) 后 extract_field(cluster_pair, 1/2, \"|\") 拆分 from/to 与 mlogp 权重构造推断"
+    },
+    {
+      "path": "data/celltype_colors.rds",
+      "object": "命名字符向量（细胞群名 -> 十六进制颜色）",
+      "requirements": "名称覆盖 lr_links 中全部 from/to 取值，顺序即扇区顺序",
+      "evidence": "源码 cls.cols 命名颜色向量与 chordDiagram(grid.col, order = allcls) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "circlize",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "上游已完成配受体通讯检验（如 NicheNet/CellPhoneDB），输出每对细胞群的显著性 p 值。"
+  ],
+  "outputs": [
+    {
+      "path": "result/lr_chord.pdf",
+      "content": "方向性弦图：连线宽度编码 -log10(p)（截断 2.5 归一化），扇区半径按连线总量自适应，扇区内白色标签"
+    }
+  ],
+  "adaptation": [
+    "源脚本依赖上游 pval_use 矩阵与 pair_order/extract_field 等外部变量；改为从整理好的 lr_links.csv 直接读取，MinMax/截断逻辑保留等价实现（pmin + 线性归一化）。",
+    "删除 pair 循环多图输出与 randomcoloR 调用；扇区标签由 get.all.sector.index 循环改写为 circos.trackPlotRegion 面板函数一次绘制。"
+  ],
+  "code_sha256": {
+    "plot.R": "38e9434928383d5d3be224e85c6bb57a3db873b2c59ffe39eaf06ff69605af60"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

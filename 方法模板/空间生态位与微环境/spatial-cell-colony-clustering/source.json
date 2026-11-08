@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "spatial-cell-colony-clustering",
+  "title": "基于空间距离图的肿瘤/免疫细胞聚落（Colony）连通域识别",
+  "kind": "method",
+  "method_type": "空间生态位与微环境",
+  "language": "Python",
+  "tags": [
+    "CODEX",
+    "空间聚落",
+    "空間距离图",
+    "微环境结构",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/wangjun-hub/CODEX_SCLC.git",
+    "figure": "script/Colony_recognition.py（CODEX_SCLC 聚落识别脚本，提取 1–180 行核心计算）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CODEX_SCLC",
+      "path": "script/Colony_recognition.py",
+      "sha256": "858dc58b3eca66efacb3c549b206c84bfa7f47ec1cf2fa6096e859db7787f422",
+      "lines": [
+        1,
+        180
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/codex_celltype_area.csv",
+      "object": "无表头 CSV（每行一个细胞）",
+      "requirements": "列 3/4 为 X/Y 质心坐标（µm 映射后尺度），列 5 为细胞面积，列 6 为细胞类型标签",
+      "evidence": "源码 [i.strip().split(\",\") for i in in_put1] 解析后以 i[3]/i[4]/i[5]/i[6] 取坐标、面积与类型的步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "opencv-python",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "CODEX 分割已产出每细胞坐标/面积/类型表；坐标尺度与面积单位一致（µm）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/spatial_colony_labels.csv",
+      "content": "每细胞聚落标注表：x、y、area、celltype 与 colony_id（同类型连通域索引；-1 表示未落入任何连通域）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "细胞绘制半径 r = sqrt(median(area)/pi)",
+      "basis": "来源代码设定；按面积中位数把细胞还原为近真实尺度的圆，使接触判定基于物理大小而非固定像素"
+    },
+    {
+      "setting": "OTSU 二值化 + 30x30 椭圆核膨胀",
+      "basis": "来源代码设定；膨胀核定义聚落桥接距离，即判定两细胞同聚落的最大间隙，随组织密度调整"
+    },
+    {
+      "setting": "RETR_EXTERNAL 外轮廓连通域为聚落",
+      "basis": "来源代码设定；忽略内部嵌套轮廓，每个外轮廓对应一个同型细胞聚落"
+    },
+    {
+      "setting": "图幅 = 坐标最大值向上取整 + 200 px 外扩",
+      "basis": "来源代码设定；防止边缘细胞被裁剪导致连通域断裂"
+    }
+  ],
+  "adaptation": [
+    "移除 argparse 命令行参数、os.chdir 工作目录切换、多图像目录批量循环与全部 print 诊断。",
+    "剥离 cv.imwrite 轮廓图像、plt.savefig 面积分布直方图与核轮廓图等绘图输出及 pickle 轮廓序列化。",
+    "CSV 手工字符串解析改为 pandas 读取；按任务规范新增 cv.pointPolygonTest 将每个细胞映射到所属连通域编号并输出 csv。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "膨胀核（30 px）与坐标-像素尺度映射共同决定聚落合并尺度，阈值敏感：过大会把独立小簇并入大聚落。",
+    "连通域方法仅识别同型细胞聚落，不量化聚落间界面互作；源码按 2000 面积阈值区分大小聚落的标注逻辑属绘图语义，已剥离。"
+  ],
+  "code_sha256": {
+    "analysis.py": "e51913ced430281ff5950de31f0465ab7d8b74da599d459eaf5c202d7759527d"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

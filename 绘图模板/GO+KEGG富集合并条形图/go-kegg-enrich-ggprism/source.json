@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "id": "go-kegg-enrich-ggprism",
+  "title": "GO + KEGG 富集合并条形图（圆角条形 + 左侧分类色块 + 气泡计数）",
+  "kind": "plot",
+  "plot_type": "GO+KEGG富集合并条形图",
+  "language": "R",
+  "paper": {
+    "repo": "生信杂货铺（微信公众号《精美的富集分析图》2025-03-22，网络下载）",
+    "figure": "GO + KEGG 合并富集条形图（原文另含 BioGRID→enrichGO/enricher 上游流程）",
+    "doi": null,
+    "url": null
+  },
+  "source_files": [
+    {
+      "repo": "生信杂货铺（网络下载，用户提供文本；提供者已补数据准备并修 rbind 列名 bug）",
+      "relative_path": null,
+      "sha256": null,
+      "lines": null,
+      "note": "工作区无原始文件，未留存原始哈希"
+    }
+  ],
+  "license": {
+    "type": null,
+    "file": null,
+    "note": "网络下载代码未附许可，许可状态未知"
+  },
+  "inputs": {
+    "object": "Data/go_enrich.rds 与 Data/kegg_enrich.rds：上游 clusterProfiler 富集结果 data.frame",
+    "fields": "接口要求（由代码确认）：GO 需 ONTOLOGY（BP/CC/MF）/Description/p.adjust/Count/geneID 列；KEGG 需 Description/p.adjust/Count/geneID，无 ONTOLOGY（代码内赋 KEGG）；不同分类存在同名 Description 时 factor levels 重复会报错",
+    "state": "输入未随模板提供；接口由代码推断；来源的 DEMO 合成数据块按用户要求不入模板，合成渲染验证未完成（见 validation.notes）"
+  },
+  "packages": [
+    "ggprism",
+    "gground",
+    "tidyverse"
+  ],
+  "prerequisites": [
+    "上游富集计算（enrichGO(ont='ALL') / enricher(KEGG TERM2GENE)）不在模板内",
+    "gground 为 GitHub-only 包（dxsbiocc/gground），需 remotes::install_github 安装",
+    "原文章 DEMO=FALSE 流程（BioGRID tab3 互作基因下采样 150 → enrichGO/enricher → KEGG BRITE 一级分类表 join）已按用户要求从模板移除，仅在此登记",
+    "关键可调参数：条宽 geom_round_col(width=0.6)、透明度 alpha；气泡 scale_size(range=c(5,16))；字号通路名 5/基因名 3.5；每分类条数 top_n(5,...)；画布高按 条数*0.32+3 估算；pal 顺序对应因子 levels KEGG/MF/CC/BP，换色只改 pal"
+  ],
+  "adaptation": [
+    "按用户要求仅保留绘图代码：移除 DEMO 开关、内置示例数据块与 BioGRID/enrichGO/enricher 上游分支，输入改为 readRDS 两个富集结果 data.frame；本轮移除 OUT_FILE/OUT_W/OUT_H 与自动格式分支，固定导出原默认 pathway.pdf",
+    "每分类 top5 筛选（FDR 最小、同 FDR 取 Count 最大）与左侧色块/气泡布局逻辑原样保留",
+    "原 rbind 列名 bug 由来源提供者以 bind_rows 修复，模板沿用",
+    "注释最简化：出处、安装说明与参数对照表移入本文件，不进代码",
+    "2026-10-31：仅移除文件头以外的解释性注释（包括输入和函数用途说明），可执行表达式保持不变。",
+    "2026-10-31 保存方式统一：显式 ggsave(filename, plot, width, height, units)，参数就地填写；保留原有格式、物理尺寸、PNG 分辨率和 PDF 设备特性。仅归一化保存接口/GO 图对象赋值后，其余表达式比对 identical=TRUE。"
+  ],
+  "code_sha256": {
+    "plot.R": "320c1e5056ce032e999b08c0aa5a01d95b2a8f7cf6b7f76f0ad98d900affd90a"
+  },
+  "validation": {
+    "syntax": "2026-10-31：R 4.5.3 parse 通过",
+    "render": null,
+    "real_data": null,
+    "figure_comparison": null,
+    "notes": "gground 仅发布于 GitHub，本机代理（127.0.0.1:7890）未运行、直连与 r-universe 均不可达，未能安装，渲染验证未完成；用户安装 gground 后可补实测。原文章附有渲染成图，参数本身经来源验证",
+    "comment_cleanup": {
+      "date": "2026-10-31",
+      "check": "R parse 树 identical=TRUE；只清理注释",
+      "real_data_rerun": false,
+      "note": "保留原验证记录及其范围；本轮没有执行绘图，不新增渲染或真实数据通过声明。"
+    },
+    "save_update": {
+      "date": "2026-10-31",
+      "code_comparison": "四案移除保存调用及归一化 GO 对象赋值后，其他表达式 identical=TRUE；语法通过",
+      "saving_api_smoke": "真实 ggplot2 的 base PDF、Cairo PDF 与 PNG 保存通过；7x3 英寸/600dpi 的 PNG 新旧调用像素一致",
+      "real_template_render": false,
+      "note": "本次保存接口冒烟测试使用独立示例 ggplot，不代表四个正式模板已重画；此前渲染记录只覆盖当时快照。"
+    }
+  }
+}

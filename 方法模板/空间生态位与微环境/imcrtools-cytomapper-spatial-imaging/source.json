@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "id": "imcrtools-cytomapper-spatial-imaging",
+  "title": "imcRtools/cytomapper CODEX 空间成像邻接图构建、互作置换检验与细胞社区聚合",
+  "kind": "method",
+  "method_type": "空间生态位与微环境",
+  "language": "R",
+  "tags": [
+    "imcRtools",
+    "SpatialExperiment",
+    "细胞社区",
+    "邻域聚合",
+    "CODEX"
+  ],
+  "paper": {
+    "repository": "https://github.com/wangjun-hub/CODEX_SCLC.git",
+    "figure": "script/Cell-cell_Pairwise_Interaction_Analysis.R（CODEX_SCLC 空间互作分析，全文件 1–34 行；aggregateNeighbors 按任务规范在同一数据对象上补全）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CODEX_SCLC",
+      "path": "script/Cell-cell_Pairwise_Interaction_Analysis.R",
+      "sha256": "e3aec1d5223ab441d225d422033b288010303688f1b29c55f3f0452db258239e",
+      "lines": [
+        1,
+        34
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/codex_features.csv",
+      "object": "data.frame（QUANTM/CODEX 单细胞导出表）",
+      "requirements": "行=细胞；含 \"Cell: Mean\" 前缀通道强度列、1-5/8-21/762 元数据列（含 Image、celltype）与 Centroid X/Y µm 坐标列",
+      "evidence": "源码 grepl(\"Cell: Mean\", colnames) 与列索引选择推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "imcRtools",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SpatialExperiment",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "data.table",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "CODEX 影像已完成分割与单细胞表型注释（celltype 列）；多轮图像以 Image 列区分。"
+  ],
+  "outputs": [
+    {
+      "path": "results/codex_interactions.csv",
+      "content": "每图像 × 细胞类型对互作置换检验表（观察/期望、log fold change、p_gt/p_lt）"
+    },
+    {
+      "path": "results/codex_neighbor_aggregation.csv",
+      "content": "每细胞邻域细胞类型构成向量（aggregatedNeighbors 列），供社区聚类（如 k-means）识别细胞社区"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "asinh(counts/1) 强度变换",
+      "basis": "来源代码设定；CODEX/IMC 蛋白强度标准弧双曲变换"
+    },
+    {
+      "setting": "buildSpatialGraph type = 'knn', k = 20",
+      "basis": "来源代码设定；20 近邻定义邻近关系"
+    },
+    {
+      "setting": "testInteractions method = 'classic', SerialParam(RNGseed = 123)",
+      "basis": "来源代码设定；固定置换种子保证可重复"
+    },
+    {
+      "setting": "aggregateNeighbors(aggregate_by = 'metadata', count_by = 'celltype')",
+      "basis": "任务规范要求的细胞社区聚合步骤（在源码同一 spe 对象与图上执行）；社区划分可对接下游聚类"
+    }
+  ],
+  "adaptation": [
+    "保留源码 SpatialExperiment 构建与 testInteractions 逐字逻辑；移除 rm(list=ls()) 与未使用的绘图/Seurat 依赖。",
+    "按任务规范新增 aggregateNeighbors 邻域构成聚合（源码未调用，为同一 imcRtools API 在相同对象上的标准延伸）并落盘两个 csv。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "元数据列索引（c(1:5,8:21,762)）绑定来源文件布局，新导出需重核列位置；knn 图对细胞密度不均区域有偏。",
+    "邻域聚合仅给出构成矩阵，社区数量与稳定性需下游聚类+轮廓/ARI 评估。"
+  ],
+  "code_sha256": {
+    "analysis.R": "f60aa1d85dd5e30b9c146f1458acac628b366bc1fe128387e6889c0fb652f6c9"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "id": "omicverse-pywgcna-pydeg-pipeline",
+  "title": "omicverse bulk 差异表达（pyDEG）与加权基因共表达模块（pyWGCNA）管线",
+  "kind": "method",
+  "method_type": "共表达与表达程序",
+  "language": "Python",
+  "tags": [
+    "omicverse",
+    "pyDEG",
+    "pyWGCNA",
+    "差异表达",
+    "共表达模块"
+  ],
+  "paper": {
+    "repository": "https://github.com/Starlitnightly/omicverse",
+    "figure": "omicverse/bulk/_wgcna.py（pyWGCNA 注册接口与官方用法示例）与 omicverse/bulk/_Deseq2.py（pyDEG 类接口，242 行起）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "omicverse",
+      "path": "omicverse/bulk/_wgcna.py",
+      "sha256": "d68d8b4ba1d7195d0687b856800c12f2b54ff725f3cc6754355f82f7d3c47eb1",
+      "lines": [
+        1,
+        100
+      ],
+      "role": "pyWGCNA 接口契约与官方示例"
+    },
+    {
+      "root_label": "omicverse",
+      "path": "omicverse/bulk/_Deseq2.py",
+      "sha256": "8ddc190e67b27597f76c1dc57ad34d9cb5952f6ea7facfcd8743dfa25e63f9ab",
+      "lines": [
+        242,
+        330
+      ],
+      "role": "pyDEG 接口契约"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bulk_counts.csv",
+      "object": "pd.DataFrame（基因 × 样本，原始计数）",
+      "requirements": "行=基因、列=样本；前 3 列为处理组、后 3 列为对照（示例分组按实际调整）",
+      "evidence": "pyDEG(raw_data) 文档（genes in rows, samples in columns）与 pyWGCNA 示例（rows=samples, cols=genes 转置）推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "omicverse",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "PyWGCNA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "omicverse 已安装且 bulk 扩展可用；每组样本数 ≥ 3。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ov_pydeg_results.csv",
+      "content": "差异表达表：log2FC/qvalue/-log(qvalue)/sig 分类（up/down/normal）"
+    },
+    {
+      "path": "results/ov_pywgcna_module_genes.csv 与 ov_pywgcna/ 模型目录",
+      "content": "模块归属基因表与 WGCNA 模型存档"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "pyDEG.deseq2(test_list, control_list) + foldchange_set(fc_threshold=-1, pval_threshold=0.05, logp_max=6)",
+      "basis": "omicverse 接口契约（_Deseq2.py 类方法签名与默认值）；fc_threshold=-1 由 log2FC 直方图自动取折点"
+    },
+    {
+      "setting": "pyWGCNA(name, species, geneExp, save=True).preprocess().findModules().analyseWGCNA()",
+      "basis": "_wgcna.py 注册示例的官方链路；外包 PyWGCNA 实现（软阈值+动态剪切）"
+    }
+  ],
+  "adaptation": [
+    "本模板来源于 omicverse 包内接口契约与 docstring 官方示例（源库未提供独立教程脚本）；调用链严格按注册示例组装，未虚构参数。",
+    "模块基因提取按 PyWGCNA API get_module_genes 补全并落盘；两个工具统一到一个线性脚本。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "pyWGCNA 为 omicverse 对 PyWGCNA 的封装，接口字段（get_module_genes 等）随版本可能变化，使用前核对安装版本；样本数 < 15 时 WGCNA 结论不稳（与 WGCNA 模板同源约束）。",
+    "deseq2 调用签名以本机 omicverse 版本为准（deseq2/fc_threshold 等命名在 1.6+ 有调整）。"
+  ],
+  "code_sha256": {
+    "analysis.py": "62f9360c8bda524d17f4e49b74e2362cb963710f5feb2feadf622356c3a6bcfd"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

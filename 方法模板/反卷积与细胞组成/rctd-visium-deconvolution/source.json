@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "rctd-visium-deconvolution",
+  "title": "spacexr (RCTD) 10x Visium 空间转录组细胞类型反卷积",
+  "kind": "method",
+  "method_type": "反卷积与细胞组成",
+  "language": "R",
+  "tags": [
+    "spacexr",
+    "RCTD",
+    "Visium",
+    "空间反卷积",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": "https://github.com/sgtc-stanford/GIM-spatial.git",
+    "figure": "Code/Visium/RCTD_run.R（GIM-spatial Visium RCTD 运行脚本，全文件 1–45 行；Reference/SpatialRNA 构建对应同仓 seurat_to_RCTD 环节）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "GIM-spatial",
+      "path": "Code/Visium/RCTD_run.R",
+      "sha256": "60e8122a485b73f10321739e2ff722f63a363aa628ef15633115115fe06c9b19",
+      "lines": [
+        1,
+        45
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sc_reference_seurat.rds",
+      "object": "Seurat 对象（单细胞参考）",
+      "requirements": "RNA assay 含原始 counts 层；meta.data 含 cell_type 列与 nCount_RNA（或同义 UMI 计数列）",
+      "evidence": "Reference(counts, cell_types, nUMI) 构建接口要求推断（参照同仓 Cortex-Atlas-Code 与 GRIT-Atlas 的 RCTD 参考构建模式）"
+    },
+    {
+      "path": "Data/visium_seurat.rds",
+      "object": "Seurat 对象（Visium 切片）",
+      "requirements": "Spatial assay 含原始 counts 层；保留空间坐标（GetTissueCoordinates 可取 imagecol/imagerow）",
+      "evidence": "SpatialRNA(coords, counts, nUMI) 构建接口要求推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "spacexr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "单细胞参考与空间数据使用同一基因符号体系；参考细胞类型覆盖空间组织预期类型。"
+  ],
+  "outputs": [
+    {
+      "path": "results/rctd_visium.rds",
+      "content": "完整 RCTD 对象：内部估计（表达式/umi）、似然、空间权重（weights）与结果表（results_df 含每 spot 细胞类型分配）"
+    },
+    {
+      "path": "results/rctd_weights.csv",
+      "content": "spot × 细胞类型归一化权重矩阵，行和为 1，即每个 spot 的细胞类型组成估计"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "doublet_mode = \"full\"",
+      "basis": "来源代码三种模式（doublet/multi/full）中的 full：不限制每 spot 细胞类型数，适合 Visium 多细胞 spot 的连续组成估计"
+    },
+    {
+      "setting": "max_cores = 8",
+      "basis": "任务规范设定（来源代码未在创建步显式设定）；并行核数按本机调整"
+    },
+    {
+      "setting": "set.seed(42)",
+      "basis": "来源代码设定；RCTD 的 PLSI 初始化含随机成分，固定种子保证可复现"
+    }
+  ],
+  "adaptation": [
+    "移除 optparse 命令行解析、sessionInfo 与 print 日志；输入由已创建的 RCTD rds 改为单细胞参考与空间两个 Seurat 对象，补全 Reference/SpatialRNA 构建步骤使其成为自包含线性流程。",
+    "三种 doublet 模式运行精简为 full 一种，删除三个中间 rds 分片保存，改为保存完整 RCTD 对象并新增归一化权重表导出。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "full 模式权重为相对组成，不提供 doublet 模式的明确 1-2 型分配；spot 内稀有类型估计不确定性高。",
+    "反卷积受参考覆盖度与平台偏差影响；跨平台（scRNA vs 空间）3' 偏好差异未建模时组成估计有偏。"
+  ],
+  "code_sha256": {
+    "analysis.R": "79ec73fee2436a5228635dec6a0dd757a1296a06d70b3bf413e82830ace488b0"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

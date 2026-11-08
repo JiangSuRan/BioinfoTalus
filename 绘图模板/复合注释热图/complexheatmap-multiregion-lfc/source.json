@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "complexheatmap-multiregion-lfc",
+  "title": "ComplexHeatmap 跨脑区/跨亚群差异表达 Log2FC 一致性分块热图",
+  "kind": "plot",
+  "plot_type": "复合注释热图",
+  "language": "R",
+  "tags": [
+    "ComplexHeatmap",
+    "差异基因热图",
+    "分块热图",
+    "circlize"
+  ],
+  "paper": {
+    "repository": "https://github.com/cboix/admultiregion_analysis.git",
+    "figure": "differential_expression/analysis_degs/aggregated_degs_01c_consistency_lfc.R（多方法 DE 结果跨区域/病理变量一致性分析，全文件 1–184 行；LFC 矩阵构建 logFC_nb × path:region 逻辑取自该脚本）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "admultiregion_analysis",
+      "path": "differential_expression/analysis_degs/aggregated_degs_01c_consistency_lfc.R",
+      "sha256": "f0fb082669b3f6d3a99455c3c5aa20e313f0461b3c463794ef6b1c3f0aaebde7",
+      "lines": [
+        1,
+        184
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "data/deg_lfc_matrix.rds",
+      "object": "矩阵（行 = 基因_细胞类型，列 = 病理变量:脑区）",
+      "requirements": "行名以 _ 分隔基因与细胞类型后缀，列名以 : 分隔病理变量与脑区前缀（沿用源码 gr/gs/pr 命名约定）",
+      "evidence": "源码 fulldf$gr = paste0(gene,'_',region)、fulldf$pr = paste0(path,':',region) 与 pivot.tomatrix 矩阵化步骤推断"
+    },
+    {
+      "path": "data/deg_pval_matrix.rds",
+      "object": "矩阵（与 lfc 矩阵同维度同行列名的 p 值矩阵）",
+      "requirements": "与效应量矩阵行列一一对应",
+      "evidence": "源码 setdflist 中 DE 结果含 logFC_nb 与 p 值字段推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "circlize",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "grid",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，data 与 result 目录已存在；路径在实际适配时就地替换。",
+    "上游已完成差异建模并汇总为效应量矩阵（负二项/MAST 等任一方法的 logFC 均可）。"
+  ],
+  "outputs": [
+    {
+      "path": "result/multiregion_deg_lfc_heatmap.pdf",
+      "content": "按细胞类型分行块、病理变量分列块的 logFC 热图，显著格子带星号标记"
+    }
+  ],
+  "adaptation": [
+    "源脚本以 UMAP/相关系数回归（umap、glm、ggpubr 条形图）呈现一致性；按任务规范改写为 ComplexHeatmap 分块热图，保留其 LFC 矩阵命名约定（gene_celltype × path:region）与跨集合堆叠思路。",
+    "删除 cbrbase/set_proj 私有依赖、rda 分片加载循环、回归拟合与全部中间图；输出改为单张 pdf。"
+  ],
+  "code_sha256": {
+    "plot.R": "cbd4a0fd24551fce1fb8f335c2d928dd7b2203e1d8a4cb3dd5c59a1bc354b266"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

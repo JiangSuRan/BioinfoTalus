@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "id": "startrac-tcr-indices",
+  "title": "STARTRAC 单细胞 TCR 克隆扩增、跨组织迁移与状态转换指数计算",
+  "kind": "method",
+  "method_type": "组织偏好与克隆动态",
+  "language": "R",
+  "tags": [
+    "Startrac",
+    "TCR",
+    "克隆扩增",
+    "组织迁移",
+    "状态转换"
+  ],
+  "paper": {
+    "repository": "Pan-cancer T cell atlas (Zheng et al., Science 2021)",
+    "figure": "泛癌 T 细胞图谱 CD8 STARTRAC 分析（code/w.step0.03.startrac.CD8.R 20–46 行的核心计算段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "code",
+      "path": "code/w.step0.03.startrac.CD8.R",
+      "sha256": "974f4ffb46e8bd7995459ef8bce9e2ec75d84f20768dbbf2fbeaf07ee52cdd6a",
+      "lines": [
+        20,
+        46
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/tcr_cell_metadata.rds",
+      "object": "data.table（每行一个细胞）",
+      "requirements": "需含 patient（患者）、meta.cluster（亚群，映射为 majorCluster）、cloneID（克隆，映射为 clone.id）、loc（组织部位）等列；应已限定到目标细胞类型（如 CD8 T）并完成 TCR 配对过滤",
+      "evidence": "in_dat$majorCluster <- as.character(in_dat$meta.cluster) 与 in_dat$clone.id <- in_dat$cloneID 的字段规范化步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Startrac",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "输入已按细胞类型（如 CD8）与组织部位完成取样，TCR 克隆 ID 已配对并过滤掉无克隆信息细胞。"
+  ],
+  "outputs": [
+    {
+      "path": "results/startrac_output.rds",
+      "content": "Startrac.out 对象，含 expa（克隆扩增）、migr（跨组织迁移）、tran（状态转换）三类指数及其置换检验 p 值与各指数分解矩阵"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "过滤 patient × majorCluster 细胞数 < 10 的组合",
+      "basis": "来源代码设定；稀疏组合内指数估计噪声过大，阈值 10 为经验值，随数据规模可调"
+    },
+    {
+      "setting": "n.perm = 1000, cores = 4",
+      "basis": "来源代码 n.perm = 1000、cores = 6（线程数按常规核数缩减）；置换次数决定最小可分辨 p 值约 1/1001"
+    },
+    {
+      "setting": "proj = \"panC\"",
+      "basis": "来源代码项目名标记；仅影响输出对象内项目标签，无方法学含义"
+    }
+  ],
+  "adaptation": [
+    "移除 tic/toc 计时、if(!file.exists(...)) 结果缓存守卫、按 loc 与癌种重复的批量循环及 RhpcBLASctl / doParallel 并行注册。",
+    "原代码 Startrac.run 输入的 stype==\"CD8\" 子集移至上游输入准备，模板输入即已限定细胞类型。",
+    "保留 meta.cluster→majorCluster、cloneID→clone.id 字段映射；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "STARTRAC 指数依赖 TCR 克隆配对质量与组织采样均衡性；patient × cluster 过滤阈值 10 为经验设定，过严会剔除真实稀疏亚群。",
+    "迁移指数将克隆跨组织共享视作迁移事件，未校正组织取样深度差异；状态转换指数依赖 majorCluster 注记的稳定性。"
+  ],
+  "code_sha256": {
+    "analysis.R": "55505b69594d71914456971149306484331f278881fa89969c9293258ecb7ccd"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

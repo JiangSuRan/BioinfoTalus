@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "id": "gim-spatial-lesion-edger-de",
+  "title": "GIM-spatial 空间病理分区（Base/Pit/Metaplasia）Pseudobulk 聚合与 limma-voom 差异表达",
+  "kind": "method",
+  "method_type": "Pseudobulk差异分析",
+  "language": "R",
+  "tags": [
+    "edgeR",
+    "limma-voom",
+    "空间分区",
+    "Pseudobulk",
+    "GIM"
+  ],
+  "paper": {
+    "repository": "https://github.com/sgtc-stanford/GIM-spatial.git",
+    "figure": "Code/Visium/seurat_create_pseudobulk.R（分区 Pseudobulk 聚合，全文件 79 行）与 Code/Visium/seurat_pseudobulk_DE.R（voom 差异表达，28–290 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "GIM-spatial",
+      "path": "Code/Visium/seurat_pseudobulk_DE.R",
+      "sha256": "48980fa91205b2ff49635fe685921cbd572fcb2392681c43574e09a2f2d615b1",
+      "lines": [
+        28,
+        290
+      ],
+      "role": "提取的核心分析流程"
+    },
+    {
+      "root_label": "GIM-spatial",
+      "path": "Code/Visium/seurat_create_pseudobulk.R",
+      "sha256": "b914be4b0b8a6e0929eb149de445ad5b645ef161ae426b1828c2b346a8494b76",
+      "lines": [
+        30,
+        79
+      ],
+      "role": "Pseudobulk 聚合流程参考"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/pseudobulk_counts.tsv",
+      "object": "tibble（Gene 列 + 伪样本计数列）",
+      "requirements": "列名格式 array_LIMSdissection_group（由聚合脚本导出）；上游按 spot 病理注记 × 患者聚合（源码聚合脚本按 orig.ident × Idents 求和）",
+      "evidence": "separate(pseudobulk, c('array','LIMS_dissection','group'), sep='_') 命名约定推断"
+    },
+    {
+      "path": "Data/samples.csv",
+      "object": "data.frame（患者表）",
+      "requirements": "含 LIMS_dissection 关联键与 group/region/metaplasia/OLGIM 注记列",
+      "evidence": "left_join(samples, by='LIMS_dissection') 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "edgeR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "limma",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "tidyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "分区注记（病理分区）已写回空间对象 Idents 并按分区聚合完成。"
+  ],
+  "outputs": [
+    {
+      "path": "results/spatial_region_limma_results.csv",
+      "content": "Metaplasia vs Base 的 topTable（logFC/AveExpr/t/P.Value/adj.P.Val）"
+    },
+    {
+      "path": "results/spatial_region_treat_results.csv 与 decideTests.csv",
+      "content": "treat（lfc=0 检验）结果与三对比对的 decideTests 符号矩阵"
+    },
+    {
+      "path": "results/edger_dgelist.rds",
+      "content": "过滤与 TMM 归一化后的 DGEList（含样本表）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "filterByExpr + TMM calcNormFactors",
+      "basis": "来源代码设定；edgeR 标准预处理"
+    },
+    {
+      "setting": "design = ~0+group + dissection + region（患者与阵列协变量）",
+      "basis": "来源代码设定；空间分区比较按患者配对建模"
+    },
+    {
+      "setting": "voom + lmFit + eBayes + treat(lfc=0)",
+      "basis": "来源代码实际检验链为 limma-voom（任务单所述 edgeR glmQLFit 为可选替代，源码未用；本模板忠实按源码提取）"
+    },
+    {
+      "setting": "三对比 Metaplasia-Base / Metaplasia-Pit / Base-Pit",
+      "basis": "来源代码设定；随分区定义调整"
+    }
+  ],
+  "adaptation": [
+    "聚合脚本（seurat_create_pseudobulk.R）的 Seurat 对象逐样本×分区求和循环以 csv 输入形式移至上游（模板保留其列名约定）；DE 脚本的 jpeg 密度/MDS/PCA 绘图段与 boxplot 预览全部移除。",
+    "optparse 参数与注释掉的元数据生成块删除；保存对象精简为 y/DGEList 与结果表。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "源码用 limma-voom 而非 edgeR QL 检验：QL 检验（glmQLFit/glmQLFTest）对小样本分区计数更保守，如需可平替。",
+    "分区注记边界 spot 的混合归属会稀释分区特异信号；患者数少时 dissection 协变量消耗自由度。"
+  ],
+  "code_sha256": {
+    "analysis.R": "9f68f6752e84f99339d646105e384f690b6b042bf2d74fba5bd01559c17c9001"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

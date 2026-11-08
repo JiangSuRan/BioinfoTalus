@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "chromvar-motifmatchr-tf-deviation",
+  "title": "chromVAR GC 偏倚校正、motifmatchr motif 匹配与 TF 可及性偏差 Z-score 计算",
+  "kind": "method",
+  "method_type": "单细胞表观组学",
+  "language": "R",
+  "tags": [
+    "chromVAR",
+    "motifmatchr",
+    "TF偏差",
+    "GC偏倚",
+    "scATAC"
+  ],
+  "paper": {
+    "repository": "https://github.com/GreenleafLab/chromVAR (上游)；应用来源为 omicverse 仓库 SEACells 外部 R 脚本",
+    "figure": "omicverse/external/SEACells/Rscripts/chromVAR.R（SEACells metacell 级 chromVAR 流程，全文件 67 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "omicverse",
+      "path": "omicverse/external/SEACells/Rscripts/chromVAR.R",
+      "sha256": "be359074b6ba7a4aefb43a2430b50c857fe815bd78b0193448675d6ccfcfd294",
+      "lines": [
+        1,
+        67
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/peaks.bed 与 counts.txt 与 peak_names.txt 与 cell_names.txt 与 sampling_depth.txt",
+      "object": "峰坐标 BED + 峰 × 细胞计数矩阵文本三件套 + 测序深度列",
+      "requirements": "hg38 坐标；counts 为原始插入计数",
+      "evidence": "源码 getPeaks/read.delim 组装 SummarizedExperiment 的五文件约定推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "chromVAR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "motifmatchr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "chromVARmotifs",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "BSgenome.Hsapiens.UCSC.hg38",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "BSgenome hg38 已安装；单细胞输入建议先经 SEACells/metacell 或滤波聚合（极稀疏单细胞偏差噪声大）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/chromvar_deviationScores.csv",
+      "content": "motif × 细胞（或 metacell）的偏差 Z-score 矩阵"
+    },
+    {
+      "path": "results/chromvar_deviations.csv 与 variability.csv",
+      "content": "原始偏差矩阵与每 motif 变异度统计（含 p 值与 bonferroni 校正）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "addGCBias(genome = BSgenome.Hsapiens.UCSC.hg38)",
+      "basis": "来源代码设定；峰 GC 含量校正为 chromVAR 必需步骤"
+    },
+    {
+      "setting": "human_pwms_v2 motif 库",
+      "basis": "来源代码设定；可选 JASPAR/HOCOMOCO 替换"
+    },
+    {
+      "setting": "computeDeviations + computeVariability",
+      "basis": "chromVAR 标准链；variability 提供 motif 排序"
+    }
+  ],
+  "adaptation": [
+    "移除 commandArgs 命令行解析与 print 日志；五文件输入改为 Data/ 相对路径字面量。",
+    "保留 getPeaks → SE 构建 → addGCBias → matchMotifs → computeDeviations/computeVariability 逐字主链与三个 csv 落盘。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "偏差 Z-score 在极低片段数细胞上不稳定，建议过滤 depth 或在 metacell 级计算；motif 库覆盖度决定 TF 解读边界。",
+    "偏差 ≠ TF 活性：共开放区域或间接结合均可产生正偏差。"
+  ],
+  "code_sha256": {
+    "analysis.R": "f4415ad5fd528f8ece7a2d5c4aafb6ac567229c71cf4508fe2ab0341bf57f54e"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "id": "tensorqtl-cis-xqtl-mapping",
+  "title": "tensorQTL 单细胞 Pseudobulk 顺式表达/染色质可及性数量性状位点（cis-eQTL / cis-caQTL）GPU 映射",
+  "kind": "method",
+  "method_type": "群体遗传与xQTL",
+  "language": "Python",
+  "tags": [
+    "tensorQTL",
+    "cis-eQTL",
+    "cis-caQTL",
+    "PEER隐因子",
+    "群体遗传",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/CIMA-Project/CIMA.git",
+    "figure": "cis-xQTL/01_preprocessing_and_run_tensorQTL/20250103_run_cis_eQTL.py（CIMA 图谱逐细胞类型 cis-eQTL 映射，全文件 1–119 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "CIMA",
+      "path": "cis-xQTL/01_preprocessing_and_run_tensorQTL/20250103_run_cis_eQTL.py",
+      "sha256": "34dd93fe67d02cb3cca326890cf45434105c71f6c6642586c6b10fea14743743",
+      "lines": [
+        1,
+        46
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/expression_bed.bed.gz",
+      "object": "gzip bed 表型矩阵（逆正态变换）",
+      "requirements": "前 4 列 chr/start/end/phenotype_id，列为样本；已做 INT 与残差化上游处理",
+      "evidence": "源码 tensorqtl.read_phenotype_bed(expression_bed) 与 phenotype_df[covariates_df.index] 对齐推断"
+    },
+    {
+      "path": "Data/covariates.csv",
+      "object": "data.frame（样本 × 协变量）",
+      "requirements": "含 Age、sex、PC1、PC2 与 pf1..pfN（PEER 因子）；行名与表型列一致",
+      "evidence": "源码 covariates_df.loc[:, info + pf] 的列选择逻辑推断"
+    },
+    {
+      "path": "Data/genotype/CIMA.{bed,bim,fam}",
+      "object": "PLINK 前缀基因型（剂量）",
+      "requirements": "hg38 坐标；样本覆盖表型样本",
+      "evidence": "任务规范指定的 genotypeio.PlinkReader 加载方式（源码为 parquet 预导出等效数据）推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "tensorqtl",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas-plink",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "PEER 因子已由上游（如 peer 包）估计并入协变量表；表型已按细胞类型 pseudobulk 并 INT。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cis_qtl_permutation.csv",
+      "content": "置换检验汇总表：每表型的最优 variant、beta、beta_gi（genotype 交互）、p_gi、p_val（名义）、p_val_perm（置换）、q_val"
+    },
+    {
+      "path": "results/*.parquet",
+      "content": "cis.map_nominal 输出的名义关联 parquet（每表型 cis 窗口内全部 variant 的关联统计）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "PEER 数按样本量分档 15/30/35（<=150 / <=250 / >250）",
+      "basis": "来源代码设定的分档规则；协变量数须显著小于样本数"
+    },
+    {
+      "setting": "maf_threshold = 0.05（源码 0.1）",
+      "basis": "任务规范设定；稀有变异检验功效低，阈值随样本量调整"
+    },
+    {
+      "setting": "map_cis seed = 2025（源码 8888）",
+      "basis": "任务规范设定；固定置换种子保证可复现"
+    }
+  ],
+  "adaptation": [
+    "移除 R_HOME 环境变量配置、argparse 逐细胞类型参数与逐类型输出目录、print 诊断及 qvalues 延后处理注释（模板内联完成）。",
+    "基因型由 parquet 预导出改为 genotypeio.PlinkReader 直接加载 PLINK 前缀（任务规范指定）。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "Pseudobulk 样本量（供体数）决定功效：类型特异稀有细胞类型的 eQTL 检验受限于供体覆盖。",
+    "PEER 因子可能吸收真实信号；顺式窗口默认 1Mb；群体分层需 PC 协变量充分校正，混合群体应分层映射。"
+  ],
+  "code_sha256": {
+    "analysis.py": "28420a4338043f16bd972c1f276108497f5c96ba6cb065a174bbd7db9400263f"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

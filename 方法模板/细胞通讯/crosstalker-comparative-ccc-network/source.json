@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "crosstalker-comparative-ccc-network",
+  "title": "CrossTalkeR 跨条件配体-受体通讯网络比较（PageRank/介数中心性差异与差异通讯边）",
+  "kind": "method",
+  "method_type": "细胞通讯",
+  "language": "R",
+  "tags": [
+    "CrossTalkeR",
+    "细胞通讯比较",
+    "PageRank",
+    "LIANA",
+    "网络中心性"
+  ],
+  "paper": {
+    "repository": "https://github.com/CostaLab/CrossTalkeR (上游)；应用来源为 multiomics_athero_atlas 仓库功能分析段",
+    "figure": "03 – Functional analysis of scRNA-seq atlas/Cell_Cell_Communication_CrosstalkeR.R（动脉粥样硬化 vs 对照通讯网络比较，全文件 85 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "multiomics_athero_atlas",
+      "path": "03 – Functional analysis of scRNA-seq atlas/Cell_Cell_Communication_CrosstalkeR.R",
+      "sha256": "aa587142093d2de209c29a6a7111576329218c57d9996aefc79303b5b6b5e04b",
+      "lines": [
+        1,
+        85
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/athero_seurat.rds",
+      "object": "Seurat 对象",
+      "requirements": "meta.data 含 Disease_State（条件，如 Control/Atherosclerosis）与 Main_Cell_Types（细胞类型）",
+      "evidence": "源码 subset(adata_Seurat, subset = (Main_Cell_Types != ...)) 与 Disease_State 拆分推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "CrossTalkeR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "liana",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "每条件细胞类型数 ≥ 2 且样本足够；CrossTalkeR 报告需 rmarkdown/tinytex 环境。"
+  ],
+  "outputs": [
+    {
+      "path": "results/crosstalker/result.html",
+      "content": "跨条件比较 HTML 报告：条件间差异通讯网络图（GFI/graph 着色）、节点 PageRank 与介数中心性排比、差异 LR 表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "条件列表命名 c('Control','Athero')",
+      "basis": "来源代码设定；CrossTalkeR 以列表名作为条件标识，condition@condition 差异自动计算"
+    },
+    {
+      "setting": "LIANA cellphonedb 结果过滤 pvalue <= 0.05 后转 CrossTalkeR 列格式",
+      "basis": "来源代码设定；gene_A/gene_B 的 _ → * 复合物替换、Ligand/Receptor 标注"
+    },
+    {
+      "setting": "threshold = 0, sel_columns 含 lr.mean",
+      "basis": "来源代码设定；通讯强度列进入网络权重"
+    }
+  ],
+  "adaptation": [
+    "保留 liana_wrap → cellphonedb 提取 → generate_report 主链逐字逻辑；输出路径改 results/crosstalker/。",
+    "移除注释掉的 SeuratDisk/SeuratObject 冗余加载；osteoblast 排除为研究特定设定保留。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "两条件通讯均基于单一池化对象（未按供体分层），供体间异质性会进入条件差异；建议每供体运行后聚合。",
+    "差异中心性对网络规模差异敏感，两条件细胞数悬殊时先做规模校正。"
+  ],
+  "code_sha256": {
+    "analysis.R": "06d6a2d508f272f00946352187cf63caa77bc676c993f7955a28ce68dc4fcf2c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

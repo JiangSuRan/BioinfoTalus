@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "scenic-genie3-regulon-inference",
+  "title": "SCENIC 单细胞转录因子共表达网络（GENIE3）与 Regulon 活性推断",
+  "kind": "method",
+  "method_type": "转录调控网络",
+  "language": "R",
+  "tags": [
+    "SCENIC",
+    "GENIE3",
+    "RcisTarget",
+    "转录调控网络",
+    "Regulon"
+  ],
+  "paper": {
+    "repository": "code",
+    "figure": "code/scenic/run.scenic.step1.zhangLab10X.R（泛癌 T 细胞图谱 SCENIC step1 准备脚本，全文件 1–177 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "code",
+      "path": "code/scenic/run.scenic.step1.zhangLab10X.R",
+      "sha256": "2b1f463d55f959ae78a1d70eac6e5240e0e903ea88043cb1e4e3a1f823b4789d",
+      "lines": [
+        1,
+        177
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/expr_matrix.rds",
+      "object": "矩阵（基因 × 细胞，归一化表达如 norm_exprs/SCT data）",
+      "requirements": "HGNC 基因符号行名；建议上游已按 miniCluster 做均值聚合降载（大数据 GENIE3 为 O(n^2) 级耗时）",
+      "evidence": "源码 exprMat <- assay(obj)（norm_exprs）与 sceToLoom 内 geneFiltering 调用推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "SCENIC",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "AUCell",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "RcisTarget",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "本地已配置 RcisTarget 数据库目录（Data/scenic：motif 注释与 ranking 数据库）；注册并行后端按机器配置。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scenic_aucell.rds",
+      "content": "runSCENIC_3_scoreCells 返回的 AUC 结果：每细胞各 Regulon 活性得分与二值化分配"
+    },
+    {
+      "path": "results/scenic_options.rds",
+      "content": "scenicOptions 运行配置对象（含输出目录与数据库路径），供后续 step4/可视化复用"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "geneFiltering minCountsPerGene = 0.5, minSamples = 3",
+      "basis": "来源代码 sceToLoom 调用参数；对 miniCluster 聚合矩阵设定的宽松阈值，单细胞级数据宜按比例收紧"
+    },
+    {
+      "setting": "黑名单剔除 ^RP[LS] 与 MALAT1",
+      "basis": "来源代码 env.misc 黑名单逻辑的内联子集；完整黑名单（应激基因等）应替换为来源数据文件"
+    },
+    {
+      "setting": "org = \"hgnc\", nCores = 10",
+      "basis": "来源代码设定；数据库物种与线程数按数据与本机调整"
+    }
+  ],
+  "adaptation": [
+    "源脚本实为 SCENIC 输入准备（多数据集 cbind 对齐、miniCluster 均值聚合、loom 导出与检出基因数诊断图），按任务规范改写为 initializeScenic → geneFiltering → runCorrelation → runGenie3 → runSCENIC_1/2/3 的标准 SCENIC 线性流程。",
+    "miniCluster 聚合（ssc.average.cell）与 loom/SCopeLoomR 导出、UMAP 附加、诊断直方图全部移除；外部黑名单 rds 内联为核糖体/MALAT1 规则。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "GENIE3 计算量随基因数平方增长，>1 万细胞需先做亚群/miniCluster 聚合（来源研究的做法）；AUCell 阈值自动划分对分布形态敏感。",
+    "Regulon 推断依赖 motif 数据库覆盖度；低质量或浅测序细胞的 AUC 分数方差大。"
+  ],
+  "code_sha256": {
+    "analysis.R": "91caa0a17907f47b680de76f956a3779d1af009229f3679f9da4e533d4fcc667"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

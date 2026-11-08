@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "nebulosa-kernel-density-umap",
+  "title": "Nebulosa 核密度联合表达降维图（单/多标志物联合密度）",
+  "kind": "plot",
+  "plot_type": "核密度联合表达UMAP图",
+  "language": "R",
+  "tags": [
+    "Nebulosa",
+    "核密度",
+    "联合表达",
+    "UMAP",
+    "dropout"
+  ],
+  "paper": {
+    "repository": "neutrophil（中性粒细胞状态图谱研究代码）",
+    "figure": "Fig. 1.R 的 Nebulosa 段（110–125 行，三种去卷积算法打分的联合密度）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "neutrophil",
+      "path": "Fig. 1.R",
+      "sha256": "9d95db894998882582136c9336942983a4ba4dea1be4fa213a76fe594d78b06a",
+      "lines": [
+        110,
+        125
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/neutrophil_seurat.rds",
+      "object": "Seurat 对象",
+      "requirements": "已含 tsne/umap 降维与连续特征列（如去卷积打分 NEU_*）",
+      "evidence": "源码 plot_density(tcga_obj_sub, features, reduction = 'tsne') 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Nebulosa",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "特征列为连续值（打分/基因表达均可）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/nebulosa_joint_density.pdf",
+      "content": "三特征联合核密度面板（多特征时输出 joint 密度 + 各自密度网格）"
+    },
+    {
+      "path": "results/nebulosa_single_density.pdf",
+      "content": "单特征核密度图"
+    }
+  ],
+  "adaptation": [
+    "源码 p1+p2 拼接交互显示改为两张独立 pdf；源码特征为多参数位置传参保留（plot_density 支持多特征联合）。",
+    "显式补 joint = TRUE 与 ggsave 五参数；FeaturePlot 对照图移除。"
+  ],
+  "code_sha256": {
+    "plot.R": "8218a99242b355f2620ef31567ec9a64bc2687a26b02c9d2684d008d5e20c053"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

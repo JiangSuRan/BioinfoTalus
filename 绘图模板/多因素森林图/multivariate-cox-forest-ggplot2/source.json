@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "id": "multivariate-cox-forest-ggplot2",
+  "title": "多因素森林图（NC 风格多变量 Cox 回归，ggplot2 像素坐标手排布局）",
+  "kind": "plot",
+  "plot_type": "多因素森林图",
+  "language": "R",
+  "paper": {
+    "repo": "清同趣科研（微信公众号文章附代码，网络下载）",
+    "figure": "复现 Chu T. et al. Nat Commun 2025, 16, 6770 的多变量 Cox 森林图",
+    "doi": null,
+    "url": null
+  },
+  "source_files": [
+    {
+      "repo": "清同趣科研（网络下载，用户提供文本）",
+      "relative_path": null,
+      "sha256": null,
+      "lines": null,
+      "note": "原始脚本为用户网络下载后粘贴的全文，工作区无原始文件，未留存原始哈希"
+    }
+  ],
+  "license": {
+    "type": null,
+    "file": null,
+    "note": "网络下载代码未附许可，许可状态未知"
+  },
+  "inputs": {
+    "object": "两个 csv：data/nc_forest_estimates.csv（每行一个变量）与 data/nc_cell_types.csv（右侧图例）",
+    "fields": "接口要求（由代码确认）：estimates 需列 row_order、variable、hr、ci_low、ci_high、hr_ci_label、p_label（character）、stars（character，可空）、cluster_id（签名行为编号、临床行为 NA）；cell_types 需列 legend_order、cluster_id，且必须恰好 11 行（x/y/plot_label 由代码按位置硬编码赋值）；行几何硬编码：1-3 行临床变量 + 10 行细胞签名（2 Mono + 5 TAM + 3 DC），图例 11 项中编号 8 仅进图例、不占表行",
+    "state": "输入未随模板提供；来源文章的两个 csv 未获得，接口由代码推断并经合成数据渲染验证（合成数据不入库）"
+  },
+  "packages": [
+    "ggplot2"
+  ],
+  "prerequisites": [
+    "HR/CI/P 值来自上游多因素 Cox 回归，由用户整理进 csv；模板不含回归步骤",
+    "variable 列宽约 75px（x=36-111），变量名过长会压到 HR 文本列（合成数据 13 字符已实测重叠）",
+    "HR 映射区间 0.5-2.5 无钳位，CI 下限 <约 0.45 或上限 >约 2.6 时误差条越出绘图区压到文字列（0.41 已实测重叠）",
+    "布局常数按 10 行签名设计：签名 11 行时末行（y=26）与横轴基线（y=30）碰撞，已实测复现",
+    "base_family = \"Arial\"，非 Windows 环境需替换可用字体"
+  ],
+  "adaptation": [
+    "视觉与布局语义按来源原样保留（含上述行数/列宽约束），仅精简注释",
+    "去除来源横幅头注、rm(list = ls())、rstudioapi 工作目录探测、分节标记与署名注释，dir.create 去除 showWarnings=FALSE 警告抑制；出处仅在 source.json 登记",
+    "工作目录约定改为模板根相对路径 data/ 与 result/，PDF/PNG 均用 ggsave；PDF 显式使用 cairo_pdf 设备",
+    "2026-10-31：仅移除文件头以外的解释性注释（包括输入和函数用途说明），可执行表达式保持不变。",
+    "2026-10-31 保存方式统一：显式 ggsave(filename, plot, width, height, units)，参数就地填写；保留原有格式、物理尺寸、PNG 分辨率和 PDF 设备特性。仅归一化保存接口/GO 图对象赋值后，其余表达式比对 identical=TRUE。"
+  ],
+  "code_sha256": {
+    "plot.R": "86a15b59c907e091f1d10183a0e140d664abdc9af1abb14d35f6756fa664d695"
+  },
+  "validation": {
+    "syntax": "2026-10-31：R 4.5.3 parse 通过并完整执行（ASCII 临时目录，模板文件原样运行）",
+    "render": "2026-10-31：合成数据（3 临床 + 10 签名）7x3 英寸 600dpi PNG 与 PDF 渲染成功；视觉审查通过（分组括号精确包行 2+5+3、末行与轴线留白、CI 与文字列无粘连均确认）",
+    "real_data": null,
+    "figure_comparison": null,
+    "notes": "真实输入 csv 与原文图均未获得；合成渲染仅验证语法与布局执行，不代表真实数据或原文图外观。首轮合成数据（11 签名行 + 13 字符变量名 + CI 下限 0.41）复现三处布局约束后修正，约束登记于 prerequisites；验证副本与最终文件仅差已删除的署名注释行；合成数据已清理不入库",
+    "comment_cleanup": {
+      "date": "2026-10-31",
+      "check": "R parse 树 identical=TRUE；只清理注释",
+      "real_data_rerun": false,
+      "note": "保留原验证记录及其范围；本轮没有执行绘图，不新增渲染或真实数据通过声明。"
+    },
+    "save_update": {
+      "date": "2026-10-31",
+      "code_comparison": "四案移除保存调用及归一化 GO 对象赋值后，其他表达式 identical=TRUE；语法通过",
+      "saving_api_smoke": "真实 ggplot2 的 base PDF、Cairo PDF 与 PNG 保存通过；7x3 英寸/600dpi 的 PNG 新旧调用像素一致",
+      "real_template_render": false,
+      "note": "本次保存接口冒烟测试使用独立示例 ggplot，不代表四个正式模板已重画；此前渲染记录只覆盖当时快照。"
+    }
+  }
+}

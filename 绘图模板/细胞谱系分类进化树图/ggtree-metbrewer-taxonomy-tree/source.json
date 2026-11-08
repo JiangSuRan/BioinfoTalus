@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "id": "ggtree-metbrewer-taxonomy-tree",
+  "title": "ggtree 聚类树 + 堆叠小提琴组合图（树 tiplab 对齐簇标签）",
+  "kind": "plot",
+  "plot_type": "细胞谱系分类进化树图",
+  "language": "R",
+  "tags": [
+    "ggtree",
+    "树图",
+    "堆叠小提琴",
+    "patchwork",
+    "聚类对齐"
+  ],
+  "paper": {
+    "repository": "https://github.com/lcy1364/Cortex-Atlas-Code.git",
+    "figure": "src/fig3/fig3lm.R（ET 亚群树图 + 堆叠小提琴组合，60–90 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Cortex-Atlas-Code",
+      "path": "src/fig3/fig3lm.R",
+      "sha256": "8c8703899f9e8ed0b55cd40e6a39a8508cb4aab3f54941606574f36db10621cf",
+      "lines": [
+        60,
+        90
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/subset_seurat.rds",
+      "object": "Seurat 对象",
+      "requirements": "含 region_cluster 标识列与 VariableFeatures；counts 可用",
+      "evidence": "源码 get_cl_means(...counts[VariableFeatures,] %>% logCPM) 与 VlnPlot(stack=TRUE) 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ggtree",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "treeio",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ape",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "簇数 ≥ 3 才能构成有意义的树；ggtree 来自 Bioconductor。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ggtree_vln_combo.pdf",
+      "content": "左：堆叠小提琴；右：以簇均值表达距离构建的聚类树（tiplab 簇名）"
+    }
+  ],
+  "adaptation": [
+    "源码 build_dend/pvclust（含 bootstrap p 值）以 ape::as.phylo(hclust) 等价简化（pvclust 依赖为可选；树形构造保留层次聚类语义）。",
+    "get_cl_means 自定义函数以 sapply(split) 等价实现；scale_x_reverse 保持标签顺序与小提琴轴一致。",
+    "ggsave 补全五参数；输出路径改 results/。"
+  ],
+  "code_sha256": {
+    "plot.R": "17d91f5a7cf19472effe1d76b44a44029c4a89a0a2a418ba046d53cb00fa10c5"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

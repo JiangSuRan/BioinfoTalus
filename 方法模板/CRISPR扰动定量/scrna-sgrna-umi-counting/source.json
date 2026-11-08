@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "id": "scrna-sgrna-umi-counting",
+  "title": "CRISPR 扰动 sgRNA FASTQ 逐读段条码校正与 UMI 计数矩阵构建",
+  "kind": "method",
+  "method_type": "CRISPR扰动定量",
+  "language": "Python",
+  "tags": [
+    "CRISPR",
+    "sgRNA",
+    "UMI计数",
+    "条码校正",
+    "Perturb-seq"
+  ],
+  "paper": {
+    "repository": "single-cell_CRISPR（体内 CRISPR 扰动单细胞研究）",
+    "figure": "sgRNA_umi_counts.py（R1/R2 FASTQ sgRNA 与三段细胞条码解析，全文件 85 行）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "single-cell_CRISPR",
+      "path": "sgRNA_umi_counts.py",
+      "sha256": "b14e8f1729b6cb596b773ddf1f626a0d912236d71a54d50048175c510553fa8c",
+      "lines": [
+        1,
+        85
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/tmp_R1.fastq.gz 与 tmp_R2.fastq.gz",
+      "object": "CRISPR 文库富集测序 FASTQ",
+      "requirements": "R1 结构：3 × 9nt 细胞条码（0-9/21-30/43-52）+ 8nt UMI（52-60）；R2 含 sgRNA 序列",
+      "evidence": "源码 line[0:9]/[21:30]/[43:52]/[52:60] 切片约定推断"
+    },
+    {
+      "path": "Data/sgRNA_20nt.fa 与 Data/cb.csv",
+      "object": "sgRNA 参考序列 FASTA + 细胞条码白名单（b1/b2/b3 列）",
+      "requirements": "sgRNA 20nt；白名单与文库设计一致",
+      "evidence": "parse(fasta) 与 cb.b1.tolist() 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "biopython",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "FASTQ 已解压可流式读（gzip.open）；大文件运行较慢（纯 Python 逐行）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sgRNA_counts_umi_counts.csv.gz",
+      "content": "细胞条码 × sgRNA 的 UMI 计数长表（barcode, sgRNA, counts）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "条码校正 = 精确命中或汉明距离 1",
+      "basis": "来源代码 barcode() 函数设定；白名单三段分别校正后拼接"
+    },
+    {
+      "setting": "sgRNA 归属 = R2 精确子串首命中",
+      "basis": "来源代码设定；多 sgRNA 共载细胞会归入首个命中，混载率需另行评估"
+    },
+    {
+      "setting": "计数口径 = unique (sgRNA, barcode, UMI) 去重后按 (barcode, sgRNA) 聚合",
+      "basis": "来源代码 value_counts 两步聚合；PCR 重复经 UMI 折叠"
+    }
+  ],
+  "adaptation": [
+    "argv 参数保留可选默认（argparse 禁用），out 前缀改 results/；其余逻辑逐字保留。",
+    "barcode() 的 None 显式比较修正（源码 !=None 风格）；UMI ratio 诊断 print 移除。"
+  ],
+  "limitations": [
+    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "纯 Python 逐行解析在千万读级速度受限，生产可换 Rust/kallisto bustools；汉明距离 1 校正在高错误率 run 会引入假阳性条码。",
+    "sgRNA 首命中策略低估多 sgRNA 细胞比例，下游感染 MOI 估计应核对。"
+  ],
+  "code_sha256": {
+    "analysis.py": "ddb72839ea58b718d70a36a9f6ed3eececaae7fbea748dfb1e34f9a2d952f4c2"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

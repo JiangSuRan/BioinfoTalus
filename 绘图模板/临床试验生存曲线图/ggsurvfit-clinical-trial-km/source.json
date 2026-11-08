@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "id": "ggsurvfit-clinical-trial-km",
+  "title": "ggsurvfit 临床级生存曲线（survfit2 + 置信区间 + 风险表 + prism 主题）",
+  "kind": "plot",
+  "plot_type": "临床试验生存曲线图",
+  "language": "R",
+  "tags": [
+    "ggsurvfit",
+    "survfit2",
+    "KM曲线",
+    "风险表",
+    "ggprism"
+  ],
+  "paper": {
+    "repository": "MMRF_ImmuneAtlas-main（多发性骨髓瘤免疫图谱）",
+    "figure": "manuscript_figures/figure_4/Fig4L_M_N_O_Survival_Curves_for_CD3_Signatures.Rmd（签名高低组 PFS 曲线，90–110 行 survfit2 段）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "MMRF_ImmuneAtlas-main",
+      "path": "MMRF_ImmuneAtlas-main/manuscript_figures/figure_4/Fig4L_M_N_O_Survival_Curves_for_CD3_Signatures.Rmd",
+      "sha256": "fe2e4098bed92593158f2e8b0d3939b2de80f23c478204ae31beee6e6f014754",
+      "lines": [
+        90,
+        110
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/survival_signature.csv",
+      "object": "data.frame（每患者一行）",
+      "requirements": "列含 signature_score（签名得分）、pfscdy（PFS 天数）、censpfs（删失/事件）",
+      "evidence": "源码 Surv(pfscdy, censpfs) ~ median_cutoff 与 feat 中位分组推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ggsurvfit",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "survival",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggprism",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "事件数足够（每组 ≥ 10 事件）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ggsurvfit_km_curve.pdf",
+      "content": "KM 曲线：置信区间带、log-rank p 值、底部风险表、删失标记、prism 主题"
+    }
+  ],
+  "adaptation": [
+    "源码四条签名曲线（naive/cyto/exh/dys）逐段重复；模板精简为单签名一次调用，risktable 行在源码被注释、模板按任务规范启用。",
+    "feat 中位数分组泛化为 signature_score 列；ggsave 补全五参数。",
+    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+  ],
+  "code_sha256": {
+    "plot.R": "8cc232ea2ad0ee4e02ccd71dfb5d691e4e88b67f06076a8f49632461d4475fda"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

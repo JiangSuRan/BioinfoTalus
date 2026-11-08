@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "sccoda-credible-effects-barplot",
+  "title": "scCODA 效应热图（Covariate × Cell Type，Inclusion probability 过滤可信效应）",
+  "kind": "plot",
+  "plot_type": "组成比例贝叶斯效应图",
+  "language": "Python",
+  "tags": [
+    "scCODA",
+    "效应热图",
+    "Inclusion probability",
+    "可信效应",
+    "组成变化"
+  ],
+  "paper": {
+    "repository": "https://github.com/lcy1364/Cortex-Atlas-Code.git",
+    "figure": "src/fig1/fig1d4_non_neuron.ipynb（scCODA 效应汇总可视化，cell 9：Final Parameter 均值热图 + p>0.8 过滤版）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "Cortex-Atlas-Code",
+      "path": "src/fig1/fig1d4_non_neuron.ipynb",
+      "sha256": "3eb9956e7c1ea68d7899ffdec3443833b288e6278427467d40236638ab2ffdad",
+      "lines": [
+        1,
+        435
+      ],
+      "role": "提取的核心绘图逻辑"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sccoda/*_results.csv",
+      "object": "scCODA summary_prepare 输出表（每参考类型一个）",
+      "requirements": "列含 Covariate（含 C(...,Treatment(...))[T.x] 编码）、Cell Type、Final Parameter、Inclusion probability",
+      "evidence": "源码 results_tables glob 与 Covariate 正则解码推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "seaborn",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "matplotlib",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游 scCODA 分析已完成（对应 sccoda-bayesian-compositional-analysis 模板）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sccoda_effect_size_credible.pdf",
+      "content": "Covariate × Cell Type 效应热图：Inclusion probability ≥ 0.8 之外的效应置零（可信过滤版）"
+    },
+    {
+      "path": "results/sccoda_effect_size_p_gt_0.8.csv",
+      "content": "过滤后的效应量表"
+    }
+  ],
+  "adaptation": [
+    "保留 Covariate 正则解码、Credible 判定、双热图（unfiltered + p>0.8）逻辑中的可信过滤版；unfiltered 版同型可复用。",
+    "plot_order/plot_size 以示例子集字面量（源码全字典按数据）；except 静默重排删除，显式 Categorical。",
+    "plt.show 删除；fig.savefig(results/) 落盘。"
+  ],
+  "code_sha256": {
+    "plot.py": "8405d08614d0ef134f8d74d9ad973a63794539b4e89aa41138b82e4018e9c780"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python parse check",
+      "date": "2026-11-07"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

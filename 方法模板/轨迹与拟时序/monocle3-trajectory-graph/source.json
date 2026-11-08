@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "id": "monocle3-trajectory-graph",
+  "title": "Monocle3 单细胞轨迹图学习（复用 Seurat UMAP 坐标）",
+  "kind": "method",
+  "method_type": "轨迹与拟时序",
+  "language": "R",
+  "tags": [
+    "monocle3",
+    "Seurat",
+    "拟时序分析",
+    "轨迹推断",
+    "UMAP"
+  ],
+  "paper": {
+    "repository": "https://github.com/bio-Pixel/panVC",
+    "figure": "TrajectoryAnalysis.R（panVC 单细胞轨迹分析段，提取 37–63 行 mono3 流程）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "panVC",
+      "path": "TrajectoryAnalysis.R",
+      "sha256": "8750aab7dbb6c1d014e4fbbccdfa06038c984cd78a95cc315d83e0503d4055a1",
+      "lines": [
+        37,
+        63
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_clustered.rds",
+      "object": "Seurat 对象",
+      "requirements": "RNA assay 含 counts 层；已计算 umap 降维（Embeddings(seu_obj, \"umap\") 可取坐标）；meta.data 保留轨迹解释所需列",
+      "evidence": "GetAssayData(assay = \"RNA\", layer = \"counts\") 提取计数与 Embeddings(seu_obj, reduction = \"umap\") 复用坐标的步骤推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "monocle3",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游 Seurat 已完成标准化、降维聚类并生成 UMAP；轨迹解释所需的细胞类型注记已在 meta.data 中。"
+  ],
+  "outputs": [
+    {
+      "path": "results/monocle3_cds.rds",
+      "content": "cell_data_set (cds) 对象：含 PCA 预处理、复用 Seurat 的 UMAP 嵌入、cluster_cells 聚类结果与 learn_graph 学习的主轨迹图（principal graph）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "preprocess_cds num_dim = 50",
+      "basis": "来源代码设定；预处理主成分数随数据复杂度调整，过高会纳入噪声成分"
+    },
+    {
+      "setting": "复用 Seurat UMAP 坐标替换 monocle3 自建 UMAP",
+      "basis": "来源代码设定；保证轨迹图与既有聚类可视化在同一嵌入空间，避免两套 UMAP 解读分歧"
+    },
+    {
+      "setting": "reduce_dimension preprocess_method = \"PCA\"",
+      "basis": "来源代码显式指定 monocle3 默认预处理方法；配对 num_dim 使用"
+    }
+  ],
+  "adaptation": [
+    "将原脚本 mono3 <- function(seu_obj = a){...} 函数包装拆解为从上到下直接执行的线性脚本。",
+    "GetAssayData 的 slot = \"counts\" 更新为 Seurat v5 兼容的 layer = \"counts\"。",
+    "cds@int_colData$reducedDims 槽直访改为 SingleCellExperiment::reducedDim 标准访问器读写。",
+    "删除函数内 plot_cells 绘图与 tidyverse / patchwork 冗余加载；输出路径改为项目根相对路径。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "learn_graph 的主轨迹依赖 UMAP 嵌入质量，复用 Seurat UMAP 时轨迹拓扑受其聚类与降维参数影响。",
+    "模板止步于轨迹图学习，未执行 order_cells 根节点选择与伪时间计算；根节点选择具有主观性，需结合生物学先验。"
+  ],
+  "code_sha256": {
+    "analysis.R": "b58497be5324b63719996f9b0eed15c9705480a51201ec2c2b731936b2e26a31"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

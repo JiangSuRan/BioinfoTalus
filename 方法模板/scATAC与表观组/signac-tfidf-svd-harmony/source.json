@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "id": "signac-tfidf-svd-harmony",
+  "title": "Signac 单细胞染色质可及性 TF-IDF 归一化、SVD (LSI) 降维与 Harmony 整合聚类",
+  "kind": "method",
+  "method_type": "scATAC与表观组",
+  "language": "R",
+  "tags": [
+    "Signac",
+    "Seurat",
+    "scATAC-seq",
+    "TF-IDF",
+    "RunSVD",
+    "Harmony"
+  ],
+  "paper": {
+    "repository": "https://github.com/corceslab/2025_Sant_CHOIR.git",
+    "figure": "clustering_scripts/run_Signac.R（CHOIR 基准 Signac 聚类流程，全文件 1–158 行的 LSI 分支）",
+    "author_attribution": null,
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "2025_Sant_CHOIR",
+      "path": "clustering_scripts/run_Signac.R",
+      "sha256": "66f329eb2d7a672fb01d644b30c66cac6cd9e1762f387629487f2e50f81ace0a",
+      "lines": [
+        1,
+        158
+      ],
+      "role": "提取的核心分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/atac_peak_counts.rds",
+      "object": "稀疏矩阵（峰 region × 细胞，行名 chr:start-end 格式）",
+      "requirements": "已质控细胞的 peak 计数；rowname 可被 CreateChromatinAssay 解析",
+      "evidence": "源码 counts1 <- readRDS(preprocessed .rds) 后直接 RunTFIDF 的 LSI 分支推断"
+    },
+    {
+      "path": "Data/cell_metadata.csv",
+      "object": "data.frame（行名 = 细胞条码）",
+      "requirements": "含 Batch 列（Harmony 校正变量）",
+      "evidence": "源码 HarmonyMatrix(meta_data = cell_metadata, vars_use = \"Batch\") 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Signac",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "harmony",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
+    "上游已完成峰矩阵构建（CellRanger-ATAC/ArchR addPeakSet 等）与细胞质控。"
+  ],
+  "outputs": [
+    {
+      "path": "results/signac_clustered.rds",
+      "content": "含 ATAC ChromatinAssay、lsi 与 harmony_lsi 降维、图聚类标签的 Seurat 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "FindTopFeatures(min.cutoff = \"q0\")",
+      "basis": "来源代码设定（保留全部非零峰，源码另取 percentile 排序前 25000）；模板用对象内变量特征机制，必要时截取 top 25000"
+    },
+    {
+      "setting": "HarmonyMatrix(vars_use = \"Batch\", do_pca = FALSE)",
+      "basis": "来源代码设定；do_pca=FALSE 因输入已是 LSI 嵌入，批次变量列随数据调整"
+    },
+    {
+      "setting": "FindNeighbors dims = 1:50, FindClusters algorithm = 4 (Leiden), resolution = 0.5, random.seed = 1",
+      "basis": "源码参数向基准表的取值（dim_list 1:50、Leiden、种子固定）；分辨率随数据规模重评"
+    }
+  ],
+  "adaptation": [
+    "剥离基准测试函数包装（run_Signac <- function(...)）、参数表解析、多模态 PCA+LSI 的 WNN 分支与计时/输出表构造，仅保留单模态 LSI 分支。",
+    "由裸矩阵流程改写为 Seurat/Signac 对象流程（CreateChromatinAssay + RunTFIDF/FindTopFeatures/RunSVD），HarmonyMatrix 与 FindNeighbors/FindClusters 调用保持源码语义。",
+    "删除 Sys.time 计时与 print 诊断；输出改为保存完整 Seurat 对象。"
+  ],
+  "limitations": [
+    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
+    "未做 LSI 第一成分（测序深度维）剔除的显式处理，批次-深度混叠时建议比较弃用第 1 维的敏感性。",
+    "Harmony 校正可能过度消除真实生物学群间差异；Leiden 分辨率与邻域维度需按数据重扫。"
+  ],
+  "code_sha256": {
+    "analysis.R": "8f1d02ff87337808f7c4cd2de48dc90e9d1bc819b5c5388ce02360eed2b6d650"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript parse check",
+      "date": "2026-11-06"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}
