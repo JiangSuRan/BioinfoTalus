@@ -29,6 +29,16 @@
         46
       ],
       "role": "提取的核心分析流程"
+    },
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p9.R",
+      "sha256": "34f77d06f4fa159a0a9269994995242a037e0e6f7bc8824ee0f519c3713f40ff",
+      "lines": [
+        167,
+        175
+      ],
+      "role": "参考 GSVA 2.x gsvaParam() 参数对象接口升级旧版 gsva() 签名"
     }
   ],
   "license": {
@@ -52,12 +62,17 @@
   "packages": [
     {
       "name": "GSVA",
-      "tested_version": null,
+      "tested_version": "2.4.9",
+      "source_version": null
+    },
+    {
+      "name": "BiocParallel",
+      "tested_version": "1.44.0",
       "source_version": null
     },
     {
       "name": "data.table",
-      "tested_version": null,
+      "tested_version": "1.18.4",
       "source_version": null
     }
   ],
@@ -73,33 +88,37 @@
   ],
   "method_choices": [
     {
-      "setting": "method = \"gsva\", kcdf = \"Gaussian\", mx.diff = TRUE",
-      "basis": "来源代码设定；连续表达量配 Gaussian 核，mx.diff=TRUE 得双向有界分数（ssGSEA 可改 method=\"ssgsea\"）"
+      "setting": "gsvaParam(..., minSize = 1, maxSize = Inf, kcdf = \"Gaussian\", maxDiff = TRUE)",
+      "basis": "GSVA >= 1.50 参数对象标准 API；连续表达用 Gaussian 核，ssGSEA 可改 ssgseaParam()"
     },
     {
-      "setting": "parallel.sz = 8",
-      "basis": "来源代码设定（按核数调整）；并行粒度为签名"
+      "setting": "BPPARAM = SerialParam(progressbar = FALSE)",
+      "basis": "替代已废弃的 parallel.sz 参数，避免 Windows 节点套接字开销；Linux 大队列可改 MulticoreParam"
     }
   ],
   "adaptation": [
-    "移除按癌种循环分片计算与 rbind 拼接（一次性全矩阵计算等价且更简洁）、colData 合并落表与 SingleCellExperiment 容器依赖。",
-    "读写路径统一为项目根相对路径（Data/ 与 results/），输出为 saveRDS 得分矩阵。"
+    "移除按癌种循环分片计算与 SingleCellExperiment 容器依赖，使用 split() 直接展开签名列表。",
+    "依据 GSVA 2.x API 与 base/p9.R 模式将已废止的 gsva(..., method=\"gsva\", parallel.sz=8) 升级为 gsvaParam() + SerialParam()。"
   ],
   "limitations": [
-    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
-    "GSVA 分数依赖基因在样本间的分布估计，样本数少（<10）时分布不稳；跨批次/平台合并前应先校正。",
-    "签名间基因重叠会造成分数相关，解读时注意冗余；小基因集（<10）方差大。"
+    "已在 R 4.5.3 合成数据（80 基因 × 16 样本 × 3 签名）端到端验证通过；真实大样本队列建议结合批次检查。",
+    "GSVA 分数依赖基因在样本间的分布估计，样本数少（<10）时分布不稳；跨批次/平台合并前应先校正。"
   ],
   "code_sha256": {
-    "analysis.R": "ac0e8372f4ab1e8f796966e3b352e3a11a278e04f715b9b9632a1e3178ce775e"
+    "analysis.R": "ad62ba293facf20b33525101fa77ba9bff9c1fe2113968f83df5ccba12707722"
   },
   "validation": {
     "syntax": {
       "status": "passed",
-      "environment": "Rscript parse check",
-      "date": "2026-11-06"
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
     },
-    "synthetic_run": null,
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, GSVA 2.4.9, BiocParallel 1.44.0) + synthetic 80 genes x 16 samples",
+      "date": "2026-11-14",
+      "notes": "已运行验证 GSVA 2.x gsvaParam() 输出 3 x 16 评分矩阵并正常落盘。"
+    },
     "reference_comparison": null,
     "real_data": null,
     "second_dataset": null

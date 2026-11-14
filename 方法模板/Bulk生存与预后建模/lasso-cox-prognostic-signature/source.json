@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "id": "lasso-cox-prognostic-signature",
+  "title": "分层划分队列的 LASSO-Cox 预后风险签名构建与独立验证时间依赖 ROC 评估",
+  "kind": "method",
+  "method_type": "Bulk生存与预后建模",
+  "language": "R",
+  "tags": [
+    "LASSO",
+    "glmnet",
+    "Cox回归",
+    "预后模型",
+    "survivalROC",
+    "风险评分"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p17.R（L1-185 队列分层抽样、单因素 Cox 筛选、LASSO Cox 惩罚回归与测试集生存验证）",
+    "author_attribution": "本地教学筛选脚本（base/p17.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p17.R",
+      "sha256": "3d85e504bc85242f27b3f9cabdc587f3145cc4def15ce1ac7b6dbfa50e1a4dd5",
+      "lines": [
+        1,
+        185
+      ],
+      "role": "队列分层抽样、单因素 Cox 筛选、LASSO Cox 惩罚回归与测试集生存验证"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cohort_survival_expr.rds",
+      "object": "data.frame（行名样本，含 OS.time、OS 与候选基因表达列）",
+      "requirements": "OS.time 为正值随访天数，OS 为 0/1 删失结局状态，基因列已完成样本内归一化/对数化",
+      "evidence": "base/p17.R 生存建模矩阵输入"
+    }
+  ],
+  "packages": [
+    {
+      "name": "survival",
+      "tested_version": "3.8.6",
+      "source_version": null
+    },
+    {
+      "name": "glmnet",
+      "tested_version": "5.0",
+      "source_version": null
+    },
+    {
+      "name": "caret",
+      "tested_version": "7.0.1",
+      "source_version": null
+    },
+    {
+      "name": "survivalROC",
+      "tested_version": "1.0.3.1",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "总样本与事件数足够 70/30 分层拆分；输出 lasso_cox_model_results.rds 直接供给 lasso-cox-risk-triad-and-roc 绘图模板。"
+  ],
+  "outputs": [
+    {
+      "path": "results/lasso_cox_model_results.rds",
+      "content": "模型包：交叉验证拟合、训练阈值、非零签名权重、测试集评分与 1/3/5 年 ROC"
+    },
+    {
+      "path": "results/lasso_cox_signature_genes.csv",
+      "content": "LASSO 筛选非零回归系数基因列表"
+    },
+    {
+      "path": "results/lasso_cox_test_metrics.csv",
+      "content": "独立测试集 1/3/5 年 AUC 与 KM Log-rank P 值"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "caret::createDataPartition 分层拆分 + 仅在训练集执行单因素 Cox (p < 0.05) + 训练集风险中位数阈值",
+      "basis": "杜绝原脚本未做特征/阈值隔离及只在训练集画 ROC 的严重信息泄露缺陷"
+    },
+    {
+      "setting": "cv.glmnet(family = \"cox\", alpha = 1, cox.ties = \"efron\") + s = \"lambda.min\"",
+      "basis": "修复原脚本 cv(alpha=0.5) 与 glmnet(alpha=1) 超参不一致及 glmnet 5.1 默认结处理变更告警"
+    },
+    {
+      "setting": "survivalROC(method = \"NNE\", span = 0.25 * n^(-0.20))",
+      "basis": "相比原脚本二分类 ROCR 忽略右删失或 KM 估计非单调超界，NNE 平滑确保删失校准且敏感度单调有界 [0,1]"
+    }
+  ],
+  "adaptation": [
+    "以 CRAN 通用 caret 替换原 sampling::strata；按研究方法学最佳实践全面重构训练集隔离与删失时间依赖验证并拆离四联绘图。"
+  ],
+  "limitations": [
+    "已在 R 4.5.3 合成生存队列（140 样本 × 25 基因）零警告跑通并核验测试集 AUC 与 KM 分层；小队列单次随机拆分方差较大时建议外加外部队列验证或重复交叉验证。"
+  ],
+  "code_sha256": {
+    "analysis.R": "5f5b3ecd7e726b952b3530ab5564c00cbcd8bfe0fe1e07b54ad28de56026a716"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, glmnet 5.0, caret 7.0-1, survival 3.8-6, survivalROC 1.0.3.1) + synthetic 140 cohorts",
+      "date": "2026-11-14",
+      "notes": "零警告完成训练/测试隔离建模，测试集 1/3/5 年 ROC 严格单调且位于 [0,1]。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

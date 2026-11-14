@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "id": "wgcna-module-trait-labeled-heatmap",
+  "title": "WGCNA 共表达聚类树模块色带图与模块-临床性状相关性标注热图",
+  "kind": "plot",
+  "plot_type": "相关性热图",
+  "language": "R",
+  "tags": [
+    "WGCNA",
+    "labeledHeatmap",
+    "plotDendroAndColors",
+    "模块性状相关",
+    "热图"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p10.R（L148-224 动态剪切与合并模块聚类树色带及模块-性状相关矩阵标注热图）",
+    "author_attribution": "本地教学筛选脚本（base/p10.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p10.R",
+      "sha256": "048db64f22a760735423133648834fea89df8095396871c63acc7f56cb7f48e0",
+      "lines": [
+        148,
+        224
+      ],
+      "role": "动态剪切与合并模块聚类树色带及模块-性状相关矩阵标注热图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "results/wgcna_modules.rds",
+      "object": "list（上游 wgcna-coexpression-metamodule 输出对象）",
+      "requirements": "含 geneTree, dynamicColors, moduleColors, moduleTraitCor, moduleTraitPvalue",
+      "evidence": "base/p10.R TOM 聚类树及模块性状统计矩阵"
+    }
+  ],
+  "packages": [
+    {
+      "name": "WGCNA",
+      "tested_version": "1.74",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "先运行 wgcna-coexpression-metamodule 生成 results/wgcna_modules.rds；results/ 目录已存在。"
+  ],
+  "outputs": [
+    {
+      "path": "results/wgcna_dendro_modules.pdf",
+      "content": "基因系统发育树及合并前后模块色带对照 PDF"
+    },
+    {
+      "path": "results/wgcna_module_trait_heatmap.pdf",
+      "content": "模块特征基因-临床性状 r/(p) 双行数值标注热图 PDF"
+    }
+  ],
+  "visual_grammar": [
+    {
+      "setting": "plotDendroAndColors(dendroLabels = FALSE, hang = 0.03) + blueWhiteRed(50), zlim = c(-1, 1)",
+      "basis": "标准对称双向相关性色阶与模块色带对齐，清晰呈现动态切分到合并模块的结构变化"
+    },
+    {
+      "setting": "yLabels 保留 'ME' 前缀并显式 dim(text_matrix)",
+      "basis": "激活 WGCNA 内置模块色块坐标渲染，防止单行/单列矩阵维度坍缩"
+    }
+  ],
+  "adaptation": [
+    "统一对接标准方法模板结果包，规范画布边距 par(mar) 防止长性状名或长模块名截断。"
+  ],
+  "limitations": [
+    "已在本机 R 4.5.3 上游合成网络运行并渲染 PNG 目视检查过标签与色块；若模块数量 > 25 建议增大 PDF 高度并减小 cex.text。"
+  ],
+  "code_sha256": {
+    "plot.R": "5ade346fe2c64355c610a1faebcb65b7f2d83ee23aef9591f8cf6b3b7894336d"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, WGCNA 1.74) + synthetic WGCNA modules",
+      "date": "2026-11-14",
+      "notes": "已生成 PDF 并转为 150 DPI PNG 目视检查树状色带与模块性状矩阵，对齐清晰无遮挡。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

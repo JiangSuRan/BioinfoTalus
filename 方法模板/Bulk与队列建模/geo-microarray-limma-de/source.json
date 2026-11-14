@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "geo-microarray-limma-de",
+  "title": "GEO / 芯片表达矩阵探针映射、分位数归一化与 limma 经验贝叶斯差异分析",
+  "kind": "method",
+  "method_type": "Bulk与队列建模",
+  "language": "R",
+  "tags": [
+    "GEO",
+    "芯片",
+    "limma",
+    "avereps",
+    "差异表达",
+    "分位数归一化"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p5.R（L72-174 GEO 芯片探针符号映射、分位数归一化与 limma 差异分析）",
+    "author_attribution": "本地教学筛选脚本（base/p5.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p5.R",
+      "sha256": "deb4699b9077ca443cf2a01715232043cbebf20f031638e439b624fa81f82741",
+      "lines": [
+        72,
+        174
+      ],
+      "role": "GEO 芯片探针符号映射、分位数归一化与 limma 差异分析"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/microarray_probe_expr.rds",
+      "object": "matrix（探针 × 样本，log2 强度）",
+      "requirements": "对数尺度且缺失值已完成质控插补",
+      "evidence": "base/p5.R 芯片探针矩阵输入"
+    },
+    {
+      "path": "Data/probe_annotation.tsv",
+      "object": "data.frame（ID, SYMBOL 列）",
+      "requirements": "含探针 ID 与基因符号列",
+      "evidence": "base/p5.R GPL 平台或 org.Hs.eg.db 映射表"
+    },
+    {
+      "path": "Data/sample_metadata.tsv",
+      "object": "data.frame（Sample, Group 列）",
+      "requirements": "Group 含 Control 与 Tumor",
+      "evidence": "base/p5.R 样本分组设计"
+    }
+  ],
+  "packages": [
+    {
+      "name": "limma",
+      "tested_version": "3.66.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；原始 Affymetrix .CEL 需上游完成 rma 背景校正。"
+  ],
+  "outputs": [
+    {
+      "path": "results/limma_microarray_deg.csv",
+      "content": "limma 全基因差异统计表（logFC, AveExpr, t, P.Value, adj.P.Val, B, gene）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "过滤 '///' 多基因探针并用 limma::avereps 按基因均值合并重复探针",
+      "basis": "比手写 dplyr 聚合更快且避免跨基因模糊信号污染"
+    },
+    {
+      "setting": "normalizeBetweenArrays(method = \"quantile\") + eBayes(trend = TRUE, robust = TRUE)",
+      "basis": "标准芯片阵列间归一化；intensity-trend 与样本稳健设置兼顾异方差与离群样本"
+    }
+  ],
+  "adaptation": [
+    "剥离教学脚本中已过时的 affy::expresso 样例，改用 limma::avereps 取代手写字符串拆分与分组汇总循环并显式对齐样本顺序。"
+  ],
+  "limitations": [
+    "若合并多套独立 GEO 数据集（多 GPL/批次），需在上游先完成公共基因交集与 ComBat 校正。"
+  ],
+  "code_sha256": {
+    "analysis.R": "4bfc83301dd51513785cdb6a9464a2d108ab3696b5c8582b2d24fe024e002df7"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, limma 3.66.0) + synthetic 120 probes x 10 samples",
+      "date": "2026-11-14",
+      "notes": "已验证重复探针合并、/// 过滤与植入差异基因（Sym1-Sym6）TopTable 精确检出。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

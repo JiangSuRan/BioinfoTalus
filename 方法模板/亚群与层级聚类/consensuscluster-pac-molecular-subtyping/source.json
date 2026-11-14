@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "consensuscluster-pac-molecular-subtyping",
+  "title": "ConsensusClusterPlus 无监督分子分型与 PAC 最优簇数判定",
+  "kind": "method",
+  "method_type": "亚群与层级聚类",
+  "language": "R",
+  "tags": [
+    "ConsensusClusterPlus",
+    "PAC",
+    "分子分型",
+    "无监督聚类",
+    "K值选择"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p11.R（L1-95 ConsensusClusterPlus 共识聚类与 PAC 最优 K 自动筛选）",
+    "author_attribution": "本地教学筛选脚本（base/p11.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p11.R",
+      "sha256": "3334a81c59deca072f2a8b4f9dfd5b1e6e44cc8460f74a44404bdfd8d0806199",
+      "lines": [
+        1,
+        95
+      ],
+      "role": "ConsensusClusterPlus 共识聚类与 PAC 最优 K 自动筛选"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bulk_expr_matrix.rds",
+      "object": "matrix（基因 × 样本，归一化 log 表达）",
+      "requirements": "行名基因符号，样本经质控与批次处理",
+      "evidence": "base/p11.R 共识聚类表达输入"
+    },
+    {
+      "path": "Data/subtyping_genes.txt",
+      "object": "纯文本（每行一个基因符号）",
+      "requirements": "目标通路或高变异候选分子标志基因",
+      "evidence": "base/p11.R 基因子集行筛选"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ConsensusClusterPlus",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "本机 R 4.5.3 未安装 ConsensusClusterPlus，实际运行前需通过 BiocManager::install(\"ConsensusClusterPlus\") 安装。"
+  ],
+  "outputs": [
+    {
+      "path": "results/consensus_pac_metrics.csv",
+      "content": "K = 2..6 各聚类数的模糊聚类比例 PAC 指标表"
+    },
+    {
+      "path": "results/consensus_subtypes.csv",
+      "content": "基于最优 K 判定的样本分子亚型分型结果表"
+    },
+    {
+      "path": "results/consensus_results.rds",
+      "content": "ConsensusClusterPlus 完整共识矩阵与树状结果"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "行中位数中心化 + clusterAlg = \"hc\", distance = \"pearson\", reps = 1000, pItem = 0.8",
+      "basis": "转录组分子分型标准共识聚类重抽样配置"
+    },
+    {
+      "setting": "PAC = ecdf(lower.tri(M))(0.9) - ecdf(lower.tri(M))(0.1) 自动取最小",
+      "basis": "比主观目视 delta-area 拐点更客观量化簇边界模糊样本比例"
+    }
+  ],
+  "adaptation": [
+    "去除原脚本 ALL 测试数据集依赖、双通路注释索引互换隐患与需外部下载授权的 CIBERSORT.R 段，浓缩为通用可复用分型模板。"
+  ],
+  "limitations": [
+    "本机仅通过 Rscript 4.5.3 语法树 parse 核验，未在安装 ConsensusClusterPlus 的环境中做合成端到端跑测。"
+  ],
+  "code_sha256": {
+    "analysis.R": "635b936ca685a163f3e51518e689f7b49a446ca74dcaec8f3e5afc3eba5f0ed1"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

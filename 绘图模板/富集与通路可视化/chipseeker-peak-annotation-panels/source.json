@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "id": "chipseeker-peak-annotation-panels",
+  "title": "ChIPseeker 多样本染色质峰基因组区段分布、TSS 距离谱与交集 UpSet 图",
+  "kind": "plot",
+  "plot_type": "富集与通路可视化",
+  "language": "R",
+  "tags": [
+    "ChIPseeker",
+    "plotAnnoBar",
+    "plotDistToTSS",
+    "upsetplot",
+    "表观可视化"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p16.R（L14-52 多样本 ChIPseeker 基因组区段、TSS 距离图与 UpSet+Venn 饼图）",
+    "author_attribution": "本地教学筛选脚本（base/p16.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p16.R",
+      "sha256": "da010cc888328d0ddd0231ade26725b173befff91cd67ce1e25111d6d8d01a32",
+      "lines": [
+        14,
+        52
+      ],
+      "role": "多样本 ChIPseeker 基因组区段、TSS 距离图与 UpSet+Venn 饼图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "results/chipseeker_peak_annotations.rds",
+      "object": "named list of csAnno objects",
+      "requirements": "由 chipseeker-peak-annotation-go 生成的多样本注释结果列表",
+      "evidence": "base/p16.R peakAnnoList 绘图输入"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ChIPseeker",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggupset",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "本机未安装 ChIPseeker 与 ggupset；实际绘前需安装对应包并完成上游注释。"
+  ],
+  "outputs": [
+    {
+      "path": "results/chipseeker_multi_sample_panels.pdf",
+      "content": "多样本基因组构成柱状图与 TSS 距离谱纵向联合图 PDF"
+    },
+    {
+      "path": "results/chipseeker_upset_vennpie.pdf",
+      "content": "代表样本染色质特征重叠 UpSet 与 Venn 饼图 PDF"
+    }
+  ],
+  "visual_grammar": [
+    {
+      "setting": "patchwork 组合 plotAnnoBar + plotDistToTSS，单独导出 upsetplot(..., vennpie = TRUE)",
+      "basis": "plotAnnoBar/plotDistToTSS 返回标准 ggplot 对象易于上下排版，upsetplot 含嵌入式 Venn 饼图独立成页防止比例挤压"
+    }
+  ],
+  "adaptation": [
+    "移除交互式画屏与多余 plotAnnoPie 重复页，规范导出多样本纵排面板与 UpSet-Venn 组合图。"
+  ],
+  "limitations": [
+    "本机仅完成 Rscript 4.5.3 语法解析核验，未进行合成出图渲染。"
+  ],
+  "code_sha256": {
+    "plot.R": "d36a14e1ede9b59434a5b1984914d0e6310a3c932f143322fde886b4494c8848"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

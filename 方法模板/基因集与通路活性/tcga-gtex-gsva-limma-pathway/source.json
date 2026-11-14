@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "id": "tcga-gtex-gsva-limma-pathway",
+  "title": "TCGA 与 GTEx FPKM 对数尺度统一、GSVA 2.x 通路评分及 limma 差异检验",
+  "kind": "method",
+  "method_type": "基因集与通路活性",
+  "language": "R",
+  "tags": [
+    "TCGA",
+    "GTEx",
+    "GSVA",
+    "limma",
+    "通路活性",
+    "尺度对齐"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p9.R（L1-210 TCGA log2(FPKM+1) 与 GTEx log2(FPKM+0.001) 还原合并 + GSVA 2.x + limma 通路检验）",
+    "author_attribution": "本地教学筛选脚本（base/p9.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p9.R",
+      "sha256": "34f77d06f4fa159a0a9269994995242a037e0e6f7bc8824ee0f519c3713f40ff",
+      "lines": [
+        1,
+        210
+      ],
+      "role": "TCGA log2(FPKM+1) 与 GTEx log2(FPKM+0.001) 还原合并 + GSVA 2.x + limma 通路检验"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/tcga_log2fpkm1.rds",
+      "object": "matrix（基因 × 肿瘤样本，log2(FPKM+1)）",
+      "requirements": "Xena Toil TCGA log2(fpkm+1) 口径，行名为基因符号",
+      "evidence": "base/p9.R TCGA_FPKM 输入"
+    },
+    {
+      "path": "Data/gtex_log2fpkm001.rds",
+      "object": "matrix（基因 × 正常样本，log2(FPKM+0.001)）",
+      "requirements": "Xena Toil GTEx log2(fpkm+0.001) 口径，行名与 TCGA 同源",
+      "evidence": "base/p9.R GTEx_FPKM 0.001 偏移还原逻辑"
+    },
+    {
+      "path": "Data/hallmark_genesets.gmt",
+      "object": "MSigDB GMT 基因集文件",
+      "requirements": "基因符号与表达矩阵行名一致",
+      "evidence": "base/p9.R 基因集列表加载"
+    }
+  ],
+  "packages": [
+    {
+      "name": "limma",
+      "tested_version": "3.66.0",
+      "source_version": null
+    },
+    {
+      "name": "GSVA",
+      "tested_version": "2.4.9",
+      "source_version": null
+    },
+    {
+      "name": "BiocParallel",
+      "tested_version": "1.44.0",
+      "source_version": null
+    },
+    {
+      "name": "clusterProfiler",
+      "tested_version": "4.18.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "确认输入确实来自 Xena Toil 平台对应偏移版本；结果表 tcga_gtex_gsva_limma.csv 可直接喂给 ggplot2-gsva-limma-diverging-bar。"
+  ],
+  "outputs": [
+    {
+      "path": "results/tcga_gtex_gsva_scores.rds",
+      "content": "样本水平 GSVA 通路活性得分矩阵（通路 × 样本）"
+    },
+    {
+      "path": "results/tcga_gtex_gsva_limma.csv",
+      "content": "limma Tumor vs Normal 通路差异 t 统计量与 BH 校正表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "pmax(2^gtex_expr - 0.001, 0) -> log2(gtex_fpkm + 1) -> quantile normalizeBetweenArrays",
+      "basis": "纠正 GTEx (+0.001) 与 TCGA (+1) 直接拼接导致的伪偏移，pmax 防止浮点下溢负值产生 NaN"
+    },
+    {
+      "setting": "GSVA::gsvaParam(..., kcdf = \"Gaussian\", maxDiff = TRUE) + limma eBayes",
+      "basis": "符合 GSVA 2.x 参数对象接口并与下游 diverging barplot 衔接"
+    }
+  ],
+  "adaptation": [
+    "修正原脚本 nromalized.data 拼写错误及浮点 2^x - 0.001 < 0 风险；剥离原脚本带切片 bug 的双向条形图（由 ggplot2-gsva-limma-diverging-bar 承接）。"
+  ],
+  "limitations": [
+    "GTEx 与 TCGA 分属不同研究队列，分位数归一化不能替代已知协变量（年龄/缺血时间/测序中心）的批次控制。"
+  ],
+  "code_sha256": {
+    "analysis.R": "1666f9869049d9fed5ea0ba94ad704b04a8401426b9cbffd1532a5f4a9a66c17"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, GSVA 2.4.9, limma 3.66.0, clusterProfiler 4.18.4) + synthetic 90 genes x 18 samples",
+      "date": "2026-11-14",
+      "notes": "已验证不同 log2 偏移还原合并后正确检出激活通路 HALLMARK_PATHWAY_A (t=12.84)。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

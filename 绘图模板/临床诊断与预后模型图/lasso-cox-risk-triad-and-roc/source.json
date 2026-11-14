@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "lasso-cox-risk-triad-and-roc",
+  "title": "LASSO-Cox 预后特征系数、有序风险评分三联热图与多时点独立验证 ROC 面板",
+  "kind": "plot",
+  "plot_type": "临床诊断与预后模型图",
+  "language": "R",
+  "tags": [
+    "LASSO-Cox",
+    "风险三联图",
+    "ComplexHeatmap",
+    "时间依赖ROC",
+    "预后图"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p17.R（L60-185 LASSO 系数条形图、有序风险三联热图与测试集时间依赖 ROC 多面板整合图）",
+    "author_attribution": "本地教学筛选脚本（base/p17.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p17.R",
+      "sha256": "3d85e504bc85242f27b3f9cabdc587f3145cc4def15ce1ac7b6dbfa50e1a4dd5",
+      "lines": [
+        60,
+        185
+      ],
+      "role": "LASSO 系数条形图、有序风险三联热图与测试集时间依赖 ROC 多面板整合图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "results/lasso_cox_model_results.rds",
+      "object": "list（由 lasso-cox-prognostic-signature 生成）",
+      "requirements": "含 signature_coef, risk_cutoff, test_scores, test_expr_sig, test_roc",
+      "evidence": "base/p17.R 系数、风险评分、表达热图与 ROC 数据流"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": "2.25.3",
+      "source_version": null
+    },
+    {
+      "name": "circlize",
+      "tested_version": "0.4.18",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "先运行 lasso-cox-prognostic-signature 生成 results/lasso_cox_model_results.rds；results/ 目录已存在。"
+  ],
+  "outputs": [
+    {
+      "path": "results/lasso_cox_risk_triad_roc.pdf",
+      "content": "四面板复合图：LASSO 权重 + 测试集 1/3/5 年 ROC + 风险评分/随访状态散点 + 有序 Z-score 热图"
+    }
+  ],
+  "visual_grammar": [
+    {
+      "setting": "热图行基因严格按面板 A 系数降序排列，Z-score 截断于 [-2.5, 2.5] 且传 heatmap_legend_param(at = c(-2.5, 0, 2.5))",
+      "basis": "保证左侧权重柱状图与右侧热图基因上下对应，避免离群值压缩中间渐变层次与图例刻度溢出"
+    },
+    {
+      "setting": "grid.grabExpr(draw(ht)) 嵌入 patchwork，legend.position = \"inside\" (ggplot2 4.x 语法)",
+      "basis": "实现 ComplexHeatmap 与 ggplot2 四面板一次性无缝拼板及零 ggplot2 废弃警告"
+    }
+  ],
+  "adaptation": [
+    "弃用原脚本散落 ggscatter + 无序热图 + 泄露训练集 ROCR 曲线，重构为独立测试集四面板联动布局。"
+  ],
+  "limitations": [
+    "已在 R 4.5.3 真实跑通上游模型输出并目视核验 PNG，全部曲线与三联轴严格对齐无告警；若非零基因过多（>20）建议调大 PDF 高度或缩小行字号。"
+  ],
+  "code_sha256": {
+    "plot.R": "e501fe5f96e35ef474f8d6ad9473a4a75f6c65f4964c93f0ca4506ee8aaf670e"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, ComplexHeatmap 2.25.3, ggplot2 4.0.3, patchwork 1.3.2) + synthetic cohort",
+      "date": "2026-11-14",
+      "notes": "已生成 PDF 并转为 150 DPI PNG 目视检查四面板布局、单调 ROC 曲线与 Z-score 色阶对齐。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

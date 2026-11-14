@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "wgcna-coexpression-metamodule",
-  "title": "WGCNA 软阈值筛选、拓扑重叠矩阵（TOM）构建与共表达模块识别",
+  "title": "WGCNA 软阈值筛选、动态模块合并与临床性状关联分析",
   "kind": "method",
   "method_type": "共表达与表达程序",
   "language": "R",
@@ -29,6 +29,16 @@
         188
       ],
       "role": "提取的核心分析流程"
+    },
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p10.R",
+      "sha256": "048db64f22a760735423133648834fea89df8095396871c63acc7f56cb7f48e0",
+      "lines": [
+        1,
+        264
+      ],
+      "role": "补全 goodSamplesGenes 质控、mergeCloseModules 模块合并与临床性状相关性分析并修复 adjacency 参数错误"
     }
   ],
   "license": {
@@ -38,15 +48,21 @@
   "inputs": [
     {
       "path": "Data/bulk_expr_matrix.rds",
-      "object": "矩阵（基因 × 样本，归一化表达）",
-      "requirements": "样本数建议 >= 15（WGCNA 官方经验下限）；基因已做适度筛选（如高变异或目标基因集）",
-      "evidence": "源码 WGCNA::cor 对基因加载矩阵的计算与任务规范指定的 pickSoftThreshold/TOM 流程组合推断"
+      "object": "matrix（基因 × 样本，归一化表达）",
+      "requirements": "样本数建议 >= 15；基因已筛选高变异基因（通常 3000-8000）",
+      "evidence": "base/p10.R 矩阵转置与 WGCNA 官方输入结构"
+    },
+    {
+      "path": "Data/wgcna_sample_traits.csv",
+      "object": "data.frame（行名样本 ID × 数值/二值性状列）",
+      "requirements": "行名与表达矩阵列名共有样本交集对齐",
+      "evidence": "base/p10.R 临床设计矩阵关联分析输入"
     }
   ],
   "packages": [
     {
       "name": "WGCNA",
-      "tested_version": null,
+      "tested_version": "1.74",
       "source_version": null
     }
   ],
@@ -57,43 +73,46 @@
   "outputs": [
     {
       "path": "results/wgcna_modules.rds",
-      "content": "列表：软阈值估计与 sft 拟合表、基因聚类树 geneTree、模块归属（dynamicMods 与 moduleColors）及模块特征基因 MEs（样本 × 模块）"
+      "content": "含 softPower、geneTree、dynamicColors、moduleColors、MEs、moduleTraitCor、moduleTraitPvalue 与 gene_module 的完整结果包"
+    },
+    {
+      "path": "results/wgcna_gene_modules.csv",
+      "content": "基因归属模块映射表（合并前后颜色对比）"
     }
   ],
   "method_choices": [
     {
-      "setting": "networkType/TOMType = \"signed\", powers = 1:10, 拟合目标 R^2=0.8（无估计回退 6）",
-      "basis": "WGCNA 官方教程默认；signed 网络区分正负共表达，回退分支避免无标度不显著时报错"
+      "setting": "goodSamplesGenes + powers = 1:20, RsquaredCut = 0.85, networkType/type = \"signed\"",
+      "basis": "修复旧模板 adjacency(networkType=...) 错误参数名（应为 type=）；拓展软阈值探索上限至 20"
     },
     {
-      "setting": "cutreeDynamic minClusterSize = 30, deepSplit = 2",
-      "basis": "WGCNA 官方教程默认；模块粒度随 deepSplit 增大而变细，需结合模块尺寸分布调整"
-    },
-    {
-      "setting": "ME 经 orderMEs 排序",
-      "basis": "WGCNA 官方教程默认；按相关性排序便于模块间冗余检查"
+      "setting": "cutreeDynamic(method = \"hybrid\", distM = dissTOM, deepSplit = 2, minClusterSize = 30) + mergeCloseModules(cutHeight = 0.25)",
+      "basis": "hybrid 切分直接利用 TOM 相异矩阵并合并高度相似特征基因模块，抑制碎片化"
     }
   ],
   "adaptation": [
-    "源脚本为 NMF 因子层面的相似度分析（Jaccard/Pearson 因子矩阵、future 并行与多重缓存守卫）；按任务规范以 WGCNA 官方教程标准流程实现 pickSoftThreshold -> adjacency -> TOM -> 动态剪切 -> moduleEigengenes。",
-    "移除 fs/dir_create、Sys.glob 多样本扫描、if(!file.exists) 缓存、stopifnot 断言、诊断直方图与全部绘图段。",
-    "读写路径统一为项目根相对路径（Data/ 与 results/）。"
+    "修复旧模板 adjacency(..., networkType = \"signed\") 传参报错（WGCNA::adjacency 实为 type = \"signed\"）与 method = \"tree\" 忽略 dissTOM 问题。",
+    "吸收 base/p10.R 完整临床分析链：补充样本与性状显式对齐、goodSamplesGenes 质控、mergeCloseModules 合并、corPvalueStudent 性状关联及模块表落盘；图形部分剥离至 wgcna-module-trait-labeled-heatmap。"
   ],
   "limitations": [
-    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
-    "WGCNA 结论对小样本队列敏感；模块-性状关联应配合置换检验，ME 与临床相关时避免样本非独立（配对/批量结构）导致的假关联。",
-    "软阈值无标度假设不满足时（截断分布数据）模块结构不稳定，应报告 sft 拟合曲线。"
+    "已在 R 4.5.3 合成共表达网络（240 基因 × 24 样本）验证全流程与下游热图衔接；极小样本队列（<15）相关性不稳。",
+    "非独立配对设计或未去批次数据时，ME 与性状关联易受混杂影响。"
   ],
   "code_sha256": {
-    "analysis.R": "0fefce4d529aaeecd7ae72adf90653c18dcd6d779ce5698fa72a4c009837baa1"
+    "analysis.R": "e6094933decbdfc72f65ba2d66cafa46c12186339713578fcc6ed5f8071e6eac"
   },
   "validation": {
     "syntax": {
       "status": "passed",
-      "environment": "Rscript parse check",
-      "date": "2026-11-06"
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
     },
-    "synthetic_run": null,
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, WGCNA 1.74) + synthetic 240 genes x 24 samples x 3 traits",
+      "date": "2026-11-14",
+      "notes": "已端到端验证 TOM、模块合并与模块-性状相关性矩阵生成并对接绘图模板。"
+    },
     "reference_comparison": null,
     "real_data": null,
     "second_dataset": null

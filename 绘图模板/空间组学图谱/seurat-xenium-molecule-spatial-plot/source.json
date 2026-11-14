@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "id": "seurat-xenium-molecule-spatial-plot",
+  "title": "Seurat v5 Xenium 亚细胞空间细胞类型、转录本分子定位与特征表达联合图",
+  "kind": "plot",
+  "plot_type": "空间组学图谱",
+  "language": "R",
+  "tags": [
+    "Seurat",
+    "Xenium",
+    "ImageDimPlot",
+    "ImageFeaturePlot",
+    "亚细胞空间转录组"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p15.R（L1-35 Seurat Xenium ImageDimPlot 分子叠加图与 ImageFeaturePlot 空间表达图）",
+    "author_attribution": "本地教学筛选脚本（base/p15.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p15.R",
+      "sha256": "ab2176c354aa280b01d4ab3dd0fc74cfb7987dae1da7294168fe341f1f652bb2",
+      "lines": [
+        1,
+        35
+      ],
+      "role": "Seurat Xenium ImageDimPlot 分子叠加图与 ImageFeaturePlot 空间表达图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/xenium_seurat.rds",
+      "object": "Seurat v5 空间对象",
+      "requirements": "含名为 fov（或按数据替换）的 FOV 坐标与 cell_type 元数据列，且目标分子存在于该 FOV 分子槽内",
+      "evidence": "base/p15.R LoadXenium 构建之 Seurat Xenium 对象"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标基因同时存在于表达矩阵与 FOV 亚细胞分子表。"
+  ],
+  "outputs": [
+    {
+      "path": "results/xenium_spatial_panels.pdf",
+      "content": "细胞类型与亚细胞转录本定位图 + 连续空间表达联合面板 PDF"
+    }
+  ],
+  "visual_grammar": [
+    {
+      "setting": "dark.background = TRUE + plot.background = element_rect(fill = \"black\") + border.color = \"grey15\", border.size = 0.15",
+      "basis": "避开 Seurat shape = 21 传 border.color = NA 时点图层隐身与面板高度白框不等的图形陷阱，并统一暗色底板突显荧光分子色"
+    },
+    {
+      "setting": "max.cutoff = \"q95\"",
+      "basis": "防止高拷贝极端像元压缩中低表达渐变动态范围"
+    }
+  ],
+  "adaptation": [
+    "由单张交互式出图重构为 patchwork 双面板出版级导出，并修正无边框隐身与 DarkTheme 外框尺寸不一致问题。"
+  ],
+  "limitations": [
+    "已用合成 Seurat v5 FOV（120 细胞 + 360 亚细胞分子）端到端出图并目视检查 PNG；真实整张 Xenium 切片细胞数达十万级时建议调小 size 与 mols.size 并限定 crop 视场。"
+  ],
+  "code_sha256": {
+    "plot.R": "0ef96bdbb645a78303c327753402b9fb695bb418f12e412cf30acc6a8aa557e7"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, Seurat 5.5.0, SeuratObject 5.4.0, patchwork 1.3.2) + synthetic Xenium FOV",
+      "date": "2026-11-14",
+      "notes": "已生成 PDF 并转为 PNG 目视核验细胞质心、分子点与连续表达梯度在暗底板全显清晰。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

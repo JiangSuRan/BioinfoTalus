@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "id": "edger-qlf-bulk-de",
+  "title": "Bulk RNA-seq 原始计数矩阵 edgeR TMM 归一化与准似然 F 检验差异分析",
+  "kind": "method",
+  "method_type": "Bulk与队列建模",
+  "language": "R",
+  "tags": [
+    "edgeR",
+    "TMM",
+    "glmQLFit",
+    "Bulk RNA-seq",
+    "差异表达"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p6.R（L84-215 Bulk RNA-seq edgeR TMM 归一化与 glmQLFit/glmQLFTest 差异分析）",
+    "author_attribution": "本地教学筛选脚本（base/p6.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p6.R",
+      "sha256": "bb4e00910bbfe6bf279364c88960e4cda99c927fc1de6afca8d2aa3a8c9fdd67",
+      "lines": [
+        84,
+        215
+      ],
+      "role": "Bulk RNA-seq edgeR TMM 归一化与 glmQLFit/glmQLFTest 差异分析"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/bulk_raw_counts.rds",
+      "object": "matrix（基因 × 样本，非负原始读数计数）",
+      "requirements": "必须为未标准化整数计数矩阵，而非 TPM/FPKM",
+      "evidence": "base/p6.R edgeR DGEList 计数输入"
+    },
+    {
+      "path": "Data/bulk_metadata.csv",
+      "object": "data.frame（Sample, Group 列）",
+      "requirements": "Group 含 Control 与 Treat（按实际水平改写）",
+      "evidence": "base/p6.R 样本分组表"
+    }
+  ],
+  "packages": [
+    {
+      "name": "edgeR",
+      "tested_version": "4.8.2",
+      "source_version": null
+    },
+    {
+      "name": "limma",
+      "tested_version": "3.66.0",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；样本数建议每组 >= 3 以便稳定离散度收缩估计。"
+  ],
+  "outputs": [
+    {
+      "path": "results/edger_qlf_deg.csv",
+      "content": "edgeR 准似然差异表（logFC, logCPM, F, PValue, FDR, gene）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "filterByExpr + TMM + estimateDisp(robust = TRUE) + glmQLFit(robust = TRUE)/glmQLFTest",
+      "basis": "edgeR 官方推荐准似然 F 检验严格控制小样本 Bulk 假阳性率，优于冗余 LRT/经典检验"
+    },
+    {
+      "setting": "makeContrasts 显式对比矩阵",
+      "basis": "支持平滑拓展至多组比较与协变量校正"
+    }
+  ],
+  "adaptation": [
+    "去除原脚本同时重复跑 exactTest/LRT/QLF/voom 的教学冗余与散落文件读取，收敛为最优稳健准似然线性脚本。"
+  ],
+  "limitations": [
+    "若存在复杂多批次嵌套或随机效应（如同一受试者多时间点），建议参考 variancepartition-dream 或配合设计矩阵加协变量。"
+  ],
+  "code_sha256": {
+    "analysis.R": "1af56fb2fbb1da1dad0c5afd38e903805cd4268593a361640c18dba60a94692f"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, edgeR 4.8.2, limma 3.66.0) + synthetic 150 genes x 10 samples",
+      "date": "2026-11-14",
+      "notes": "已验证 filterByExpr、TMM、稳健 QLF 拟合与 4 倍植入差异基因检出。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

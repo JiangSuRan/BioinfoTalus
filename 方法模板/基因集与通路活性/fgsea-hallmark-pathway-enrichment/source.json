@@ -28,6 +28,16 @@
         104
       ],
       "role": "提取的核心分析流程"
+    },
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p9.R",
+      "sha256": "34f77d06f4fa159a0a9269994995242a037e0e6f7bc8824ee0f519c3713f40ff",
+      "lines": [
+        167,
+        175
+      ],
+      "role": "参考 GSVA 2.x gsvaParam() 替换已废止的 GSVA::gsva() 调用"
     }
   ],
   "license": {
@@ -57,22 +67,27 @@
   "packages": [
     {
       "name": "GSVA",
-      "tested_version": null,
+      "tested_version": "2.4.9",
       "source_version": null
     },
     {
-      "name": "jsonlite",
-      "tested_version": null,
+      "name": "BiocParallel",
+      "tested_version": "1.44.0",
       "source_version": null
     },
     {
       "name": "dplyr",
-      "tested_version": null,
+      "tested_version": "1.1.4",
       "source_version": null
     },
     {
-      "name": "tidyr",
-      "tested_version": null,
+      "name": "tibble",
+      "tested_version": "3.3.1",
+      "source_version": null
+    },
+    {
+      "name": "jsonlite",
+      "tested_version": "1.8.8",
       "source_version": null
     }
   ],
@@ -88,33 +103,37 @@
   ],
   "method_choices": [
     {
-      "setting": "gsva kcdf = \"Gaussian\"（连续 log TPM）",
-      "basis": "来源代码设定；计数型数据应改 Poisson 核"
+      "setting": "gsvaParam(..., kcdf = \"Gaussian\", maxDiff = TRUE) + SerialParam()",
+      "basis": "修复原模板 GSVA 1.x 旧接口在 Bioconductor >= 3.19 报错的问题；连续 log-TPM 用 Gaussian 核"
     },
     {
       "setting": "分组比较 Welch t.test + BH 校正",
-      "basis": "来源代码 geom_signif(test=t.test) 的计算等价实现；比较对取源码三组（BL vs nCRT_non-CR/CR 及组间）"
+      "basis": "来源代码 geom_signif(test=t.test) 的计算等价实现；比较对取源码三组"
     }
   ],
   "adaptation": [
-    "移除 geom_signif/geom_boxplot 箱线绘图、pROC 的 ROC 曲线段与单细胞评分 ComplexHeatmap 热图段（按任务规范剥离绘图）。",
-    "geom_signif 的隐式检验改为显式 t.test 统计表并新增 BH 校正与 csv 落盘；pdat 的空值替换与因子 levels 精简。"
+    "剥离原脚本 ComplexHeatmap 热图、pROC ROC 与 geom_signif 绘图段，保留显式 t.test + BH 校正统计落盘。",
+    "修复原模板缺失 library(tibble) 导致 rownames_to_column 失败及 GSVA::gsva() 旧签名废止崩溃的缺陷。"
   ],
   "limitations": [
-    "仅完成本机 R 语法树解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
-    "小样本疗效分组的 t 检验功效有限，多重比较校正后易无显著结论；评分对通路基因集版本敏感。",
-    "单通路打分不构成富集方向检验（如需秩统计富集请配合 fgsea/GSEA 模板）。"
+    "已在 R 4.5.3 合成数据（60 基因 × 12 样本）端到端验证通过；小样本疗效分组 t 检验功效有限。",
+    "单通路打分不构成秩统计方向富集检验（如需秩富集请配合 fgsea/GSEA 模板）。"
   ],
   "code_sha256": {
-    "analysis.R": "7e94a0eee4f7c0a6a21d860ddb6b3bf09d913912e20287967ff09ef53942ad9c"
+    "analysis.R": "5649d433de8d99f91158225324d8f8e97035a11a2ad2e4f77c3369b4010139e2"
   },
   "validation": {
     "syntax": {
       "status": "passed",
-      "environment": "Rscript parse check",
-      "date": "2026-11-06"
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
     },
-    "synthetic_run": null,
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, GSVA 2.4.9, tibble 3.3.1) + synthetic 60 genes x 12 samples",
+      "date": "2026-11-14",
+      "notes": "已验证 gsvaParam + rownames_to_column + Welch t 检验 + BH 校正输出 signature_score_stats.csv。"
+    },
     "reference_comparison": null,
     "real_data": null,
     "second_dataset": null

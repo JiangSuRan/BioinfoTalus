@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "id": "chipseeker-peak-annotation-go",
+  "title": "ChIPseeker 多样本染色质峰基因组注释与 TSS 近端基因 GO 富集",
+  "kind": "method",
+  "method_type": "表观基因组与峰注释",
+  "language": "R",
+  "tags": [
+    "ChIPseeker",
+    "ChIP-seq",
+    "CUT&Tag",
+    "峰注释",
+    "GO富集"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "base/p16.R（L1-52 多样本 ChIP/ATAC BED 峰注释与启动子基因 GO 通路比较）",
+    "author_attribution": "本地教学筛选脚本（base/p16.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper_base",
+      "path": "base/p16.R",
+      "sha256": "da010cc888328d0ddd0231ade26725b173befff91cd67ce1e25111d6d8d01a32",
+      "lines": [
+        1,
+        52
+      ],
+      "role": "多样本 ChIP/ATAC BED 峰注释与启动子基因 GO 通路比较"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与分析脚手架提取，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/peak_samples.tsv",
+      "object": "data.frame（Sample, BedPath 列）",
+      "requirements": "BedPath 指向标准 BED/narrowPeak 峰文件（默认 hg38，可替换对应 TxDb）",
+      "evidence": "base/p16.R 多样本峰文件列表与注释流程"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ChIPseeker",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "TxDb.Hsapiens.UCSC.hg38.knownGene",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "org.Hs.eg.db",
+      "tested_version": "3.22.0",
+      "source_version": null
+    },
+    {
+      "name": "clusterProfiler",
+      "tested_version": "4.18.4",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "本机未安装 ChIPseeker 与 TxDb.Hsapiens.UCSC.hg38.knownGene；运行前需确保基因组版本（hg38/hg19/mm10）与 BED 一致。"
+  ],
+  "outputs": [
+    {
+      "path": "results/chipseeker_peak_annotations.rds",
+      "content": "供 chipseeker-peak-annotation-panels 复用的 csAnno 列表"
+    },
+    {
+      "path": "results/chipseeker_peak_annotations.csv",
+      "content": "合并全样本基因组区域注释与距离 TSS 结果表"
+    },
+    {
+      "path": "results/chipseeker_tss_go_enrichment.csv",
+      "content": "TSS ±3 kb 近端调控靶基因多样本 compareCluster GO-BP 富集表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "tssRegion = c(-3000, 3000), annoDb = \"org.Hs.eg.db\"",
+      "basis": "ChIPseeker 启动子标准窗口并同步输出 Entrez ID 与 Gene Symbol"
+    },
+    {
+      "setting": "显式筛选 abs(distanceToTSS) <= 3000 提取 EntrezID + compareCluster(\"enrichGO\")",
+      "basis": "修复原脚本 L40 错误引用未定义 anno.veh$peak2.SYMBOL 与未限定近端TSS靶基因的问题"
+    }
+  ],
+  "adaptation": [
+    "修复原脚本变量名拷贝错误并剥离绘图至独立可视化模板，以 Sample 表驱动支持任意多样本比较。"
+  ],
+  "limitations": [
+    "本机仅完成 Rscript 4.5.3 语法解析核验，未在安装 ChIPseeker/TxDb 的环境中执行端到端验证。"
+  ],
+  "code_sha256": {
+    "analysis.R": "d2aac3cdd8d3eb7490cdb8b7694d732b46f9eddb34ceeb84378b70df7ff4dc22"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 (--vanilla) parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

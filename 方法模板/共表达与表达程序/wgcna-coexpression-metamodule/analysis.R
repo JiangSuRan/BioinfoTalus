@@ -1,40 +1,77 @@
-## WGCNA 软阈值筛选、拓扑重叠矩阵（TOM）构建与共表达模块识别
+## WGCNA 软阈值筛选、动态模块合并与临床性状关联分析
 library(WGCNA)
 
-datExpr0 <- readRDS("Data/bulk_expr_matrix.rds")
-datExpr <- t(datExpr0)
+expr_mat <- as.matrix(readRDS("Data/bulk_expr_matrix.rds"))
+trait_df <- read.csv("Data/wgcna_sample_traits.csv", row.names = 1, check.names = FALSE)
 
-# 无标度拓扑拟合指数达到 0.8 的最小软阈值；无估计时回退默认 6
-powers <- c(1:10)
-sft <- pickSoftThreshold(datExpr, powerVector = powers, networkType = "signed", verbose = 0)
-softPower <- sft$powerEstimate
-if (is.na(softPower)) softPower <- 6
+# 显式对齐表达矩阵样本列与临床性状表行名，防止性状相关性错位
+common_samples <- intersect(colnames(expr_mat), rownames(trait_df))
+datExpr <- t(expr_mat[, common_samples, drop = FALSE])
+trait_df <- trait_df[common_samples, , drop = FALSE]
 
-# 邻接与拓扑重叠：TOM 缓和单边噪声，signed 网络区分正负相关
-adjacency <- adjacency(datExpr, power = softPower, networkType = "signed")
-TOM <- TOMsimilarity(adjacency, TOMType = "signed")
+# 剔除缺失率过高或零方差的基因与离群稀疏样本
+gsg <- goodSamplesGenes(datExpr, verbose = 0)
+datExpr <- datExpr[gsg$goodSamples, gsg$goodGenes, drop = FALSE]
+trait_df <- trait_df[rownames(datExpr), , drop = FALSE]
+
+# 在 1:20 候选幂次中选取无标度拟合优度 R^2 达 0.85 的最小软阈值
+powers <- 1:20
+sft <- pickSoftThreshold(
+  datExpr,
+  powerVector = powers,
+  networkType = "signed",
+  RsquaredCut = 0.85,
+  verbose = 0
+)
+softPower <- ifelse(is.na(sft$powerEstimate), 6L, sft$powerEstimate)
+
+# 有向邻接矩阵与拓扑重叠相异度：type = "signed" 区分正负共表达方向
+adj_mat <- adjacency(datExpr, type = "signed", power = softPower)
+TOM <- TOMsimilarity(adj_mat, TOMType = "signed")
 dissTOM <- 1 - TOM
 geneTree <- hclust(as.dist(dissTOM), method = "average")
 
-# 动态剪切树：自适应高度切分识别形态各异的模块
+# 基于 TOM 距离的混合动态剪切与近邻模块合并，抑制过度碎片化
 dynamicMods <- cutreeDynamic(
   dendro = geneTree,
-  method = "tree",
-  minClusterSize = 30,
-  deepSplit = 2
+  distM = dissTOM,
+  method = "hybrid",
+  deepSplit = 2,
+  pamRespectsDendro = FALSE,
+  minClusterSize = 30
 )
+dynamicColors <- labels2colors(dynamicMods)
 
-# 模块特征基因：每模块表达谱第一主成分，作为模块活性度量
-MEs <- moduleEigengenes(datExpr, colors = dynamicMods)$eigengenes
-MEs <- orderMEs(MEs)
-moduleColors <- labels2colors(dynamicMods)
+merged <- mergeCloseModules(
+  exprData = datExpr,
+  colors = dynamicColors,
+  cutHeight = 0.25,
+  verbose = 0
+)
+moduleColors <- merged$colors
+MEs <- orderMEs(merged$newMEs)
 
-wgcna_modules <- list(
+# 模块特征基因与临床性状 Pearson 相关及 Student 渐近显著性检验
+moduleTraitCor <- cor(MEs, trait_df, use = "pairwise.complete.obs")
+moduleTraitPvalue <- corPvalueStudent(moduleTraitCor, nrow(datExpr))
+
+gene_module <- data.frame(
+  gene = colnames(datExpr),
+  dynamic_color = dynamicColors,
+  merged_color = moduleColors,
+  stringsAsFactors = FALSE
+)
+write.csv(gene_module, "results/wgcna_gene_modules.csv", row.names = FALSE)
+
+wgcna_results <- list(
   softPower = softPower,
   sft = sft,
   geneTree = geneTree,
-  modules = dynamicMods,
+  dynamicColors = dynamicColors,
   moduleColors = moduleColors,
-  MEs = MEs
+  MEs = MEs,
+  moduleTraitCor = moduleTraitCor,
+  moduleTraitPvalue = moduleTraitPvalue,
+  gene_module = gene_module
 )
-saveRDS(wgcna_modules, "results/wgcna_modules.rds")
+saveRDS(wgcna_results, "results/wgcna_modules.rds")
