@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-patient-celltype-stacked-bar",
+  "title": "按临床分组排序的患者级亚群堆叠比例柱状图（患者标签按分组着色）",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "患者队列",
+    "堆叠柱状图",
+    "临床分组排序",
+    "axis着色"
+  ],
+  "paper": {
+    "repository": "https://github.com/MarioniLab/hbca.git",
+    "figure": "code/figures/patientcelltype_barplots/plot_patientcelltype_barplot.R（HBCA 全队列患者×亚群 100% 堆叠条形图及患者轴临床条件着色，51–118 行）",
+    "author_attribution": "Reed et al., Nature Genetics 2024",
+    "doi": "10.1038/s41588-024-01688-9",
+    "revision": "de6824fca1605a75c140ea0c4d3cc412aec234e2"
+  },
+  "source_files": [
+    {
+      "root_label": "hbca",
+      "path": "code/figures/patientcelltype_barplots/plot_patientcelltype_barplot.R",
+      "sha256": "e95c957015aee833c45e1fcb473c42edd5a9a79affdb47c29f28211cea018892",
+      "lines": [
+        51,
+        118
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/patient_celltype_metadata.rds",
+      "object": "data.frame",
+      "requirements": "含 patient_id、condition 与 cell_type 三列",
+      "evidence": "源码按 tissue_condition 与 patientID 联合排序并提取条件配色映射至 axis.text.x"
+    },
+    {
+      "path": "Data/condition_palette.rds",
+      "object": "named character vector",
+      "requirements": "以 condition 各水平命名的颜色向量",
+      "evidence": "源码 tissue_condition_colour_dictionary 命名配色字典"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scales",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggtext",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；Data/condition_palette.rds 的名称须覆盖 meta$condition 全部取值，且每位患者对应唯一 condition。"
+  ],
+  "outputs": [
+    {
+      "path": "results/patient_celltype_stacked_bar.pdf",
+      "content": "患者按临床分组排序且坐标轴患者 ID 按临床分组染色的 100% 亚群组成图"
+    }
+  ],
+  "adaptation": [
+    "将按分组排序与配色标签构造直接内联为单一管道（去除多余 left_join），并使用 ggtext::element_markdown 渲染彩色样本标签以避免 ggplot2 4.0 对向量化 element_text(colour=) 的弃用警告。"
+  ],
+  "code_sha256": {
+    "plot.R": "b8884dafb70b761f445516a4170625740554b409b8182fca7268acde0662b59a"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

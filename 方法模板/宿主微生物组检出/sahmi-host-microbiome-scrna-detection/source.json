@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "id": "sahmi-host-microbiome-scrna-detection",
+  "title": "SAHMI 单细胞宿主-微生物组双端条形码降噪过滤与寄主细胞群整合分析",
+  "kind": "method",
+  "method_type": "宿主微生物组检出",
+  "language": "R",
+  "tags": [
+    "SAHMI",
+    "宿主微生物组",
+    "Kraken2",
+    "k-mer一致性过滤",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "单细胞宿主-微生物组互作分析（SAHMI）实战.txt（k-mer 与 read 正相关性过滤假阳性、细胞条形码挂载与定植差异分析）",
+    "author_attribution": "本地教学脚本（单细胞宿主-微生物组互作分析（SAHMI）实战.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "单细胞宿主-微生物组互作分析（SAHMI）实战.txt",
+      "sha256": "3545a3d4b5bdebf400d0d8585d055949512112ae9efea816256a1563d5cb0730",
+      "lines": [
+        90,
+        237
+      ],
+      "role": "提取 SAHMI 污染菌排除统计标准、微生物 UMI 挂载 Seurat 与定植响应 DEG 分析"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/host_seurat.rds",
+      "object": "Seurat",
+      "requirements": "寄主单细胞归一化 Seurat 对象",
+      "evidence": "源码 Seurat 对象"
+    },
+    {
+      "path": "Data/sahmi_cell_species_counts.tsv",
+      "object": "TSV",
+      "requirements": "含 cell_barcode, taxon_name, umi_count（由上游 SAHMI Kraken2+sckmer 生成）",
+      "evidence": "源码细胞-微生物定量表"
+    },
+    {
+      "path": "Data/sahmi_kmer_consistency.tsv",
+      "object": "TSV",
+      "requirements": "含 total_reads, total_unique_kmers, n_cells_detected, spearman_kmer_read, pvalue_kmer_read",
+      "evidence": "源码物种水平真实定植滤除表"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "data.table",
+      "tested_version": "1.18.4",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；上游 FASTQ 需经 SAHMI kraken2/sckmer 去宿主比对生成计数及 k-mer 一致性表。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sahmi_host_microbe_seurat.rds",
+      "content": "整合 microbe_umi、dominant_taxon 与 Positive/Negative 状态的 Seurat 对象"
+    },
+    {
+      "path": "results/sahmi_colonized_vs_uncolonized_deg.csv",
+      "content": "微生物定植阳性 vs 阴性寄主细胞的转录重编程差异基因表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "spearman_kmer_read >= 0.6 & n_cells_detected >= 5 & total_unique_kmers >= 100",
+      "basis": "真阳性微生物随测序深度增长唯一 k-mer 数同步递增，用以剥离试剂盒背景污染"
+    }
+  ],
+  "adaptation": [
+    "将原 Bash 集群脚本后的下游 R 污染过滤与 Seurat FindMarkers 定植差异环节提炼为规范线性模板，并修复向量长度 Recycling 隐患。"
+  ],
+  "limitations": [
+    "短读长单细胞 3'/5' 测序在属以下（尤其近缘种）的分类分辨率受限于公共微生物基因组完备度。"
+  ],
+  "code_sha256": {
+    "analysis.R": "fa36bc24003a23165ef0acd4f1b8ce69c3aaf3590678601ce89c0f1e95c52be7"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla) + synthetic 120 host cells & 3 taxa (1 kitome noise filtered out)",
+      "date": "2026-11-14",
+      "notes": "过滤假阳性试剂盒噪声菌并完成定植阳性细胞 FindMarkers 输出。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

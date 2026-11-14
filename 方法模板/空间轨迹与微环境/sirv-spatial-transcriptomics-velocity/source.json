@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "id": "sirv-spatial-transcriptomics-velocity",
+  "title": "SIRV 将 scRNA 剪接/未剪接矩阵迁移至空间坐标系估算空间 RNA 速率矢量场",
+  "kind": "method",
+  "method_type": "空间轨迹与微环境",
+  "language": "Python",
+  "tags": [
+    "SIRV",
+    "空间RNA速率",
+    "scVelo",
+    "SpaGE投影",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "25 空转速率分析--SIRV.txt（SIRV.ed.SIRV 与 xy_loc 空间速率投影）",
+    "author_attribution": "本地教学脚本（25 空转速率分析--SIRV.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "25 空转速率分析--SIRV.txt",
+      "sha256": "23b8fc7dca8171b5ca398aae6afc3df78e1a1274b4fac8c96667d1ee1dfe35ac",
+      "lines": [
+        1,
+        100
+      ],
+      "role": "提取将参考单细胞 spliced/unspliced 迁移至空间 Spot 计算组织坐标速率流流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/spatial_preprocessed.h5ad",
+      "object": "AnnData",
+      "requirements": "含 obsm['spatial'] 的空间数据集",
+      "evidence": "源码空间目标对象"
+    },
+    {
+      "path": "Data/scrna_unspliced_spliced.h5ad",
+      "object": "AnnData",
+      "requirements": "含 layers['spliced'] 与 layers['unspliced'] 的配对单细胞集",
+      "evidence": "源码剪接参考单细胞集"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scvelo",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SIRV",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 SIRV 与 scvelo，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sirv_spatial_velocity.h5ad",
+      "content": "含空间坐标速度向量 velocity_xy_loc 的 AnnData 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "SIRV.ed.SIRV(n_pv=30) + velocity(mode='stochastic') + velocity_embedding(basis='xy_loc')",
+      "basis": "来源代码将 SpaGE 领域适应空间插补与物理 xy 组织坐标速率向量投射结合"
+    }
+  ],
+  "adaptation": [
+    "抽取基因交集对齐与物理坐标注入步骤并剔除原始示例硬编码路径。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 SIRV/scvelo）；空间细胞密度混杂或配对单细胞不匹配时速率矢量可能平滑失真。"
+  ],
+  "code_sha256": {
+    "analysis.py": "f645fa73fbee32fa5016abbfbc5f2ef2a7cf5d15be9d7bda03bec94b96e03f4c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

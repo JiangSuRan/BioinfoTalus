@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-cohort-donut-sqrt-count-panel",
+  "title": "图谱队列细胞数平方根柱图、组织来源堆叠柱图与环状图组合面板",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "队列概览",
+    "平方根刻度",
+    "环状图",
+    "堆叠比例",
+    "patchwork"
+  ],
+  "paper": {
+    "repository": "https://github.com/yuyang3/pan-B.git",
+    "figure": "Figure1.R（Cell 2024 泛癌 B 细胞 Fig 1A 平方根计数柱图与环状构成比 + Fig S1A 组织来源堆叠比例，250–346 与 381–409 行）",
+    "author_attribution": "Yang et al., Cell 2024",
+    "doi": "10.1016/j.cell.2024.06.038",
+    "revision": "2f6c871f39de571ba134efa68c7636cefb482fe9"
+  },
+  "source_files": [
+    {
+      "root_label": "pan-B",
+      "path": "Figure1.R",
+      "sha256": "7a7f8ff08b3ca483e3ae3d54f0580caebb50ce87682ce1acf4e4d5bf686cb729",
+      "lines": [
+        250,
+        409
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cohort_cell_metadata.rds",
+      "object": "data.frame",
+      "requirements": "含 cohort（癌种/队列）与 tissue（组织来源）两列",
+      "evidence": "源码分别对 Cancer 汇总细胞数量、按 Tissue 堆叠构成，并计算 fraction/ymax/ymin 绘制极坐标圆环"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "cowplot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scales",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；cohort 列水平数量适中以保证极坐标标签清晰居中。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cohort_composition_overview_panel.pdf",
+      "content": "平方根细胞数柱图、组织来源 100% 堆叠图与样本占比圆环图三联概览面板"
+    }
+  ],
+  "adaptation": [
+    "将源脚本三个单图整合为 patchwork 横向三联队列概览面板，微调环状图字号为 2.1 以适配常见扇区宽度。"
+  ],
+  "code_sha256": {
+    "plot.R": "4c4d8644a7e9bc8fd37b6dde69f83668b76bbb0070d1d4d9cb5e65151bb58afd"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

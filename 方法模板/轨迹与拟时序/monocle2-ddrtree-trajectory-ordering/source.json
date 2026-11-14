@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "id": "monocle2-ddrtree-trajectory-ordering",
+  "title": "Monocle 2 DDRTree 拟时序降维、状态排序与分支差异 BEAM 分析",
+  "kind": "method",
+  "method_type": "轨迹与拟时序",
+  "language": "R",
+  "tags": [
+    "Monocle2",
+    "DDRTree",
+    "拟时序",
+    "BEAM",
+    "分支分析",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "m15.R（L1-250 Monocle 2 CellDataSet 构建、DDRTree 拟时序排序与 BEAM 分支检验）",
+    "author_attribution": "本地教学脚本（m15.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "m15.R",
+      "sha256": "0800b5ffbfd665e132270d238f5c2648e4235bde8b3ac9836b2331741b5df667",
+      "lines": [
+        1,
+        250
+      ],
+      "role": "提取 Monocle2 核心流形轨迹重塑与分叉决定基因检验"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_subset.rds",
+      "object": "Seurat",
+      "requirements": "含 RNA counts 层与 celltype 元数据",
+      "evidence": "源码 Seurat v5 对象输入"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "monocle",
+      "tested_version": "2.38.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；需 igraph < 2.0（例如 1.2.x–1.6.x），因 Bioconductor monocle 2.38.0::orderCells 仍传入已废弃的 dfs(neimode=)。"
+  ],
+  "outputs": [
+    {
+      "path": "results/monocle2_cds.rds",
+      "content": "含 Pseudotime 与 State 的 CellDataSet 对象"
+    },
+    {
+      "path": "results/monocle2_beam_genes.csv",
+      "content": "按 qval 排序的分支点 1 BEAM 差异基因表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "expressionFamily = negbinomial.size() + LayerData(layer='counts')",
+      "basis": "Monocle2 负二项分布离散估算要求原始 UMI 计数而非对数标准化数据"
+    },
+    {
+      "setting": "reduceDimension(method='DDRTree') + differentialGeneTest(~celltype, qval<0.01)",
+      "basis": "来源代码预设，以群间差异表达基因驱动分支树骨架"
+    }
+  ],
+  "adaptation": [
+    "将过时 Seurat GetAssayData(slot='counts') 替换为 Seurat v5 兼容的 LayerData(assay='RNA', layer='counts')。"
+  ],
+  "limitations": [
+    "实测 R 4.5.3 + igraph 2.3.3 环境下 monocle 2.38.0::orderCells() 在调用 igraph::graph.dfs(neimode=) 时报错中断（The neimode argument of dfs() was deprecated in igraph 1.3.0 and is now defunct）；合成运行保持 null 并在低版本 igraph 环境中运行或改用 Monocle3/Slingshot。"
+  ],
+  "code_sha256": {
+    "analysis.R": "35219362e37395419f654241993cb1f9f82108b5966b3a2c081650839eddb633"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

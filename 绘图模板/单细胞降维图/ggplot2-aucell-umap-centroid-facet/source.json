@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-aucell-umap-centroid-facet",
+  "title": "AUCell 通路活性 UMAP 质心标注与分组分面梯度双联图",
+  "kind": "plot",
+  "plot_type": "单细胞降维图",
+  "language": "R",
+  "tags": [
+    "AUCell",
+    "UMAP",
+    "质心标签",
+    "ggrepel",
+    "viridis",
+    "facet_grid"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc9：auc打分.txt（52–85 行 AUCell 得分 UMAP 质心标注 + 分面可视化）",
+    "author_attribution": "本地教学脚本（sc9：auc打分.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc9：auc打分.txt",
+      "sha256": "82e770fe3ab9316e76f0a9a22097025fd80b9ff7b1d5ff0b467398ca04a15fe8",
+      "lines": [
+        52,
+        85
+      ],
+      "role": "提取 AUCell 特定通路评分并叠加质心标签、分组分面连续 viridis 映射的 UMAP 展示"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含 umap 降维坐标、seurat_clusters 与 group 分面列",
+      "evidence": "源码 sc2@reductions$umap@cell.embeddings 与 seurat_clusters / group.3"
+    },
+    {
+      "path": "Data/cells_auc.rds",
+      "object": "aucellResults",
+      "requirements": "AUCell_calcAUC 输出对象，单元格条码与 Seurat 一致",
+      "evidence": "源码 getAUC(cells_AUC)[geneSet, ]"
+    },
+    {
+      "path": "Data/target_geneset.rds",
+      "object": "character",
+      "requirements": "待展示的基因集名称（存在于 AUCell 结果行名中）",
+      "evidence": "源码 geneSet <- 'KEGG_OXIDATIVE_PHOSPHORYLATION'"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "AUCell",
+      "tested_version": "1.32.0",
+      "source_version": null
+    },
+    {
+      "name": "SummarizedExperiment",
+      "tested_version": "1.40.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "ggrepel",
+      "tested_version": "0.9.8",
+      "source_version": null
+    },
+    {
+      "name": "viridis",
+      "tested_version": "0.6.5",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；Seurat 对象已完成 RunUMAP。"
+  ],
+  "outputs": [
+    {
+      "path": "results/aucell_umap_centroid_facet.pdf",
+      "content": "AUCell 活性质心标注全局图与分组分面对比图"
+    }
+  ],
+  "adaptation": [
+    "使用 SummarizedExperiment::assay(cells_auc, 'AUC') 或 AUCell::getAUC 安全提取通路得分矩阵，通过行名显式对齐避免细胞顺序假定。",
+    "用 patchwork 将源码中两张独立 UMAP 图（质心标签全局视图 + facet_grid 分组对比图）整合为单页矢量 PDF，并统一 umap_1/umap_2 列名提取。"
+  ],
+  "code_sha256": {
+    "plot.R": "12e415175c044da7396976a36fcede777ec5c086654e717dc3e52659ba1edfb7"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

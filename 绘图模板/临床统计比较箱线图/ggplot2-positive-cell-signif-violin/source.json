@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-positive-cell-signif-violin",
+  "title": "阳性表达细胞子集分组小提琴散点与 ggsignif 显著性检验图",
+  "kind": "plot",
+  "plot_type": "临床统计比较箱线图",
+  "language": "R",
+  "tags": [
+    "ggsignif",
+    "小提琴图",
+    "阳性细胞筛选",
+    "t检验",
+    "ggplot2"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc6：marker 基因画图展示+metadata理解.txt（442–494 行阳性子集自定义小提琴显著性比较图）",
+    "author_attribution": "本地教学脚本（sc6：marker 基因画图展示+metadata理解.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc6：marker 基因画图展示+metadata理解.txt",
+      "sha256": "d1a5a28e6dd2e50b9be1435e238ff41c43542454d38cd6e6fb0cde19d259cdda",
+      "lines": [
+        442,
+        494
+      ],
+      "role": "提取目标基因非零阳性细胞表达值，按预设分组顺序绘制带抖动散点与 ggsignif 检验弧线的小提琴图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含标准化 data 层表达与 group 分组列（已设目标水平顺序）",
+      "evidence": "源码 subset(scRNA_harmony, LYZ > 0) 与 orig.ident 因子重排后 ggsignif 检验"
+    },
+    {
+      "path": "Data/target_gene.rds",
+      "object": "character",
+      "requirements": "单个目标基因符号字符串",
+      "evidence": "源码基因符号 'LYZ'"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "ggsignif",
+      "tested_version": "0.6.4",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标基因在部分细胞中存在正表达，且分组不少于 2 组。"
+  ],
+  "outputs": [
+    {
+      "path": "results/positive_cell_signif_violin.pdf",
+      "content": "阳性细胞子集分组小提琴显著性比较图"
+    }
+  ],
+  "adaptation": [
+    "用向量逻辑索引替代 subset(obj, GENE > 0) 的非标准求值限制，使模板可传入任意基因字符串；用 layer = 'data' 适配 Seurat v5 并更新 element_line(linewidth = 0.8)。",
+    "删除源码重复绘图代码块并自动根据分组水平生成两两比较列表。"
+  ],
+  "code_sha256": {
+    "plot.R": "fbb310b41c735eee190157877e5cbc5231393ed28f2676f866cb723f1b1915b0"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

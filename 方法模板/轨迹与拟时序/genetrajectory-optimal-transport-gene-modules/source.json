@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "genetrajectory-optimal-transport-gene-modules",
+  "title": "GeneTrajectory 基于细胞图最优传输（Wasserstein）距离推断基因时序动态模块",
+  "kind": "method",
+  "method_type": "轨迹与拟时序",
+  "language": "R",
+  "tags": [
+    "GeneTrajectory",
+    "最优传输",
+    "Wasserstein距离",
+    "基因轨迹",
+    "DiffusionMap"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "26 Gene trajectory 单细胞推断基因轨迹.txt（RunDM, GetGraphDistance, CoarseGrain, ExtractGeneTrajectory）",
+    "author_attribution": "本地教学脚本（26 Gene trajectory 单细胞推断基因轨迹.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "26 Gene trajectory 单细胞推断基因轨迹.txt",
+      "sha256": "5524cfda39c85b7138426db19e0337caf9c2df5bf440fc14da2fed32a30e896c",
+      "lines": [
+        1,
+        102
+      ],
+      "role": "提取基因分布间 Wasserstein 距离计算与分支基因模块提取流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_preprocessed.rds",
+      "object": "Seurat",
+      "requirements": "已完成归一化与 PCA 的 Seurat 对象",
+      "evidence": "源码 Seurat 输入"
+    },
+    {
+      "path": "Data/variable_trajectory_genes.txt",
+      "object": "character",
+      "requirements": "待追踪时序动态的候选高变基因",
+      "evidence": "源码 selected_genes"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "GeneTrajectory",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 GeneTrajectory（及底层 Python OT），仅完成 R 语法解析检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/genetrajectory_scored_seurat.rds",
+      "content": "写入各基因轨迹 Bin 得分的 Seurat 对象"
+    },
+    {
+      "path": "results/genetrajectory_modules.rds",
+      "content": "提取的基因时序轨迹顺序及扩散嵌入对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "CoarseGrain(N=500) + CalGeneDistByOT + ExtractGeneTrajectory(N=3)",
+      "basis": "来源代码与包教程；先粗粒化加速 OT 距离矩阵计算再从基因流形拆分 3 条演化级联"
+    }
+  ],
+  "adaptation": [
+    "规范脚本结构为纯分析管道，剔除环境安装与探索性打印指令。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 GeneTrajectory 与 Python POT 后端）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "b477687d4cff6139dad2bb09526bac9c81a0661501e8aa325ac2aad0b8cc054c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

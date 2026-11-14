@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "hotspot-spatial-autocorrelation-modules",
+  "title": "Hotspot 细胞状态流形空间自相关基因识别与局部协同调控模块聚类",
+  "kind": "method",
+  "method_type": "共表达与表达程序",
+  "language": "Python",
+  "tags": [
+    "Hotspot",
+    "空间自相关",
+    "协同基因模块",
+    "DANB模型",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps24.hotspot.html（Hotspot danb, create_knn_graph, compute_autocorrelations, create_modules）",
+    "author_attribution": "本地教学脚本（ps24.hotspot.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps24.hotspot.html",
+      "sha256": "eef7c744646055380a19d6292fd356e95da27452de72c0ad16dd9a8dc29d0653",
+      "lines": [
+        1,
+        45146
+      ],
+      "role": "提取细胞流形或物理空间上的局部自相关基因及模块得分计算"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_counts_with_pca.h5ad",
+      "object": "AnnData",
+      "requirements": "含原始整数 counts 层、obs['total_counts'] 与 obsm['X_pca']（或空间坐标）",
+      "evidence": "源码 danb 模型要求离散计数"
+    }
+  ],
+  "packages": [
+    {
+      "name": "hotspot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 hotspotsc，仅完成 Python 语法检查；空转场景可把 latent_obsm_key 替换为 'spatial'。"
+  ],
+  "outputs": [
+    {
+      "path": "results/hotspot_autocorrelation_genes.csv",
+      "content": "全基因空间局部自相关统计 Geary Z/FDR 排序表"
+    },
+    {
+      "path": "results/hotspot_gene_modules.csv",
+      "content": "局部协同调控模块基因归属表"
+    },
+    {
+      "path": "results/hotspot_cell_module_scores.csv",
+      "content": "单细胞各功能模块打分表（同步存为 adata.obsm）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "model='danb', create_knn_graph(n_neighbors=30), create_modules(min_gene_threshold=20, fdr_threshold=0.05)",
+      "basis": "来源代码默认负二项深度校正自相关检验及层级基因模块划分"
+    }
+  ],
+  "adaptation": [
+    "采用最新 hotspot.Hotspot 构造接口替代旧版 legacy_init 并结构化导出三个结果表。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 hotspotsc 包）；模块粒度受 min_gene_threshold 与 core_only 参数调节影响显著。"
+  ],
+  "code_sha256": {
+    "analysis.py": "c691f65b277b3b6efe4311e68f2321ef678fe4dcd862ec0b56b9e20cf2791735"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

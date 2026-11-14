@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-seurat-marker-dotplot",
+  "title": "Marker 基因亚群表达气泡图（DotPlot 统计提取 + viridis squish 截断配色）",
+  "kind": "plot",
+  "plot_type": "Marker表达气泡图",
+  "language": "R",
+  "tags": [
+    "DotPlot",
+    "Marker表达",
+    "ggplot2",
+    "viridis",
+    "scales::squish",
+    "气泡图"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc6：marker 基因画图展示+metadata理解.txt（181–210 行自定义 Marker DotPlot）",
+    "author_attribution": "本地教学脚本（sc6：marker 基因画图展示+metadata理解.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc6：marker 基因画图展示+metadata理解.txt",
+      "sha256": "d1a5a28e6dd2e50b9be1435e238ff41c43542454d38cd6e6fb0cde19d259cdda",
+      "lines": [
+        181,
+        210
+      ],
+      "role": "提取 Seurat::DotPlot 数据并重绘 viridis + squish 截断标度的自定义气泡图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含标准化表达矩阵与 celltype 分组列",
+      "evidence": "源码 DotPlot(scRNA_harmony, features = top10$gene, group.by = 'celltype.3')"
+    },
+    {
+      "path": "Data/marker_genes.rds",
+      "object": "character",
+      "requirements": "去重且有序的候选 Marker 基因符号向量",
+      "evidence": "源码 top10$gene 作为 features 输入"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "cowplot",
+      "tested_version": "1.2.0",
+      "source_version": null
+    },
+    {
+      "name": "viridis",
+      "tested_version": "0.6.5",
+      "source_version": null
+    },
+    {
+      "name": "scales",
+      "tested_version": "1.4.0",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标基因均存在于 Seurat 对象默认 assay 中。"
+  ],
+  "outputs": [
+    {
+      "path": "results/marker_dotplot.pdf",
+      "content": "截断极值配色并旋转标签的 Marker 亚群表达气泡图"
+    }
+  ],
+  "adaptation": [
+    "利用 Seurat::DotPlot 仅提取 avg.exp.scaled 与 pct.exp 统计表后用 ggplot2 重绘，消除默认主题网格并精准控制色阶上限。",
+    "使用 scales::oob_squish 将 avg.exp.scaled 压缩至 [0, 3]，避免个别极端高表达基因压缩其余 Marker 的颜色梯度；合并去重源码重复试画版本（p/p1/p4）。"
+  ],
+  "code_sha256": {
+    "plot.R": "1b1b214f450719cae8827fed04010a577ce0d02fe2ee31ed0ce8ba8dec1460be"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

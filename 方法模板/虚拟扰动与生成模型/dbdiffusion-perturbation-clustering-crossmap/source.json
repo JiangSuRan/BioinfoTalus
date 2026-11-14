@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "id": "dbdiffusion-perturbation-clustering-crossmap",
+  "title": "dbDiffusion Perturb-seq 效应矩阵构建、扰动/基因共聚类与未见扰动交叉映射",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "dbDiffusion",
+    "Perturb-seq",
+    "Leiden聚类",
+    "未见扰动",
+    "交叉映射",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/EperLuo/dbDiffusion",
+    "figure": "Fig 3a / 3c / Fig 8 (cpu_00 效应重构 + cpu_01 数据探索与两步交叉映射)",
+    "author_attribution": "本地教学脚本 (xnqc/cpu_00, cpu_01)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_00_数据预处理_从你的原始数据开始.ipynb",
+      "sha256": "85769aa118dd5a93e01556ebe97fa41a4cb14ee1519527804c664f3ac22e77a3",
+      "lines": [
+        1,
+        1011
+      ],
+      "role": "由 log-归一化单细胞表达近似重构 [-1,1] 截断扰动效应矩阵"
+    },
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_01_数据探索与扰动聚类.ipynb",
+      "sha256": "93816c7a94c8876630af77686610cad3289a9febbf04aec7ce45fffdb4caed89",
+      "lines": [
+        1,
+        951
+      ],
+      "role": "扰动聚类、基因载荷共聚类及两步交叉映射估计未见扰动条件嵌入"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本整合入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/perturb_lognorm.h5ad",
+      "object": "AnnData",
+      "requirements": "log-归一化矩阵，obs['perturbation'] 含控制组标签 'non-targeting' 与不少于 10 细胞的扰动分组",
+      "evidence": "源码 compute_effect_matrix 与 cluster_perturbations/cluster_genes 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scanpy",
+      "tested_version": "1.11.5",
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": "2.2.6",
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": "2.3.3",
+      "source_version": null
+    },
+    {
+      "name": "scipy",
+      "tested_version": "1.15.3",
+      "source_version": null
+    },
+    {
+      "name": "leidenalg",
+      "tested_version": "0.12.0",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data/ 与 results/ 目录已存在；依赖 scanpy、leidenalg 与 python-igraph。"
+  ],
+  "outputs": [
+    {
+      "path": "results/dbdiffusion_pert_embeddings.npz",
+      "content": "扰动 PCA 嵌入、扰动名及未见扰动交叉映射质心估计向量"
+    },
+    {
+      "path": "results/dbdiffusion_cluster_assignments.csv",
+      "content": "各扰动的 Leiden 聚类编号与 UMAP 二维坐标"
+    },
+    {
+      "path": "results/dbdiffusion_crossmap_scores.csv",
+      "content": "两步交叉映射对各扰动簇的匹配评分表 (matched × proportion)"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "效应重构 np.clip(mean(pert) - mean(ctrl), -1.0, 1.0), min_cells = 10",
+      "basis": "合并 cpu_00 透明近似公式（原论文完整 DE 表亦可直接替代 KO 矩阵）"
+    },
+    {
+      "setting": "扰动 PCA(64)+Leiden(0.5)；基因载荷相关性 cor_mat=load[:,:50]@load[:,:50].T -> PCA -> Leiden(0.7)",
+      "basis": "来源 cpu_01 设定，对应论文 Fig 3a/3c/Fig 8"
+    }
+  ],
+  "adaptation": [
+    "将 cpu_00 效应矩阵计算与 cpu_01 扰动/基因聚类和交叉映射合并为单一线性脚本，移除文件探查与自检包装。",
+    "用 80 基因 × 21 扰动（每扰动 25–60 细胞）双程序合成 Perturb-seq 数据完成端到端运行验证。"
+  ],
+  "limitations": [
+    "合成数据验证流程可执行性与产物格式，真实 Perturb-seq 聚类粒度受 min_cells 过滤与 Leiden 分辨率影响。",
+    "cpu_00 重构的均值差效应矩阵为对数表达近似值，若已有官方 DESeq/limma 精确效应矩阵应优先直接读入。"
+  ],
+  "code_sha256": {
+    "analysis.py": "c07e56eb8c82b3d55d6186e85f9952403e3496dee88196f2d3f5f6ad2bef08dc"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "D:\\conda\\envs\\omicverse\\python.exe (scanpy 1.11.5, anndata 0.11.4, numpy 2.2.6, pandas 2.3.3, scipy 1.15.3, matplotlib 3.10.9, networkx 3.4.2, leidenalg 0.12.0)",
+      "date": "2026-11-14",
+      "summary": "80基因×21扰动合成 Perturb-seq 数据端到端跑通；Leiden 分出多簇并输出匹配评分 score=0.90 的交叉映射嵌入与 UMAP 坐标"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

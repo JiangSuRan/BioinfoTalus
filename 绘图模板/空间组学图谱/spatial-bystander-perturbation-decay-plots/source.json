@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "id": "spatial-bystander-perturbation-decay-plots",
+  "title": "空间微环境供体敲除分区、旁观者细胞邻近差异表达、距离衰减及特异性散点图",
+  "kind": "plot",
+  "plot_type": "空间组学图谱",
+  "language": "Python",
+  "tags": [
+    "空间微环境",
+    "旁观者效应",
+    "距离衰减",
+    "Celcomen可视化",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/tantrayaslab/celcomen",
+    "figure": "cpu_07_定向敲除看邻近特定细胞类型.ipynb (AB zones / B DE / decay / specific vs generic)",
+    "author_attribution": "本地教学脚本 (xnqc/cpu_07_定向敲除)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_07_定向敲除看邻近特定细胞类型.ipynb",
+      "sha256": "9136370b86f6042425e0f4f0ef808295c3d7a298f1d9bf04fa950728c7d1a674",
+      "lines": [
+        1,
+        1151
+      ],
+      "role": "供受体空间分区图、近/远双向水平 DE 条形图、同心环距离衰减双图与特异/通用对照散点图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本提取绘图规范入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/celcomen_bystander_zones.csv 与 Data/celcomen_bystander_de.csv",
+      "object": "空间旁观者结果表",
+      "requirements": "承接 celcomen-spatial-bystander-perturbation 输出表",
+      "evidence": "与上游模板输出列 x,y,zone,dist_to_A,is_B 及 de_near_minus_far,de_generic 一致"
+    }
+  ],
+  "packages": [
+    {
+      "name": "matplotlib",
+      "tested_version": "3.10.9",
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": "2.2.6",
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": "2.3.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data/ 与 results/ 目录已存在。"
+  ],
+  "outputs": [
+    {
+      "path": "results/spatial_ab_zones.png",
+      "content": "供体敲除 A 与半径内外受体 B 细胞空间组织分布图"
+    },
+    {
+      "path": "results/bystander_near_vs_far_de.png",
+      "content": "受体 B 细胞近端相对远端上下调 Top 差异基因双向条形图"
+    },
+    {
+      "path": "results/bystander_distance_decay.png",
+      "content": "旁观者 B 细胞反事实改变随距离同心环衰减趋势与细胞计数双图"
+    },
+    {
+      "path": "results/bystander_specific_vs_generic.png",
+      "content": "细胞类型特异 vs 不分类型通用邻近差异基因相关性对比与极值标注"
+    }
+  ],
+  "adaptation": [
+    "抽离 cpu_07 四张核心旁观者效应评估图，去耦模型训练实现 300 dpi 独立渲染与合成数据视觉检验。"
+  ],
+  "limitations": [
+    "空间衰减分箱边界 [0, 15, 30, 50] 微米对应 30um 邻域阈值设定，不同空间平台尺度（如 Visium spot 直径）需等比调整分箱边界。"
+  ],
+  "code_sha256": {
+    "plot.py": "d45c6040bd5493b3f12e20fa0d52dd05add799ee8bf8329bedec903353a3e1f2"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "D:\\conda\\envs\\omicverse\\python.exe (scanpy 1.11.5, anndata 0.11.4, numpy 2.2.6, pandas 2.3.3, scipy 1.15.3, matplotlib 3.10.9, networkx 3.4.2, leidenalg 0.12.0)",
+      "date": "2026-11-14",
+      "summary": "450点合成空间坐标与40基因旁观者DE数据跑通，生成4张空间评估图并完成视觉检验"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

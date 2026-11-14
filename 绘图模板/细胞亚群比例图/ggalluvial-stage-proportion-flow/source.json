@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "id": "ggalluvial-stage-proportion-flow",
+  "title": "发育阶段/时间进程亚群比例冲击流动堆积图（ggalluvial）",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "ggalluvial",
+    "冲击图",
+    "时间动态",
+    "堆叠流图",
+    "亚群比例"
+  ],
+  "paper": {
+    "repository": "https://github.com/lilab2022/human_embryo.git",
+    "figure": "fig2.R（Cell 2023 产前巨噬细胞图谱 Fig 2F 各发育时间点亚群构成冲击流图，320–355 行）",
+    "author_attribution": "Wang et al., Cell 2023",
+    "doi": "10.1016/j.cell.2023.08.019",
+    "revision": "74a824b1d7dac0a9533126d410dd09413057c459"
+  },
+  "source_files": [
+    {
+      "root_label": "human_embryo",
+      "path": "fig2.R",
+      "sha256": "1de34b61a56ecc044e1c11dd632c9030f36d13b0e58a53db874b84aa78c80672",
+      "lines": [
+        320,
+        355
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cell_stage_metadata.rds",
+      "object": "data.frame",
+      "requirements": "含 stage（预先设好时间序的因子，或首次出现即为时间序的字符列）与 cell_type（亚群标签）",
+      "evidence": "源码以 time 为 x、subtype 为 stratum 与 alluvium、比例 rate 为 y 调用 geom_flow() + geom_stratum()"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "tidyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "forcats",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggalluvial",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scales",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；stage 建议传有序因子以免按行序重新排序。"
+  ],
+  "outputs": [
+    {
+      "path": "results/stage_proportion_alluvial.pdf",
+      "content": "连续时间阶段亚群比例流向与堆积条带图"
+    }
+  ],
+  "adaptation": [
+    "使用 dplyr::count() + tidyr::complete() 替代源脚本手工行索引比例循环确保零比例亚群流带完整，并用 forcats::as_factor 保留既有 stage 因子序。"
+  ],
+  "code_sha256": {
+    "plot.R": "75a73f85151dacade1b1a751f18c7adcca7d1d7b83de689905e0cdfb698d1b21"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

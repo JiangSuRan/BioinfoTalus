@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "id": "cellchat-multicondition-comparison-plots",
+  "title": "多条件 CellChat 通讯差异对比可视化（互作增减网络、热图与 rankNet 通路排序）",
+  "kind": "plot",
+  "plot_type": "细胞通讯气泡与弦图",
+  "language": "R",
+  "tags": [
+    "CellChat",
+    "多组比较",
+    "netVisual_diffInteraction",
+    "rankNet",
+    "compareInteractions"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc11：细胞互作 CellChat.txt（324–353 行双组 CellChat 差异比较可视化）",
+    "author_attribution": "本地教学脚本（sc11：细胞互作 CellChat.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc11：细胞互作 CellChat.txt",
+      "sha256": "88a29cdca87d78f09ff4b9c6d09fee4cddacb5a86233a40eb4a05f7191b3a91d",
+      "lines": [
+        324,
+        353
+      ],
+      "role": "对 mergeCellChat 合并对象绘制全局交互数/强度柱状图、差异环图/热图及保守/特异通路堆叠柱图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cellchat_list.rds",
+      "object": "list",
+      "requirements": "命名列表（长度 >= 2），各元素为对应条件下已算中心性的 CellChat 对象",
+      "evidence": "源码 cc.list = list(SC11 = cc.sc11, SC3 = cc.sc3) 后 mergeCellChat"
+    }
+  ],
+  "packages": [
+    {
+      "name": "CellChat",
+      "tested_version": "2.2.0.9001",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    },
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": "2.25.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；列表中各条件共享一致的细胞亚群命名。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cellchat_compare_overview_and_diff.pdf",
+      "content": "条件间互作总次数/强度柱图、差异互作网络与差值热图"
+    },
+    {
+      "path": "results/cellchat_compare_ranknet.pdf",
+      "content": "条件保守与特异性信号通路 rankNet 统计对比图"
+    }
+  ],
+  "adaptation": [
+    "统一 getMaxWeight 跨条件最大边权尺度后再并排绘图，同时用 invisible() 抑制 netVisual_diffInteraction 与 netVisual_circle 的 recordedplot 自动重放导致的布局缩放异常，并去除源码中按固定索引选取样本与单通路循环的硬编码。"
+  ],
+  "code_sha256": {
+    "plot.R": "a114651810be4042e0fb16b1327553512cd20b62752dbd64c3ab0d42291a2f5c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

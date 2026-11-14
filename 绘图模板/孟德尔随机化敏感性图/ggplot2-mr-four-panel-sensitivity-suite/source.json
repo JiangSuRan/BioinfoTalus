@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-mr-four-panel-sensitivity-suite",
+  "title": "两样本孟德尔随机化四联敏感性诊断图（散点/单SNP森林/漏斗/留一法）",
+  "kind": "plot",
+  "plot_type": "孟德尔随机化敏感性图",
+  "language": "R",
+  "tags": [
+    "孟德尔随机化",
+    "散点图",
+    "森林图",
+    "漏斗图",
+    "Leave-One-Out",
+    "patchwork"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "m8MR可视化.R（全套 ggplot2+patchwork MR 散点、单 SNP Wald 比值森林、漏斗对称与留一法敏感性四联图）",
+    "author_attribution": "本地教学脚本（m8MR可视化.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "m8MR可视化.R",
+      "sha256": "69e67cc5c87522f292212b657a9839419dad12ed09cd853b4c56ecec4f766efd",
+      "lines": [
+        1,
+        587
+      ],
+      "role": "提取基于本地 MR TSV 结果表自主绘制的四联 ggplot2+patchwork 诊断图"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "m9：一站式分析完孟德尔.R",
+      "sha256": "e4aed4ec7c33f52bff8ecf15f9e7bec3106c6bd4d7e9770e642fc47e93e6ee0a",
+      "lines": [
+        1201,
+        1662
+      ],
+      "role": "核对上游导出 mr_analysis_ready 等 TSV 字段定义"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/mr_analysis_ready.tsv",
+      "object": "data.frame",
+      "requirements": "含 SNP, beta.exposure, se.exposure, beta.outcome, se.outcome",
+      "evidence": "源码暴露与结局协调表"
+    },
+    {
+      "path": "Data/mr_results_all_methods.tsv",
+      "object": "data.frame",
+      "requirements": "含 method, b, se（可选 egger_intercept）",
+      "evidence": "源码多方法 MR 汇总表"
+    },
+    {
+      "path": "Data/mr_singlesnp.tsv",
+      "object": "data.frame",
+      "requirements": "含 SNP, b, se（含 All - 汇总行）",
+      "evidence": "源码单 SNP 分析表"
+    },
+    {
+      "path": "Data/mr_leaveoneout.tsv",
+      "object": "data.frame",
+      "requirements": "含 SNP, b, se（含 All 行）",
+      "evidence": "源码留一法分析表"
+    }
+  ],
+  "packages": [
+    {
+      "name": "data.table",
+      "tested_version": "1.18.4",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；输入为上游 MR 导出的制表符分隔表。"
+  ],
+  "outputs": [
+    {
+      "path": "results/mr_four_panel_sensitivity.pdf",
+      "content": "MR 散点拟合斜率、单 SNP 森林图、漏斗图与 LOO 敏感性四联图"
+    }
+  ],
+  "adaptation": [
+    "去除源码依赖硬编码目录与大量控制台输出，统一象限符号翻转规则并与 patchwork 合并导出。"
+  ],
+  "code_sha256": {
+    "plot.R": "56197be9b6f97f36a95be97836d32265b8948683497de3c19bcb09baba2375a6"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla) + synthetic 12-SNP 5-method MR summary tables",
+      "date": "2026-11-14",
+      "notes": "已运行并渲染 PNG 核验 4 个面板标注与置信区间显示。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

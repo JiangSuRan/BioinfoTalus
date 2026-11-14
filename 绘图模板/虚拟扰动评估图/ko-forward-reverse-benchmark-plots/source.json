@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "ko-forward-reverse-benchmark-plots",
+  "title": "虚拟敲除正向精度、反向识别相似度热图及细胞类型脆弱性排序图",
+  "kind": "plot",
+  "plot_type": "虚拟扰动评估图",
+  "language": "Python",
+  "tags": [
+    "虚拟敲除基准",
+    "反向识别热图",
+    "细胞类型脆弱性",
+    "scGPT评估",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/bowang-lab/scGPT",
+    "figure": "cpu_06 forward/reverse plots + cpu_07_小鼠 boxplot & ranking",
+    "author_attribution": "本地教学脚本 (xnqc/cpu_06, cpu_07_小鼠)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_06_敲除预测准确性验证(1).ipynb",
+      "sha256": "2e007c41f7289d4e97bfabcafc41c29a15afe4396f1fa4280b9046f8788abbe7",
+      "lines": [
+        1,
+        656
+      ],
+      "role": "正向条件 Pearson(delta) 柱散联图与带数值反白对比度的反向识别相似度矩阵热图"
+    },
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_07_小鼠虚拟敲除(1).ipynb",
+      "sha256": "9f3c54f7d72474ffceb273a20bf95d3816873f5544ecefc3299ae7fc48084737",
+      "lines": [
+        1,
+        628
+      ],
+      "role": "细胞类型 L2 偏移中位数降序箱线图与多基因虚拟敲除影响横向条形图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本提取绘图规范入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scgpt_forward_metrics.tsv, scgpt_best_ko_delta.csv, scgpt_reverse_similarity.csv, scgpt_mouse_ko_cell_shifts.csv, scgpt_mouse_ko_ranking.tsv",
+      "object": "基准评估表",
+      "requirements": "分别由 scgpt-perturbation-forward-reverse-validation 与 scgpt-cross-species-virtual-ko 生成",
+      "evidence": "与两份上游方法模板输出列名一致"
+    }
+  ],
+  "packages": [
+    {
+      "name": "matplotlib",
+      "tested_version": "3.10.9",
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": "2.2.6",
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": "2.3.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data/ 与 results/ 目录已存在。"
+  ],
+  "outputs": [
+    {
+      "path": "results/forward_ko_accuracy.png",
+      "content": "各敲除条件 Pearson(delta) 与最优条件变化量散点双联图"
+    },
+    {
+      "path": "results/reverse_ko_similarity_heatmap.png",
+      "content": "观测谱与候选预测谱带自适应黑白数字标注的相似度矩阵热图"
+    },
+    {
+      "path": "results/mouse_ko_celltype_ranking.png",
+      "content": "细胞类型虚拟敲除脆弱性排序箱线图与多基因总体影响排序条形图"
+    }
+  ],
+  "adaptation": [
+    "合并 cpu_06 与 cpu_07_小鼠基准评测视觉组件并生成 300 dpi 图件，经过合成输入与审图验证。"
+  ],
+  "limitations": [
+    "cell_type 箱线统计沿用来源 >=5 细胞类型阈值以滤除极稀有噪音群。"
+  ],
+  "code_sha256": {
+    "plot.py": "44fde050d4af14f8919c4c6c42d9b92b35d52be5bad635a1a270b72a9fe37748"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "D:\\conda\\envs\\omicverse\\python.exe (scanpy 1.11.5, anndata 0.11.4, numpy 2.2.6, pandas 2.3.3, scipy 1.15.3, matplotlib 3.10.9, networkx 3.4.2, leidenalg 0.12.0)",
+      "date": "2026-11-14",
+      "summary": "6条件正反向KO基准与6细胞类型小鼠虚拟敲除合成数据跑通，生成3张图并完成视觉检验"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-celltype-sample-stacked-bar",
+  "title": "样本×亚群 100% 堆叠比例柱状图（RColorBrewer 定性扩展配色）",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "堆叠柱状图",
+    "RColorBrewer",
+    "样本构成",
+    "ggplot2"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "d:/books/sc7：比例图和细胞亚群变化.txt（100% 堆叠比例图 pB3，24–74 行）",
+    "author_attribution": "本地教学脚本（sc7：比例图和细胞亚群变化）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_books",
+      "path": "sc7：比例图和细胞亚群变化.txt",
+      "sha256": null,
+      "lines": [
+        24,
+        74
+      ],
+      "role": "定性调色板展开与 Cell 风格样本×亚群堆叠比例柱图（pB3）"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sample_celltype_metadata.rds",
+      "object": "data.frame",
+      "requirements": "单细胞元数据，含 sample（样本）与 cluster（细胞亚群）两列；建议预先设置因子顺序以控制堆叠与横轴顺序",
+      "evidence": "源码 table(celltype.3, orig.ident) 统计每样本各亚群细胞数后传入 position = 'fill'"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "forcats",
+      "tested_version": "1.0.1",
+      "source_version": null
+    },
+    {
+      "name": "RColorBrewer",
+      "tested_version": "1.1-3",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；亚群数目不超过 RColorBrewer 定性色板组合总数（74 色）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sample_cluster_stacked_proportion.pdf",
+      "content": "各样本细胞亚群 100% 堆叠比例柱状图"
+    }
+  ],
+  "adaptation": [
+    "用 dplyr::count 替代 reshape2::melt(table(...)) 并保留预置因子顺序（as_factor），移除硬编码 7 种亚群顺序与固定 col_vector[1:7] 切片。",
+    "只保留定稿纵向比例图 pB3（剔除源码标注“有问题”的 pB1 草案及重复翻转图 pB2）。"
+  ],
+  "code_sha256": {
+    "plot.R": "c154365dd91c9a3b0c6bf80e0d89a1d910b1799492765598b15c779867fd0753"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验堆叠比例、色板与标签可读性；不代表真实队列验证。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

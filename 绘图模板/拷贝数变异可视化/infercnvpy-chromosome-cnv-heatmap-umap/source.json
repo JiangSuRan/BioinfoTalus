@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "id": "infercnvpy-chromosome-cnv-heatmap-umap",
+  "title": "inferCNVpy 染色体拷贝数变异分级热图与 CNV 得分/亚群多面板 UMAP 图",
+  "kind": "plot",
+  "plot_type": "拷贝数变异可视化",
+  "language": "Python",
+  "tags": [
+    "inferCNVpy",
+    "拷贝数热图",
+    "CNV评分",
+    "UMAP",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps20.inferCNVpy.html（chromosome_heatmap 与三联 cnv.pl/sc.pl UMAP 图）",
+    "author_attribution": "本地教学脚本（ps20.inferCNVpy.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps20.inferCNVpy.html",
+      "sha256": "32d1c7303720dacd31feec6fd044586cde99118455a8cfb91bbd0ee9ef2cab44",
+      "lines": [
+        1,
+        45043
+      ],
+      "role": "提取常染色体 CNV 分区热图与 cnv_leiden/cnv_score 空间映射图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/infercnvpy_scored.h5ad",
+      "object": "AnnData",
+      "requirements": "已执行 infercnvpy 推断并含 cnv_leiden、cnv_score 及 X_cnv_umap",
+      "evidence": "与 infercnvpy-singlecell-cnv-clustering 产出对应"
+    }
+  ],
+  "packages": [
+    {
+      "name": "infercnvpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "matplotlib",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 infercnvpy，仅完成语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/infercnvpy_chromosome_heatmap.pdf",
+      "content": "按 CNV 聚簇汇总的染色体滑动窗口拷贝数变异热图"
+    },
+    {
+      "path": "results/infercnvpy_cnv_umap_panel.pdf",
+      "content": "CNV 亚簇、CNV 得分及细胞注释并排 UMAP 图"
+    }
+  ],
+  "adaptation": [
+    "不依赖 Scanpy figdir 拼接前缀，显式通过 plt.gcf().savefig 导出矢量 PDF 并将三张 UMAP 整合为横向联图。"
+  ],
+  "code_sha256": {
+    "plot.py": "1dfcf99d1f51a988b557770784341e69cacbfbf0b2d331f00913238d76981f47"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

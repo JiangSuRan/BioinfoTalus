@@ -1,52 +1,53 @@
 {
   "schema_version": 1,
   "id": "dbdiffusion-guided-singlecell-diffusion",
-  "title": "dbDiffusion VAE 潜空间 classifier-free 引导扩散单细胞转录组生成采样",
+  "title": "dbDiffusion VAE 潜空间 classifier-free 引导扩散采样、表达解码与真实扰动评估",
   "kind": "method",
   "method_type": "虚拟扰动与生成模型",
   "language": "Python",
   "tags": [
     "dbDiffusion",
     "引导扩散",
-    "VAE潜空间",
+    "VAE解码",
     "单细胞生成",
-    "DDIM"
+    "DDIM",
+    "Python"
   ],
   "paper": {
-    "repository": "https://github.com/EperLuo/dbDiffusion (上游)；应用来源为 dbDiffusion 仓库采样脚本",
-    "figure": "functions/classifier_free/cell_sample.py（指定细胞态的潜空间采样，1–120 行）",
-    "author_attribution": null,
+    "repository": "https://github.com/EperLuo/dbDiffusion",
+    "figure": "functions/classifier_free/cell_sample.py + cpu_02_扩散模型采样与可视化.ipynb",
+    "author_attribution": "dbDiffusion 官方脚本与本地教学整合",
     "doi": null,
     "revision": null
   },
   "source_files": [
     {
-      "root_label": "dbDiffusion",
-      "path": "functions/classifier_free/cell_sample.py",
-      "sha256": "3f27d55861826647ce4b08d0adf767efd5a5dcd64cf81274d304676a5fb3b1af",
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_02_扩散模型采样与可视化.ipynb",
+      "sha256": "eb5b1fc398f1833da3828349cc1f664dbd7666e212b8b027cdb7c6082de460e7",
       "lines": [
         1,
-        120
+        1028
       ],
-      "role": "提取的核心分析流程"
+      "role": "VAE 潜空间解码与真实控制/目标扰动相关系数定量评估"
     }
   ],
   "license": {
     "identifier": null,
-    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+    "note": "本地仓库与教学脚本整合入库；不替来源重授权。"
   },
   "inputs": [
     {
-      "path": "Data/class_emb_target.npy",
-      "object": "类别嵌入向量（VAE 潜空间）",
-      "requirements": "目标细胞态/亚群的 class embedding（128 维 VAE 潜变量均值）",
-      "evidence": "main(class_emb_for_one_class, ...) 参数与 unsqueeze(0).repeat(batch,1) 推断"
+      "path": "Data/perturb_lognorm.h5ad",
+      "object": "AnnData",
+      "requirements": "log-归一化表达矩阵，obs['perturbation'] 含控制组与目标扰动",
+      "evidence": "源码 normalize_like_training 与 mean_effect 计算推断"
     },
     {
-      "path": "Data/model/trained_Unet_fullLoop800000_v3.pt",
-      "object": "classifier-free UNet 扩散权重",
-      "requirements": "与 script_util_classifier_free_v3_acc 架构一致",
-      "evidence": "model_path 模式串与 create_model_and_diffusion 推断"
+      "path": "Data/emb_dict.npy 与 Data/model/{vae.pt, trained_Unet_fullLoop800000_v3.pt}",
+      "object": "条件嵌入字典与模型权重",
+      "requirements": "条件向量维度与 class_input_dim 一致，VAE 隐空间 128 维",
+      "evidence": "源码 VAE(hidden_dim=128) 与 create_model_and_diffusion 参数推断"
     }
   ],
   "packages": [
@@ -61,53 +62,52 @@
       "source_version": null
     },
     {
-      "name": "numpy",
+      "name": "scanpy",
       "tested_version": null,
       "source_version": null
     }
   ],
   "prerequisites": [
-    "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
-    "分布式 dist_util 初始化（单卡亦可）；生成 3 万样本耗时。"
+    "从项目根运行，functions/diffusion/classifier_free_v3_no_saver 含上游 VAE 与 guided_diffusion 模块。",
+    "本机未安装上游 dbDiffusion 源码模块，仅完成 Python 语法校验；脚本已固定 CUDA GPU 运行（device='cuda'，n_samples=5000）。"
   ],
   "outputs": [
     {
-      "path": "results/ref_v3_eta1.5_30000gen.npz",
-      "content": "条件生成的 VAE 潜空间样本矩阵（num_samples × input_dim），经 VAE 解码得表达矩阵"
+      "path": "results/ZC3H13_generated.npy",
+      "content": "VAE 解码后的条件生成单细胞基因表达矩阵 (n_samples × n_genes)"
+    },
+    {
+      "path": "results/dbdiffusion_eval_metrics.csv",
+      "content": "生成与真实目标扰动在平均表达及效应量上的 Pearson 相关系数"
     }
   ],
   "method_choices": [
     {
-      "setting": "num_samples = 30000, batch_size = 10000",
-      "basis": "来源代码设定；大批次以获得稳定的条件分布估计"
+      "setting": "safe_batch = 100, n_samples = 5000, eta = 1.5, hidden_dim = 128",
+      "basis": "来源 cpu_02 与 cell_sample.py 设定；CFG 条件复制导致单批长度受限，按 100 细胞分批累加采样 5000 个细胞并在 GPU 解码"
     },
     {
-      "setting": "eta = 1.5（采样学习率/加速参数）",
-      "basis": "来源代码注释 \"you can change the learning rate for sampling here\"；影响采样步长"
-    },
-    {
-      "setting": "DDIM（use_ddim）确定性采样 + accel_flag",
-      "basis": "来源代码分支与注释；加速版 p_sample_loop"
+      "setting": "VAE 编码解码 + mean/effect_size Pearson r 评估",
+      "basis": "来源 cpu_02 升级内容，补全原模板止步于潜空间 npz 而缺乏基因空间解码与真实对照评估的缺口"
     }
   ],
   "adaptation": [
-    "main() 函数拆包为线性脚本；移除 argparse、torch.distributed all_gather 多卡收集（单卡直接收集）与 logger 进度。",
-    "采样输出由 save_data 包装改为直接 np.savez；目录名改 results/。",
-    "扰动名/邻居前缀参数保留字面量。"
+    "将原 cell_sample.py 潜空间采样模板与 cpu_02 VAE 解码及定量评估流合并升级为完整线性流程。",
+    "固定 CUDA 推理与权重加载（device='cuda'，map_location=device），去除 CPU 回退分支并将默认生成样本量恢复为 GPU 规模 n_samples=5000（保留 safe_batch=100 上游 CFG 批次限制）。",
+    "去除教学自检与进度弹窗，将定量相关性图剥离至 ppi-perturbation-debias-validation-plots。"
   ],
   "limitations": [
-    "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
-    "生成样本为潜空间近似，解码后需经判别性 QC（标记基因相关性/分布检验）；eta>1 为加速采样可能引入偏差。",
-    "类别嵌入须来自与 UNet 训练一致的 VAE 编码器，跨模型混用会失败。"
+    "仅完成 py_compile 语法解析核验，未在本机执行扩散采样与 VAE 解码。",
+    "未见过的新扰动可改由 dbdiffusion-perturbation-clustering-crossmap 估计的条件嵌入向量驱动采样。"
   ],
   "code_sha256": {
-    "analysis.py": "d1a3b366be28107544ef9bd8156de219006de2c703a8572b3dc197982cf4e107"
+    "analysis.py": "1bc5ece6f58e30a1ea17b00ce361836482ea73acf0f222ccaf47b0b16612e7c3"
   },
   "validation": {
     "syntax": {
       "status": "passed",
-      "environment": "python parse check",
-      "date": "2026-11-07"
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
     },
     "synthetic_run": null,
     "reference_comparison": null,

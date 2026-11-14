@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "id": "networkx-candidate-grn-network-heatmap",
+  "title": "候选基因定向 GRN 双环中心局部网络图与双向注意力关联热图",
+  "kind": "plot",
+  "plot_type": "转录调控网络可视化",
+  "language": "Python",
+  "tags": [
+    "NetworkX",
+    "GRN可视化",
+    "双环布局",
+    "注意力热图",
+    "scPRINT",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "07_scPRINT fig_association_heatmap + 08_scPRINT draw_local_network",
+    "author_attribution": "本地教学脚本 (xnqc/07, 08)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/07_scPRINT_指定基因GRN关联分析.ipynb",
+      "sha256": "eb0d007ebf4e6f8c49ec80585cfa0a00410b824cbeb07e23a5d322e3f282929c",
+      "lines": [
+        1,
+        1071
+      ],
+      "role": "第 95 百分位对称截断 RdBu_r 关联矩阵热图与次刻度格子线"
+    },
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/08_scPRINT_候选基因定向GRN与网络图(1).ipynb",
+      "sha256": "03d166f2e93695142ce4f5487adb3d12dac1104d341185ae9edd009c2fe4b62a",
+      "lines": [
+        1,
+        1286
+      ],
+      "role": "候选内环居中 + 邻居按加权圆均值排列双层交替外环 + 多候选共享枢纽加粗局部网络图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本提取绘图规范入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scprint_candidate_neighbors.csv",
+      "object": "邻居边表",
+      "requirements": "含 candidate, neighbor, weight, rank 列",
+      "evidence": "对接 scprint-targeted-grn-inference 输出"
+    },
+    {
+      "path": "Data/scprint_grn_matrix.csv",
+      "object": "方阵 CSV",
+      "requirements": "行列均为基因名的有符号 GRN 关联强度矩阵",
+      "evidence": "对接 scprint-targeted-grn-inference 输出"
+    }
+  ],
+  "packages": [
+    {
+      "name": "matplotlib",
+      "tested_version": "3.10.9",
+      "source_version": null
+    },
+    {
+      "name": "networkx",
+      "tested_version": "3.4.2",
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": "2.2.6",
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": "2.3.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data/ 与 results/ 目录已存在。"
+  ],
+  "outputs": [
+    {
+      "path": "results/candidate_local_network.png",
+      "content": "候选基因内环居中、共享枢纽加粗及边宽映射权重的局部 GRN 网络图 (300 dpi)"
+    },
+    {
+      "path": "results/grn_association_heatmap.png",
+      "content": "双向有符号基因注意力关联热图 (300 dpi)"
+    }
+  ],
+  "adaptation": [
+    "合并 07 热图与 08 双环 NetworkX 图并采用 300 dpi headless 落盘；经合成 GRN 矩阵跑通并人工视觉审图通过。"
+  ],
+  "limitations": [
+    "合成 GRN 数据已通过运行与视觉核查，真实大规模调控网络（>50 边）可微调 top_df 截断数防外圈过密。"
+  ],
+  "code_sha256": {
+    "plot.py": "151f9c679aebcaaee336eab8a677fbc7610a3093e4d8ae2c85515b26fc0c0e54"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "D:\\conda\\envs\\omicverse\\python.exe (scanpy 1.11.5, anndata 0.11.4, numpy 2.2.6, pandas 2.3.3, scipy 1.15.3, matplotlib 3.10.9, networkx 3.4.2, leidenalg 0.12.0)",
+      "date": "2026-11-14",
+      "summary": "4候选基因+12背景基因合成 GRN 跑通，生成 candidate_local_network.png 与 grn_association_heatmap.png，视觉审查无重叠截断"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

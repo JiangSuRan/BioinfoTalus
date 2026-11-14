@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-gene-immune-square-bubble-heatmap",
+  "title": "关键基因与免疫浸润细胞 Spearman 相关性方形气泡热图",
+  "kind": "plot",
+  "plot_type": "相关性热图",
+  "language": "R",
+  "tags": [
+    "Spearman相关",
+    "方形气泡图",
+    "免疫浸润",
+    "ggplot2",
+    "显著性星号"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "m13.R（L282-508 关键基因 x 免疫细胞 Spearman rho 方形气泡与星号热图）",
+    "author_attribution": "本地教学脚本（m13.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "m13.R",
+      "sha256": "d5c26ed0b641d79226a27ab80728f8c45266af88477cdf23d6b1e5631b8f6422",
+      "lines": [
+        282,
+        508
+      ],
+      "role": "提取关键基因与 ssGSEA 免疫浸润细胞的 Spearman 相关性方形气泡热图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/hub_gene_expression.rds",
+      "object": "matrix",
+      "requirements": "候选基因 x 样本表达矩阵",
+      "evidence": "源码 Hub 基因矩阵"
+    },
+    {
+      "path": "Data/immune_infiltration_matrix.rds",
+      "object": "matrix",
+      "requirements": "免疫细胞 x 样本浸润评分矩阵",
+      "evidence": "源码 ssGSEA 免疫细胞评分表"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "reshape2",
+      "tested_version": "1.4.5",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；两个矩阵列名需包含共有样本。"
+  ],
+  "outputs": [
+    {
+      "path": "results/gene_immune_square_bubble_heatmap.pdf",
+      "content": "rho 着色与 |rho| 大小映射的方形气泡矩阵及星号显著性图"
+    }
+  ],
+  "adaptation": [
+    "按共有样本显式对齐两矩阵并预分配相关性表容器，统一使用 shape = 22 编码正负相关及强弱。"
+  ],
+  "code_sha256": {
+    "plot.R": "13bd9bf90d36d5954ad8e522cee388a59993f31951e4a522b2a8e5c66918d5b0"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla) + synthetic 5 genes x 12 immune cells",
+      "date": "2026-11-14",
+      "notes": "已运行并渲染 PNG 核验颜色、方块大小与星号对齐。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

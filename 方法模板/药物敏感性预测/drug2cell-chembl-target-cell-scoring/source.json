@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "id": "drug2cell-chembl-target-cell-scoring",
+  "title": "Drug2Cell 基于 ChEMBL 药靶互作数据库的单细胞药物靶点富集与敏感性打分",
+  "kind": "method",
+  "method_type": "药物敏感性预测",
+  "language": "Python",
+  "tags": [
+    "Drug2Cell",
+    "ChEMBL",
+    "药物敏感性",
+    "单细胞药靶",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps22.drug2cell.html（d2c.score 单细胞药靶评分、亚群 Wilcoxon 对比与超几何富集）",
+    "author_attribution": "本地教学脚本（ps22.drug2cell.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps22.drug2cell.html",
+      "sha256": "f2f65c23f529052d986cc174ff2e572cf119bc773d0353500c7dc2186dc52771",
+      "lines": [
+        1,
+        44826
+      ],
+      "role": "提取利用 ChEMBL 药靶映射至细胞状态特异潜在靶向药物的分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_preprocessed.h5ad",
+      "object": "AnnData",
+      "requirements": "对数归一化人类单细胞 AnnData，obs 含 cell_type",
+      "evidence": "源码人类基因 Symbol 对齐 ChEMBL 靶标库"
+    }
+  ],
+  "packages": [
+    {
+      "name": "drug2cell",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 drug2cell，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/drug2cell_cluster_drug_scores.csv",
+      "content": "按细胞亚群差异检验排序的候选敏感药物清单"
+    },
+    {
+      "path": "results/drug2cell_hypergeometric_enrichment.csv",
+      "content": "药靶超几何检验富集结果"
+    },
+    {
+      "path": "results/drug2cell_scored.h5ad",
+      "content": "在 uns['drug2cell'] 内保留单细胞药物评分矩阵的 AnnData"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "d2c.score(use_raw=False) + d2c.hypergeometric()",
+      "basis": "基于细胞表达分布计算药靶平均活度并验证药物通路过代表性"
+    }
+  ],
+  "adaptation": [
+    "提取核心打分与超几何双重验证链，补全完整 CSV 表格导出以辅助下游筛选（独立于 R 端 Beyondcell）。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 drug2cell 包）；仅提示潜在靶向相关性，非临床给药依据。"
+  ],
+  "code_sha256": {
+    "analysis.py": "cc1318a5284f00490bb6f1e29b18bab5ab54a94a29623b07674ad574229bce76"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

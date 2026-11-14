@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "id": "signac-atac-qc-and-linked-coverage-tracks",
+  "title": "Signac scATAC 质控联合散点/核小体周期条纹图与多组学连锁 Coverage 轨迹图",
+  "kind": "plot",
+  "plot_type": "多组学基因组浏览器轨迹图",
+  "language": "R",
+  "tags": [
+    "Signac",
+    "scATAC-seq",
+    "CoveragePlot",
+    "FragmentHistogram",
+    "Peak2Gene连锁"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc20.1 & sc20.3（DensityScatter + FragmentHistogram 质控图及多组学 LinkPeaks CoveragePlot）",
+    "author_attribution": "本地教学脚本（sc20：scATAC--单细胞染色质开放性.1.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc20：scATAC--单细胞染色质开放性.1.txt",
+      "sha256": "ee1ce7cc88faa7d6db0f62e4cd7190ca196ddf570a282e26931895ea4c65e61d",
+      "lines": [
+        1,
+        274
+      ],
+      "role": "提取 DensityScatter 质控密度图与 FragmentHistogram 周期性图"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "sc20：scATAC--单细胞染色质开放性.3.txt",
+      "sha256": "27acaa0bc6ebd4cae2870305125c7217aad33d4fad17fa1d424905e813ea03d1",
+      "lines": [
+        1,
+        168
+      ],
+      "role": "提取带表达轨道、Highlight 区间及 Peak-Gene 连锁弧线的 CoveragePlot"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/multiome_atac_linked.rds",
+      "object": "Seurat",
+      "requirements": "含 peaks、SCT assay，有效 Fragment 文件，TSS.enrichment、nucleosome_signal 及 Links",
+      "evidence": "源码 multiome WNN + LinkPeaks 对象"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "Signac",
+      "tested_version": "1.17.1",
+      "source_version": null
+    },
+    {
+      "name": "GenomicRanges",
+      "tested_version": "1.62.1",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；Fragments 索引文件路径需在当前环境中可读。"
+  ],
+  "outputs": [
+    {
+      "path": "results/signac_atac_qc_panel.pdf",
+      "content": "Peak 计数 vs TSS 富集散点图与核小体片段周期直方联图"
+    },
+    {
+      "path": "results/signac_linked_coverage_track.pdf",
+      "content": "基因组染色质开放信号、Peak 区间、SCT 基因表达及连锁弧线复合轨迹图"
+    }
+  ],
+  "adaptation": [
+    "合并多组学 scATAC 质控图与连锁 Coverage 轨道并补充高亮 GRanges 区域标记，通过独立合成 Multiome ATAC+SCT 对象验证完整渲染。"
+  ],
+  "code_sha256": {
+    "plot.R": "ed1a860b7ddb8e11471b351f301c911c2795dcd63eaf8a8663a89f8d40324df4"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, Signac 1.17.1, Seurat 5.5.0) + synthetic 40-cell Multiome ATAC+SCT",
+      "date": "2026-11-14",
+      "notes": "两份 PDF（质控联合图与 ISG15 连锁 CoveragePlot）均已生成并通过 fitz PNG 视觉检查。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

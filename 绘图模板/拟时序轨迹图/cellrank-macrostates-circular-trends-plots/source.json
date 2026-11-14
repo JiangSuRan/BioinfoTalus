@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "id": "cellrank-macrostates-circular-trends-plots",
+  "title": "CellRank 终末命运环状单纯形投影、谱系基因趋势 GAM 曲线与级联热图",
+  "kind": "plot",
+  "plot_type": "拟时序轨迹图",
+  "language": "Python",
+  "tags": [
+    "CellRank",
+    "环状单纯形投影",
+    "GAM基因趋势",
+    "级联热图",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps19.CellRank.html（circular_projection, gene_trends, cascade heatmap 三件套）",
+    "author_attribution": "本地教学脚本（ps19.CellRank.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps19.CellRank.html",
+      "sha256": "1061a5ec07263147b3ab5de47f6883ff885587d4309e379dedee80f99f1ad3e9",
+      "lines": [
+        1,
+        45360
+      ],
+      "role": "提取 CellRank 命运概率环状投影、GAM 趋势拟合及潜时间基因激活级联热图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cellrank_fitted.h5ad",
+      "object": "AnnData",
+      "requirements": "含 obsm['lineages_fwd'] 与 obs['latent_time']",
+      "evidence": "与 cellrank-fate-probability-drivers 衔接"
+    }
+  ],
+  "packages": [
+    {
+      "name": "cellrank",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "matplotlib",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 cellrank，仅完成语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cellrank_circular.pdf",
+      "content": "命运概率单纯形环状投影图"
+    },
+    {
+      "path": "results/cellrank_gene_trends.pdf",
+      "content": "驱动基因跨终末谱系 GAM 平滑趋势曲线"
+    },
+    {
+      "path": "results/cellrank_cascade_heatmap.pdf",
+      "content": "沿目标谱系潜时间峰值排序的驱动基因级联热图"
+    }
+  ],
+  "adaptation": [
+    "补齐已有 CellRank 方法模板尚未收录的三类经典终末命运可视化。"
+  ],
+  "code_sha256": {
+    "plot.py": "cc67b6b716bb4e8d2fab6c6b32e33cf956025fa2f6d85dce1413faf56311dfb1"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

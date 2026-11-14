@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-seurat-stacked-violin",
+  "title": "Marker 基因分面紧凑堆叠小提琴图（单基因独立最大值刻度 + patchwork）",
+  "kind": "plot",
+  "plot_type": "Marker基因堆叠小提琴图",
+  "language": "R",
+  "tags": [
+    "VlnPlot",
+    "堆叠小提琴图",
+    "Marker表达",
+    "patchwork",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc6：marker 基因画图展示+metadata理解.txt（225–258 行 StackedVlnPlot）",
+    "author_attribution": "本地教学脚本（sc6：marker 基因画图展示+metadata理解.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc6：marker 基因画图展示+metadata理解.txt",
+      "sha256": "d1a5a28e6dd2e50b9be1435e238ff41c43542454d38cd6e6fb0cde19d259cdda",
+      "lines": [
+        225,
+        258
+      ],
+      "role": "逐基因精简边距、提取最大值刻度并由 patchwork 纵向堆叠的小提琴图组"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含标准化表达数据且 active ident 为目标细胞亚群",
+      "evidence": "源码 VlnPlot(obj, features = feature) 按默认 ident 分组"
+    },
+    {
+      "path": "Data/marker_genes.rds",
+      "object": "character",
+      "requirements": "待展示的亚群代表性 Marker 基因向量",
+      "evidence": "源码 top2$gene"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标基因均存在于 Seurat 对象中。"
+  ],
+  "outputs": [
+    {
+      "path": "results/marker_stacked_violin.pdf",
+      "content": "紧凑排布的多基因纵列堆叠小提琴图"
+    }
+  ],
+  "adaptation": [
+    "将源码 purrr::map / map_dbl / map2 改为基 R lapply 与 vapply 组装多面板列表，消除冗余 purrr 依赖并适配 ggproto 对象处理。",
+    "精简内部小提琴上下留白（-0.25 cm）并仅在最底面板恢复亚群 x 轴倾斜标签；移除源码末尾无效测试调用 modify_vlnplot(feature = top2$gene)。"
+  ],
+  "code_sha256": {
+    "plot.R": "191187bc2301b93a1a6e41809cec6ad2da0c3fc6b67c94b0454eae23380a7e3d"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "id": "scprint-targeted-grn-inference",
+  "title": "scPRINT 细胞类型定向基因调控网络推断与候选基因关联邻居排序",
+  "kind": "method",
+  "method_type": "AI基础模型与嵌入",
+  "language": "Python",
+  "tags": [
+    "scPRINT",
+    "GNInfer",
+    "基因调控网络",
+    "单细胞基础模型",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/cantinilab/scPRINT",
+    "figure": "07_scPRINT_指定基因GRN关联分析.ipynb + 08_scPRINT_候选基因定向GRN与网络图(1).ipynb",
+    "author_attribution": "本地教学脚本 (xnqc/07, 08)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/07_scPRINT_指定基因GRN关联分析.ipynb",
+      "sha256": "eb0d007ebf4e6f8c49ec80585cfa0a00410b824cbeb07e23a5d322e3f282929c",
+      "lines": [
+        1,
+        1071
+      ],
+      "role": "指定基因集 GNInfer 关联矩阵推断与符号映射"
+    },
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/08_scPRINT_候选基因定向GRN与网络图(1).ipynb",
+      "sha256": "03d166f2e93695142ce4f5487adb3d12dac1104d341185ae9edd009c2fe4b62a",
+      "lines": [
+        1,
+        1286
+      ],
+      "role": "候选基因∪高表达背景构网与双向最大绝对注意力邻居排序"
+    },
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_00_数据预处理_从你的原始数据开始(1).ipynb",
+      "sha256": "7c7fed35eb4869c2243569070871a5bf3db6c49c21347a2151b95ae1122240cf",
+      "lines": [
+        1,
+        756
+      ],
+      "role": "bionty 人类/小鼠 Ensembl ID 对齐前置逻辑说明参考"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/retina_counts.h5ad 与 Data/scprint_checkpoint.ckpt",
+      "object": "AnnData (原始计数) + scPRINT 检查点",
+      "requirements": "X 为原始计数，var_names 为 Ensembl ID 且 var['feature_name'] 含基因符号，obs['cell_type'] 标注细胞类型（纯符号输入需先用 bionty.Gene.public 映射）",
+      "evidence": "源码 Preprocessor(do_postp=False) 与 GNInfer(how='given') 调用推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scprint",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scdataloader",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data/ 与 results/ 目录已存在；已下载 scPRINT 预训练检查点与 lamindb 本地本体注册表。",
+    "本机未安装 scprint / scdataloader，仅完成 Python 语法校验；脚本已设定为 CUDA GPU 混合精度模式（precision='16-mixed', dtype=torch.float16）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scprint_grn_matrix.csv",
+      "content": "细胞类型特异性有符号注意力 GRN 关联矩阵"
+    },
+    {
+      "path": "results/scprint_candidate_neighbors.csv",
+      "content": "候选基因双向最大绝对权重关联邻居排序长表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "GNInfer(how='given', head_agg='mean', filtration='thresh')",
+      "basis": "来源 07/08 一致设定；在候选基因∪前 120 个高表达背景基因上下文内推断局部调控网络"
+    },
+    {
+      "setting": "undirected = np.maximum(|mat|, |mat.T|)",
+      "basis": "来源 08 relation/candidate_neighbors 设定；对双向注意力取较强边提取关联伙伴"
+    }
+  ],
+  "adaptation": [
+    "合并 07（指定基因矩阵）与 08（候选∪背景定向构网），去除 _quiet() fd 重定向、数据自检打印、IPython.display 与 _rep.ensure_weights 教学包装。",
+    "绘图段剥离至独立模板 networkx-candidate-grn-network-heatmap。",
+    "模型加载与 GNInfer 参数统一配置为 GPU 模式（map_location='cuda'、.cuda().eval()、max_cells=512、batch_size=64、num_workers=4、dtype=torch.float16、precision='16-mixed'）。"
+  ],
+  "limitations": [
+    "仅完成 py_compile 语法解析核验，未在本机执行 scPRINT 模型推断。",
+    "输入 adata.var 需具备 feature_name 与 Ensembl var_names；若仅含基因符号请先按 bionty 或在线基因表转换。"
+  ],
+  "code_sha256": {
+    "analysis.py": "d0c3f0f41749234570b10981b57aac4952bd30767c4b41c297d9068c91fc9d64"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

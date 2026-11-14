@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "id": "pheatmap-marker-celltype-grouped-heatmap",
+  "title": "细胞水平 Marker Z-score 截断与动态间隙分组热图（pheatmap + viridis）",
+  "kind": "plot",
+  "plot_type": "复合注释热图",
+  "language": "R",
+  "tags": [
+    "pheatmap",
+    "单细胞热图",
+    "Marker表达",
+    "Z-score截断",
+    "viridis"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc6：marker 基因画图展示+metadata理解.txt（279–317 行单细胞分群间隙热图）",
+    "author_attribution": "本地教学脚本（sc6：marker 基因画图展示+metadata理解.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc6：marker 基因画图展示+metadata理解.txt",
+      "sha256": "d1a5a28e6dd2e50b9be1435e238ff41c43542454d38cd6e6fb0cde19d259cdda",
+      "lines": [
+        279,
+        317
+      ],
+      "role": "按亚群下采样排序、截断 Z-score 极值并按累积亚群边界插入行列间隙的单细胞热图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含 RNA assay 与 celltype 注释列",
+      "evidence": "源码 subset(scRNA_harmony, downsample = 100) 与 celltype.3 排序"
+    },
+    {
+      "path": "Data/top_markers_df.rds",
+      "object": "data.frame",
+      "requirements": "含 cluster 与 gene 两列的排序标志基因表",
+      "evidence": "源码 rowanno <- top10 %>% arrange(cluster)"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "pheatmap",
+      "tested_version": "1.0.13",
+      "source_version": null
+    },
+    {
+      "name": "viridis",
+      "tested_version": "0.6.5",
+      "source_version": null
+    },
+    {
+      "name": "scales",
+      "tested_version": "1.4.0",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；top_markers_df 中的 gene 均在 Seurat 对象中。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cell_marker_grouped_heatmap.pdf",
+      "content": "细胞 × 基因亚群分块注释热图"
+    }
+  ],
+  "adaptation": [
+    "修复源码 gaps_row/gaps_col 固定使用 [-7] 的硬编码缺陷：改为 head(..., -1) 自动适配任意亚群数。",
+    "修复源码 viridis(option = 'I') 无效参数警告（改为 option = 'D'），并将 Seurat v4 slot 写法更新为 Seurat v5 GetAssayData(layer = 'scale.data') 与自动匹配色板。"
+  ],
+  "code_sha256": {
+    "plot.R": "36b10bc878ffc44094823e6f7e5411e6d8fb4e4ee241bbd86b6565d9a3a773c3"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

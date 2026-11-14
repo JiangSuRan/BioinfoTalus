@@ -73,7 +73,7 @@
   ],
   "prerequisites": [
     "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
-    "scGPT 预训练权重已下载；GPU 可用性决定批量推理速度（模板 CPU 兼容）。"
+    "scGPT 预训练权重已下载；需在 CUDA GPU 上执行分批 FP16 推理（每批 64 细胞）。"
   ],
   "outputs": [
     {
@@ -98,7 +98,8 @@
   "adaptation": [
     "移除 wandb 全程记录、训练/验证拆分与微调循环、DSBN 对抗判别器、save_dir 时间戳目录与脚本自拷贝；保留预处理、词表对齐、Token 化与模型加载。",
     "模型加载改用官方 scgpt.load_pretrained 简化接口（等价于源码读 args.json + TransformerModel + load_state_dict 的组合）。",
-    "输出为 obsm['X_scGPT'] 落盘 h5ad；读写路径统一为项目根相对路径（Data/ 与 results/）。"
+    "输出为 obsm['X_scGPT'] 落盘 h5ad；读写路径统一为项目根相对路径（Data/ 与 results/）。",
+    "模型（.to('cuda')）与按 64 细胞切片后的输入张量启用 torch.autocast('cuda', dtype=torch.float16) GPU 分批推理，并转回 float32 写入 obsm['X_scGPT'] 以避免全量入显存 OOM。"
   ],
   "limitations": [
     "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
@@ -106,13 +107,13 @@
     "分箱（n_bins=51）量化表达强度，极低深度细胞的 token 分布退化；批次效应仅在嵌入层隐式缓解，未做 DSBN 微调。"
   ],
   "code_sha256": {
-    "analysis.py": "869f3d001c5ba9663eb86b460bb365613794eab9505b01585ba88fbb3e64b14d"
+    "analysis.py": "2ee360dedc806d41d328b65972a910e3e66a75a24e54ee32ab884c15710377b1"
   },
   "validation": {
     "syntax": {
       "status": "passed",
-      "environment": "python parse check",
-      "date": "2026-11-06"
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
     },
     "synthetic_run": null,
     "reference_comparison": null,

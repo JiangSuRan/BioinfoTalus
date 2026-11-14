@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-donor-faceted-count-umap",
+  "title": "多供体/样本分面 UMAP 亚群分布图（分面标注细胞总数）",
+  "kind": "plot",
+  "plot_type": "单细胞降维图",
+  "language": "R",
+  "tags": [
+    "UMAP",
+    "分面展示",
+    "供体异质性",
+    "细胞计数",
+    "ggplot2"
+  ],
+  "paper": {
+    "repository": "https://github.com/tfaits/Arlotta_Lab_Chimeroids.git",
+    "figure": "CellType_Statistics_FigureGeneration.R（Nature 2024 Chimeroids 各供体分面带细胞数 UMAP，85–105 行）",
+    "author_attribution": "Antón-Bolaños et al., Nature 2024",
+    "doi": "10.1038/s41586-024-07578-8",
+    "revision": "19412bd3b85b5db6ebe92eecf9665592d1640c42"
+  },
+  "source_files": [
+    {
+      "root_label": "Arlotta_Lab_Chimeroids",
+      "path": "CellType_Statistics_FigureGeneration.R",
+      "sha256": "76552b660df4f57222023ac8ec749f6c6a4be56bfc4a6b73174aa01df80b834f",
+      "lines": [
+        85,
+        105
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/donor_umap_metadata.rds",
+      "object": "data.frame",
+      "requirements": "含 UMAP_1、UMAP_2、donor 与 cell_type 四列",
+      "evidence": "源码从 multi 提取 UMAP_1/UMAP_2 并以 table() 拼接 Genotype 与细胞数构成 NumCells1 分面标签"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/。"
+  ],
+  "outputs": [
+    {
+      "path": "results/donor_faceted_count_umap.pdf",
+      "content": "分供体/批次显示细胞数标签与亚群着色的 UMAP 网格图"
+    }
+  ],
+  "adaptation": [
+    "将源脚本硬编码的多批次供体因子水平替换为基于 dplyr::add_count() 的动态分面标题拼接，去除私有配色列表。"
+  ],
+  "code_sha256": {
+    "plot.R": "ad5171b0a87e65b6c06e309cf9aa2c05a1e63aa570d8435f542900eab5ac1f8d"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

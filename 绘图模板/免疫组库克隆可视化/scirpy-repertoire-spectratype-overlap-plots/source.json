@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "scirpy-repertoire-spectratype-overlap-plots",
+  "title": "Scirpy 单细胞免疫组库 VDJ 用途、CDR3 谱系长度、样本重叠热图与克隆型网络",
+  "kind": "plot",
+  "plot_type": "免疫组库克隆可视化",
+  "language": "Python",
+  "tags": [
+    "Scirpy",
+    "VDJ使用",
+    "CDR3长度",
+    "组库重叠",
+    "克隆网络",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps23.Scirpy.html（vdj_usage, spectratype, repertoire_overlap, clonotype_network 四联图）",
+    "author_attribution": "本地教学脚本（ps23.Scirpy.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps23.Scirpy.html",
+      "sha256": "7c32d4cfa13b3eb54b2d3d8b1ec82b3168691b580bb52a382768a13405c8cba2",
+      "lines": [
+        1,
+        46090
+      ],
+      "role": "提取 Python 免疫组库 VDJ 基因偏倚、CDR3 谱系分布及克隆相似网络"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scirpy_tcr_annotated.h5ad",
+      "object": "AnnData",
+      "requirements": "已运行 scirpy 质控与克隆型网络计算的 MuData/AnnData",
+      "evidence": "与 scirpy-tcr-repertoire-clonotype 产出对应"
+    }
+  ],
+  "packages": [
+    {
+      "name": "matplotlib",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scirpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 scirpy，仅完成语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scirpy_repertoire_visual_suite.pdf",
+      "content": "VDJ 用途、CDR3 长度分布、组库重叠热图与克隆网络四联图"
+    }
+  ],
+  "adaptation": [
+    "补齐已有 Python scirpy 方法缺失的全套组库专有绘图接口并统一编排为 2x2 图板。"
+  ],
+  "code_sha256": {
+    "plot.py": "25a84dd8392662592712dd72ef5023f9811a1027ed4af377d2c6ed503408504a"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "id": "scgpt-perturbation-forward-reverse-validation",
+  "title": "scGPT TransformerGenerator 正向基因敲除预测精度评估与反向扰动基因识别",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "scGPT",
+    "TransformerGenerator",
+    "基因敲除评估",
+    "反向扰动推断",
+    "GEARS",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/bowang-lab/scGPT",
+    "figure": "cpu_06_敲除预测准确性验证(1).ipynb + gpu_06_敲除预测准确性验证_GPU(1).ipynb",
+    "author_attribution": "本地教学脚本 (xnqc/cpu_06, gpu_06)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_06_敲除预测准确性验证(1).ipynb",
+      "sha256": "2e007c41f7289d4e97bfabcafc41c29a15afe4396f1fa4280b9046f8788abbe7",
+      "lines": [
+        1,
+        656
+      ],
+      "role": "CPU 基因面板选取、Wqkv->in_proj_ 权重兼容及正反向精度评测"
+    },
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/gpu_06_敲除预测准确性验证_GPU(1).ipynb",
+      "sha256": "b2eb8417f2b4f2a8c96231ec24a4a625bd09c2cc918cc5864015c86446b9655d",
+      "lines": [
+        1,
+        665
+      ],
+      "role": "CUDA 大规模面板与高效注意力参数对应版本（与 CPU 版仅设备参数差异）"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本合并去重入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/perturb_processed.h5ad",
+      "object": "GEARS 格式 AnnData",
+      "requirements": "obs 含 condition / condition_name，var 含 gene_name，uns 含 top_non_dropout_de_20",
+      "evidence": "源码 full.uns['top_non_dropout_de_20'] 与 create_cell_graph_dataset_for_prediction 推断"
+    },
+    {
+      "path": "Data/scgpt_human/{vocab.json, args.json} 与 Data/scgpt_finetuned_perturbation.pt",
+      "object": "微调扰动模型词表与权重",
+      "requirements": "TransformerGenerator 架构一致的微调检查点",
+      "evidence": "源码 load_perturbation_model 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scgpt",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "gears",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch_geometric",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "需安装 scgpt、gears 与 torch_geometric，并在 CUDA GPU（支持 FlashAttention）环境挂载微调扰动检查点；本机仅完成 Python 语法校验。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scgpt_forward_metrics.tsv",
+      "content": "各条件 Top-20 DE 表达相关、delta 相关、方向一致率与 MSE"
+    },
+    {
+      "path": "results/scgpt_best_ko_delta.csv",
+      "content": "预测最优扰动的真实 vs 预测 Top-20 DE 表达偏移"
+    },
+    {
+      "path": "results/scgpt_reverse_similarity.csv",
+      "content": "真实观测扰动谱与全部候选预测扰动谱的两两 Pearson 相似度矩阵"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "固定 GPU 参数：n_panel=5060、num_samples=200、batch_size=64、use_fast_transformer=True 与 amp=True",
+      "basis": "移除 cpu_06 降配分支与 Wqkv.->in_proj_ 权重键改写，直接对齐 gpu_06 大规模基因面板与 FlashAttention GPU 加速配置"
+    },
+    {
+      "setting": "union of top_non_dropout_de_20 上算反向相似度矩阵 S[i,j]",
+      "basis": "来源 cpu_06 Sec 4 反向敲除基因检索实现"
+    }
+  ],
+  "adaptation": [
+    "精简为仅 GPU 版本：固定 device=torch.device('cuda')、5060 基因面板、FlashAttention 与 AMP 推理，预测结果转 float32 求均值。",
+    "输出表直接对齐绘图模板 ko-forward-reverse-benchmark-plots 输入接口。"
+  ],
+  "limitations": [
+    "仅完成 py_compile 语法解析核验，未在本机执行 scGPT/GEARS 模型推理。"
+  ],
+  "code_sha256": {
+    "analysis.py": "56b0470efa74e4a7db36bb1a96146f4e036dada4bad094c30be7f8fb5972efbc"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

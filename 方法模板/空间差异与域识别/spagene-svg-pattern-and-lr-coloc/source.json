@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "id": "spagene-svg-pattern-and-lr-coloc",
+  "title": "SpaGene 空间可变基因检测、局部空间模式识别与配体-受体共定位推断",
+  "kind": "method",
+  "method_type": "空间差异与域识别",
+  "language": "R",
+  "tags": [
+    "SpaGene",
+    "空间可变基因",
+    "空间模式",
+    "配体受体共定位",
+    "无需先验分布"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "k17 SpaGene.md（SpaGene, FindPattern, SpaGene_LR）",
+    "author_attribution": "本地教学脚本（k17 SpaGene.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "k17 SpaGene.md",
+      "sha256": "b3a7748474723ea5ddc8f5ec6de79690a2162e2275a0a5ab2d3dbeb9211a2eeb",
+      "lines": [
+        1,
+        233
+      ],
+      "role": "提取非参数空间可变基因检测与局部共定位配体-受体分析"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_spatial.rds",
+      "object": "Seurat",
+      "requirements": "含 Spatial counts 层及空间坐标",
+      "evidence": "源码 Seurat 提取表达矩阵与坐标"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SpaGene",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 SpaGene，仅完成 R 语法解析检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/spagene_svg_results.rds",
+      "content": "空间可变基因统计对象"
+    },
+    {
+      "path": "results/spagene_patterns.rds",
+      "content": "空间协同表达基因簇模式"
+    },
+    {
+      "path": "results/spagene_colocalized_lr.csv",
+      "content": "空间近邻共表达显著配体-受体对结果表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "FindPattern(nPattern=8) + SpaGene_LR(knn=8)",
+      "basis": "来源代码与典型 Visium 邻域参数"
+    }
+  ],
+  "adaptation": [
+    "采用 Seurat v5 LayerData 接口读取 counts，去除绝对文件路径并显式保存结果。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 SpaGene 包）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "dda364a777b679d3f74f56487912ae2b4379f124f07a4870609a1bce0dc313ba"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

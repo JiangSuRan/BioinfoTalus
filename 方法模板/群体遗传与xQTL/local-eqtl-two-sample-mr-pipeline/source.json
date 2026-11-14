@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "id": "local-eqtl-two-sample-mr-pipeline",
+  "title": "本地 eQTL 汇总统计 PLINK 去连锁、弱工具剔除、结局 VCF 检索与两样本 MR 敏感性分析",
+  "kind": "method",
+  "method_type": "群体遗传与xQTL",
+  "language": "R",
+  "tags": [
+    "eQTL",
+    "孟德尔随机化",
+    "PLINK去连锁",
+    "F统计量",
+    "MR-PRESSO",
+    "TwoSampleMR"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "m5/m6/m7/m9 整合（eQTL -> 1000G PLINK 去连锁 -> F>10 检验 -> Cochran Q 自适应 FE/MRE IVW + MR-PRESSO + 敏感性）",
+    "author_attribution": "本地教学脚本（m5.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "m5.R",
+      "sha256": "2b23d91e6525f9603fa095794862586578626b5c6cd5774ac092c3e449140803",
+      "lines": [
+        1,
+        272
+      ],
+      "role": "eQTLGen 目标基因提取与 MAF 对齐"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "m6孟德尔筛选工具变量.R",
+      "sha256": "c3343aa8a78b0a67cdf699917a9db042fcdf532e4e22e19e5e91acb715f1ab1e",
+      "lines": [
+        450,
+        942
+      ],
+      "role": "PLINK 严格去连锁（r2=0.001, kb=100）与弱工具 F>10 检验"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "m7结局数据逐级因开展MR分析.R",
+      "sha256": "b5803f3b93f771ccabc6228f7e8b01d26098de151a001f7f826465f0f37785d8",
+      "lines": [
+        180,
+        600
+      ],
+      "role": "TwoSampleMR 协调与 MR-PRESSO 异常值检验"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "m9：一站式分析完孟德尔.R",
+      "sha256": "e4aed4ec7c33f52bff8ecf15f9e7bec3106c6bd4d7e9770e642fc47e93e6ee0a",
+      "lines": [
+        550,
+        1200
+      ],
+      "role": "异质性驱动的 FE/MRE IVW 自动择优逻辑与结果导出对齐绘图模板"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/eqtlgen_target_subset.tsv",
+      "object": "TSV",
+      "requirements": "目标基因 cis-eQTL 子集（含 SNP, Pvalue, Zscore, NrSamples, AssessedAllele, OtherAllele）",
+      "evidence": "m5 上游提取表"
+    },
+    {
+      "path": "Data/allele_frequency.tsv",
+      "object": "TSV",
+      "requirements": "含 SNP 与 MAF 列",
+      "evidence": "源码等位基因频率参考"
+    },
+    {
+      "path": "Data/outcome_snp_lookup.tsv",
+      "object": "TSV",
+      "requirements": "结局 GWAS 对应 SNP 效应检索表",
+      "evidence": "源码结局 VCF 检索产物"
+    },
+    {
+      "path": "Data/1000G_EUR_phase3",
+      "object": "PLINK bfile",
+      "requirements": "1000G 参考面板（bed/bim/fam）及可执行文件 Data/plink",
+      "evidence": "源码本地 PLINK clumping"
+    }
+  ],
+  "packages": [
+    {
+      "name": "data.table",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "TwoSampleMR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "MRPRESSO",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；需配置本地 plink 可执行文件与 TwoSampleMR/MRPRESSO；本机缺两包仅完成语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/mr_analysis_ready.tsv",
+      "content": "等位基因协调并去除回文与强结局相关 SNP 的工具变量表"
+    },
+    {
+      "path": "results/mr_results_all_methods.tsv",
+      "content": "IVW（按 Q 检验选 FE/MRE）、MR Egger、加权中位数等五法 OR 汇总"
+    },
+    {
+      "path": "results/mr_heterogeneity.tsv",
+      "content": "Cochran Q 异质性检验表"
+    },
+    {
+      "path": "results/mr_pleiotropy.tsv",
+      "content": "MR-Egger 截距水平多效性检验表"
+    },
+    {
+      "path": "results/mr_presso_results.rds",
+      "content": "MR-PRESSO 全局与离群检验对象"
+    },
+    {
+      "path": "results/mr_leaveoneout.tsv",
+      "content": "逐一剔除留一法结果表（直接适配 ggplot2-mr-four-panel-sensitivity-suite）"
+    },
+    {
+      "path": "results/mr_singlesnp.tsv",
+      "content": "单 SNP Wald 比值结果表（直接适配 ggplot2-mr-four-panel-sensitivity-suite）"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "PLINK --clump-p1 5e-8 --clump-r2 0.001 --clump-kb 100 + F_stat > 10",
+      "basis": "来源流程标准强工具变量与低连锁独立性筛选"
+    },
+    {
+      "setting": "harmonise_data(action=3) + 异质性 p<0.05 时启用 mr_ivw_mre 否则 mr_ivw_fe",
+      "basis": "来源流程 m9 核心因果估计稳健规则"
+    }
+  ],
+  "adaptation": [
+    "合并四份教学脚本去除了海量过程日志与防御性分支，使导出字段直接兼容新版 MR 四联诊断绘图模板。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 TwoSampleMR/MRPRESSO 及千人基因组面板）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "cf0e306d7f826787152195bed3989d748909f3186a42e02f2db0bfd48000e5d2"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

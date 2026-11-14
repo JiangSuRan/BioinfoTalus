@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-freqci-treatment-barplot",
+  "title": "多项分布 95% 置信区间与卡方检验亚群治疗反应比例柱状图",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "freqCI",
+    "95%置信区间",
+    "卡方检验",
+    "误差棒",
+    "亚群构成"
+  ],
+  "paper": {
+    "repository": "https://github.com/czbiohub-sf/scell_lung_adenocarcinoma.git",
+    "figure": "scripts/IM02_immune_cell_changes_with_response_to_treatment.Rmd（Cell 2020 NSCLC Fig 4C 免疫亚群比例 95% CI 柱状图与卡方检验，35–92 与 125–133 行）",
+    "author_attribution": "Maynard et al., Cell 2020",
+    "doi": "10.1016/j.cell.2020.07.017",
+    "revision": "de138c79bcfc2fa3a28c8a039a28ab560da78099"
+  },
+  "source_files": [
+    {
+      "root_label": "scell_lung_adenocarcinoma",
+      "path": "scripts/IM02_immune_cell_changes_with_response_to_treatment.Rmd",
+      "sha256": "ec29be8f788e11f44b2c4e9df83670689442598ee1f48acdf520897d6f858a87",
+      "lines": [
+        35,
+        133
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cell_treatment_metadata.rds",
+      "object": "data.frame",
+      "requirements": "单细胞元数据，含 group（有序因子或按出现序排列）与 cell_type（亚群）两列",
+      "evidence": "源码按 analysis 分组传入 REdaS::freqCI(..., level = .95) 并以 chisq.test 检验各亚群跨组比例变化"
+    }
+  ],
+  "packages": [
+    {
+      "name": "REdaS",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "forcats",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；需已安装 CRAN 包 REdaS。"
+  ],
+  "outputs": [
+    {
+      "path": "results/treatment_freqci_proportion_barplot.pdf",
+      "content": "分面展示各亚群在不同治疗阶段比例及 95% Goodman 置信区间误差棒柱状图"
+    },
+    {
+      "path": "results/celltype_proportion_chisq.csv",
+      "content": "各亚群卡方独立性检验 p 值及 Bonferroni 校正表"
+    }
+  ],
+  "adaptation": [
+    "移除 Rmd 中的 Brain/Pleura 组织特异排除逻辑与无意义写表碎片，保留完整的 REdaS::freqCI 95% 多项置信区间计算、分面误差棒柱状图及单亚群 Bonferroni 卡方检验结果导出，使用 forcats::as_factor 保持已有有序因子。"
+  ],
+  "code_sha256": {
+    "plot.R": "1515f8e1cec389f847eac4dfc5e366aea37ef8dce2ed8fb7c5f71c93af43990f"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

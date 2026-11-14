@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "beyondcell-drug-sensitivity",
+  "title": "Beyondcell 单细胞药敏特征打分、治疗亚群 UMAP 聚类与药物敏感性排序",
+  "kind": "method",
+  "method_type": "药物敏感性预测",
+  "language": "R",
+  "tags": [
+    "Beyondcell",
+    "药敏预测",
+    "药物敏感性",
+    "治疗异质性",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc23：Beyondcell 药敏分析和药物治疗预测.txt（15–52 行药敏计算、混杂回归、UMAP 聚类与排序）",
+    "author_attribution": "本地教学脚本（sc23：Beyondcell 药敏分析和药物治疗预测.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc23：Beyondcell 药敏分析和药物治疗预测.txt",
+      "sha256": "45546b1645c19601d4b9a27063af9206c79cb7d2207270ad3f5b506f8de4d5e3",
+      "lines": [
+        15,
+        52
+      ],
+      "role": "Seurat v5 兼容转换、PSc 药物集打分、nFeature_RNA 回归校正及治疗集群药敏优先级排序"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本精炼适配，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含标准化表达与 condition 条件列的肿瘤/上皮 Seurat 对象",
+      "evidence": "源码 ScaleData -> beyondcell bcScore -> bcRanks(idents = 'condition')"
+    }
+  ],
+  "packages": [
+    {
+      "name": "beyondcell",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标环境已安装 beyondcell，输入 Seurat 对象含至少 1 组待排序条件列。"
+  ],
+  "outputs": [
+    {
+      "path": "results/beyondcell_scored.rds",
+      "content": "已完成混杂回归、beyondcell UMAP 降维及药物排名的 Beyondcell 对象"
+    },
+    {
+      "path": "results/beyondcell_condition_ranks.tsv",
+      "content": "各条件下优先级排序的候选敏感药物表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "将 Seurat v5 Assay5 转为 v4 Assay 后再运行 bcScore(GetCollection(PSc), expr.thres = 0.1)",
+      "basis": "beyondcell 对旧版 Seurat 矩阵槽位有结构依赖，显式兼容转换可预防插槽读取报错"
+    },
+    {
+      "setting": "bcRegressOut(vars.to.regress = 'nFeature_RNA')",
+      "basis": "消除单细胞测序深度差异对药物特征富集方向与幅度的系统偏移后再聚类"
+    }
+  ],
+  "adaptation": [
+    "剔除源码重复 UpdateSeuratObject 调用、随机 1000 细胞切片及尾部多余全局 Assay 版本 options 修改。"
+  ],
+  "limitations": [
+    "药物响应签名基于细胞系扰动转录谱，体内微环境耐药与免疫介导效应不在模型直接覆盖范围内。"
+  ],
+  "code_sha256": {
+    "analysis.R": "973093d5a3cfae88589fc1d1e1db159e985d3bfb5efdc84fbefdb16a4fa3c3c4"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "seurat-wnn-citeseq-integration",
+  "title": "Seurat CITE-seq RNA+ADT 加权最近邻（WNN）多模态整合聚类",
+  "kind": "method",
+  "method_type": "多组学整合与迁移",
+  "language": "R",
+  "tags": [
+    "CITE-seq",
+    "WNN",
+    "FindMultiModalNeighbors",
+    "ADT",
+    "CLR",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc21：CITE-seq 数据分析.txt（15–40 行双模态独立预处理与 WNN 联合邻域图聚类）",
+    "author_attribution": "本地教学脚本（sc21：CITE-seq 数据分析.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc21：CITE-seq 数据分析.txt",
+      "sha256": "5d2624a2bb0207ff64dcb3729ce920afdc9ae365baf67d7867b52cc51519827b",
+      "lines": [
+        15,
+        40
+      ],
+      "role": "分别对 RNA 对数归一化/PCA 与 ADT CLR/apca 独立降维后构建加权最近邻图并联合 UMAP 聚类"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本精炼适配，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/citeseq_seurat.rds",
+      "object": "Seurat",
+      "requirements": "同时含 RNA 与 ADT 两个 assay 的 Seurat 对象",
+      "evidence": "源码 DefaultAssay(bm) <- 'RNA' / 'ADT' -> FindMultiModalNeighbors"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；ADT assay 蛋白特征数足以支持设定主成分维度（推荐 >= 18）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/citeseq_wnn_seurat.rds",
+      "content": "含 weighted.nn、wsnn 图、RNA.weight、wnn.umap 与 SLM 聚类标签的 Seurat 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "ADT 采用 CLR (margin = 2) 而 RNA 采用 LogNormalize",
+      "basis": "表面蛋白计数总量受细胞体积及非特异抗体吸附影响显著，按单细胞跨蛋白 CLR 标准化优于常规总计数归一化"
+    },
+    {
+      "setting": "FindMultiModalNeighbors -> RunUMAP(nn.name = 'weighted.nn') + FindClusters(algorithm = 3)",
+      "basis": "源码分别学习单细胞水平 RNA 与蛋白模态信息权重，并用 SLM（algorithm = 3）在加权共享近邻图 wsnn 上聚类"
+    }
+  ],
+  "adaptation": [
+    "移除 SeuratData 联网示例下载；增加 min(..., nrow(adt) - 1, ncol - 1) 主成分安全上限计算，确保低维蛋白 Panel 或小型验证集下 SVD 不因维度超限失败。"
+  ],
+  "limitations": [
+    "未包含跨批次模态校正（多样本批次显著时应先在各自 pca 与 apca 上去批次后再构建 WNN）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "72c806edb0c86235d5efb2308036fc77ddb329766c69b4cde1f1b99f7f0a26cd"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 RDS/TSV 产物，结构与数值校验正常；不代表真实队列数据验证。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

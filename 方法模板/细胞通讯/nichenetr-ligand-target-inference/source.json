@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "id": "nichenetr-ligand-target-inference",
+  "title": "NicheNet 细胞间先验信号调控配体优先级与靶基因预测",
+  "kind": "method",
+  "method_type": "细胞通讯",
+  "language": "R",
+  "tags": [
+    "NicheNet",
+    "细胞通讯",
+    "配体靶基因",
+    "条件差异",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc12：细胞互作-- NicheNet .txt（23–58 行 nichenet_seuratobj_aggregate 主流程）",
+    "author_attribution": "本地教学脚本（sc12：细胞互作-- NicheNet .txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc12：细胞互作-- NicheNet .txt",
+      "sha256": "f3d2f4de6b8b4cd3833a70515870fc4282f0e36e8fe906cf3b6b599dbee2935c",
+      "lines": [
+        23,
+        58
+      ],
+      "role": "结合先验配体-受体-靶基因权重网络推断发送群向接收群条件特异性差异表达驱动配体"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本精炼适配，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含标准化 RNA assay、celltype 注释及 condition 实验分组列",
+      "evidence": "源码 nichenet_seuratobj_aggregate(seurat_obj, condition_colname, ...)"
+    },
+    {
+      "path": "Data/ligand_target_matrix.rds",
+      "object": "matrix",
+      "requirements": "NicheNet 先验配体-靶基因调控潜力矩阵",
+      "evidence": "源码 readRDS('ligand_target_matrix.rds')"
+    },
+    {
+      "path": "Data/lr_network.rds",
+      "object": "data.frame",
+      "requirements": "NicheNet 先验配体-受体互作表",
+      "evidence": "源码 readRDS('lr_network.rds')"
+    },
+    {
+      "path": "Data/weighted_networks.rds",
+      "object": "list",
+      "requirements": "含 lr_sig 与 gr 权重网络数据框",
+      "evidence": "源码 readRDS('weighted_networks.rds')"
+    }
+  ],
+  "packages": [
+    {
+      "name": "nichenetr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；三套先验参考网络与表达对象物种及基因命名一致。"
+  ],
+  "outputs": [
+    {
+      "path": "results/nichenet_output.rds",
+      "content": "含 prioritized ligands、ligand_activities、调控热图与靶基因表的完整 NicheNet 输出列表"
+    },
+    {
+      "path": "results/nichenet_ligand_activities.tsv",
+      "content": "候选配体皮尔逊/aupr 活性排序表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "nichenet_seuratobj_aggregate(sender = ..., receiver = ..., condition_colname = 'condition')",
+      "basis": "源码将细胞通讯焦点从配体受体共表达进一步延伸到受体细胞内部条件特异差异基因调控解释力"
+    }
+  ],
+  "adaptation": [
+    "抽离源码固定样本名称与路径（sample2/sample21、E:/super.lesson/...），改用相对路径 Data/ 与 results/ 并持久化活性排名表。"
+  ],
+  "limitations": [
+    "高度依赖预构建物种匹配先验调控矩阵，物种混淆会显著丢失同源配体/靶标。",
+    "接收细胞在目标条件间若差异基因极少，配体 AUPR/Pearson 排名区分度显著下降。"
+  ],
+  "code_sha256": {
+    "analysis.R": "7a3172b3707357f6398cdf5a88888754221745ba45374e26aa286f2fb5e9abe1"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

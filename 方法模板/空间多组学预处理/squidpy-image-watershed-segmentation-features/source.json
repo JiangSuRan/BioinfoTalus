@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "id": "squidpy-image-watershed-segmentation-features",
+  "title": "Squidpy H&E 组织影像容器构建、高斯平滑、分水岭核分割与 Spot 形态特征提取",
+  "kind": "method",
+  "method_type": "空间多组学预处理",
+  "language": "Python",
+  "tags": [
+    "Squidpy",
+    "H&E影像",
+    "分水岭分割",
+    "ImageContainer",
+    "形态特征提取",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "8.squidpy.md（L340-490 ImageContainer, process smooth, segment watershed, calculate_image_features）",
+    "author_attribution": "本地教学脚本（8.squidpy.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "8.squidpy.md",
+      "sha256": "c1eda292b4a4652516b3e16cce4b1493dd47498ed00b8ed99759fc11a4168f3c",
+      "lines": [
+        340,
+        490
+      ],
+      "role": "提取从 hires 影像构建容器至细胞核分水岭分割与 Spot 图像摘要提取流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_with_hires_image.h5ad",
+      "object": "AnnData",
+      "requirements": "含 uns['spatial'][lib]['images']['hires'] 与 scalefactors",
+      "evidence": "源码 Visium AnnData 影像字段"
+    }
+  ],
+  "packages": [
+    {
+      "name": "numpy",
+      "tested_version": "1.26.4",
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": "2.1.4",
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": "1.9.3",
+      "source_version": null
+    },
+    {
+      "name": "squidpy",
+      "tested_version": "1.3.1",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；hires 图像通道位于末轴（Y x X x C）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/squidpy_spot_image_features.csv",
+      "content": "每个空间 Spot 对应的影像灰度总结及分割核计数/面积特征矩阵"
+    },
+    {
+      "path": "results/squidpy_segmented_features.h5ad",
+      "content": "将影像衍生特征写入 obsm['img_features'] 的 AnnData 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "process(method='smooth', sigma=1) + segment(method='watershed', channel=0)",
+      "basis": "实测 Squidpy 1.3.1 sigma 必须为整型或四维列表以避免 TypeError，平滑后单通道强度分水岭分割核轮廓"
+    }
+  ],
+  "adaptation": [
+    "修正教学代码中浮点 sigma 与并行 Manager().Queue() 在 Windows 报错缺陷（显式使用整数 sigma=1、n_jobs=1 与 show_progress_bar=False）。"
+  ],
+  "limitations": [
+    "经典阈值分水岭对重度染色粘连或强异质基质的切分精细度不及深度学习模型 StarDist。"
+  ],
+  "code_sha256": {
+    "analysis.py": "83f8963b143ff1d3d8ce5b97baf75e7d260680bc8d70fd4e269571312caef2c3"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "Python (scma conda env: squidpy 1.3.1, scanpy 1.9.3) + synthetic 180-spot 300x300 RGB Visium tile",
+      "date": "2026-11-14",
+      "notes": "修复 sigma 类型及多进程引导报错后运行成功，输出 70KB Spot 影像特征 CSV 及 h5ad。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

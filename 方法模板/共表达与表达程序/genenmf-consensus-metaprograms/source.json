@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "genenmf-consensus-metaprograms",
+  "title": "GeneNMF 跨样本非负矩阵分解一致元程序提取、MSigDB GSEA 注释与 UCell 评分",
+  "kind": "method",
+  "method_type": "共表达与表达程序",
+  "language": "R",
+  "tags": [
+    "GeneNMF",
+    "NMF",
+    "MetaPrograms",
+    "fgsea",
+    "UCell",
+    "表达程序"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc19：非负矩阵降维nmf.txt（54–130 行 multiNMF + getMetaPrograms + runGSEA + UCell 评分）",
+    "author_attribution": "本地教学脚本（sc19：非负矩阵降维nmf.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc19：非负矩阵降维nmf.txt",
+      "sha256": "804f9f0b7c8f8e904fa7790d2dfaa319fbf5457171bad210a4fe87002efe6e11",
+      "lines": [
+        54,
+        130
+      ],
+      "role": "分样本扫参多秩 NMF 分解、余弦聚类合并一致元程序、GSEA 功能注释及 UCell 细胞打分"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本精炼适配，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含 RNA assay 标准化表达且 sample 列区分至少 2 个样本",
+      "evidence": "源码 SplitObject(seu, split.by = 'orig.ident') -> multiNMF(k = 4:9)"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "GeneNMF",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "fgsea",
+      "tested_version": "1.36.2",
+      "source_version": null
+    },
+    {
+      "name": "UCell",
+      "tested_version": "2.14.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标环境已安装 GeneNMF 与 msigdbr（runGSEA 联网或缓存访问 MSigDB）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/genenmf_metaprograms.rds",
+      "content": "GeneNMF 跨样本一致元程序及指标权重对象"
+    },
+    {
+      "path": "results/genenmf_gsea_hallmark.rds",
+      "content": "各元程序在 Hallmark 通路集的富集注释列表"
+    },
+    {
+      "path": "results/seurat_with_mp_ucell.rds",
+      "content": "写入各 MetaProgram UCell 活性的 Seurat 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "multiNMF(k = 4:9) + getMetaPrograms(metric = 'cosine', nMP = 6, min.confidence = 0.7)",
+      "basis": "源码跨多种因子数分解再经样本间余弦相似与置信度过滤，可避免单个样本批次噪声主导局部表达程序"
+    },
+    {
+      "setting": "AddModuleScore_UCell(..., name = '')",
+      "basis": "基于单细胞内基因表达排序的无参打分使跨样本元程序活性可比"
+    }
+  ],
+  "adaptation": [
+    "移除源码重复调用的两次 getMetaPrograms，直接一步施加 min.confidence = 0.7 稳健筛选并保留 Hallmark GSEA 注释与 UCell 回写。"
+  ],
+  "limitations": [
+    "runGSEA 依赖 msigdbr 注释集合，离线集群需先缓存对应物种 MSigDB 数据。",
+    "每个拆分子样本需保有足够高变基因与细胞量，否则部分秩 k 分解易不收敛。"
+  ],
+  "code_sha256": {
+    "analysis.R": "d2bb06c868576c53a3d0f0f40665115e4e715bfd4ba35bc84109fcda28d83550"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

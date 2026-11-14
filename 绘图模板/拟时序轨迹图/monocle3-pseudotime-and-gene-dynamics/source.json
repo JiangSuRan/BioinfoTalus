@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "id": "monocle3-pseudotime-and-gene-dynamics",
+  "title": "Monocle3 拟时序轨迹图、基因动态拟时拟合与共表达模块热图",
+  "kind": "plot",
+  "plot_type": "拟时序轨迹图",
+  "language": "R",
+  "tags": [
+    "monocle3",
+    "拟时序",
+    "plot_cells",
+    "plot_genes_in_pseudotime",
+    "基因模块热图",
+    "pheatmap"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc10：Monocle3.txt（91–178 行细胞类型轨迹图、拟时序着色彩图、单基因拟时拟合及模块聚合热图）",
+    "author_attribution": "本地教学脚本（sc10：Monocle3.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc10：Monocle3.txt",
+      "sha256": "f8536e6bf1d93150088958cdd1316ae5fa353f2c04ff672d5df4acd28892163e",
+      "lines": [
+        91,
+        178
+      ],
+      "role": "展示已推断主图与拟时序的 Monocle3 UMAP 轨迹、基因随拟时表达曲线及聚合共表达模块热图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/monocle3_cds.rds",
+      "object": "cell_data_set",
+      "requirements": "已完成 learn_graph 与 order_cells 的 Monocle3 cds，colData 含 celltype 列，rowData 含 gene_short_name",
+      "evidence": "源码 plot_cells(..., color_cells_by = 'celltype.3'/'pseudotime') 与 graph_test"
+    },
+    {
+      "path": "Data/track_genes.rds",
+      "object": "character",
+      "requirements": "用于拟时表达曲线展示的候选动态基因符号向量（2–4 个）",
+      "evidence": "源码 AFD_lineage_cds <- cds[rowData(cds)$gene_short_name %in% AFD_genes, ]"
+    }
+  ],
+  "packages": [
+    {
+      "name": "monocle3",
+      "tested_version": "1.4.27",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "pheatmap",
+      "tested_version": "1.0.13",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    },
+    {
+      "name": "stringr",
+      "tested_version": "1.6.0",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；monocle3 >= 1.3 且 cds 含有效 UMAP、principal_graph 与 pseudotime。"
+  ],
+  "outputs": [
+    {
+      "path": "results/monocle3_trajectory_and_genes.pdf",
+      "content": "细胞类型主图、拟时序染色轨迹与关键基因动态曲线联图"
+    },
+    {
+      "path": "results/monocle3_gene_modules_heatmap.pdf",
+      "content": "基于 graph_test 筛选基因聚类的 Monocle3 共表达模块跨群热图"
+    }
+  ],
+  "adaptation": [
+    "将 colData 访问由 @colData@listData 内部槽直访改回标准 colData(cds)[['celltype']] 访问器。",
+    "剔除互动式选区 choose_cells / choose_graph_segments 与过时 Matrix::rBind trace 补丁，保留非交互可复现绘图主线。"
+  ],
+  "code_sha256": {
+    "plot.R": "db937521826fdebb18e4e93a3f63ab717e2bd907392ba5e68c55518569829901"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -7,7 +7,7 @@ from nicheformer.data.dataset import tokenize_data
 from nicheformer.models._nicheformer import Nicheformer
 
 adata = sc.read_h5ad("Data/spatial_dissociated.h5ad")
-model = Nicheformer.load_from_checkpoint("Data/nicheformer_checkpoint.ckpt")
+model = Nicheformer.load_from_checkpoint("Data/nicheformer_checkpoint.ckpt").cuda()
 model.eval()
 
 # 基因表达按每基因中位计数缩放后 token 化（4096 序列位 + 辅助 token）
@@ -19,7 +19,7 @@ tokens = tokenize_data(X, median_counts_per_gene=median_counts).astype(np.int64)
 embeddings = []
 with torch.no_grad():
     for i in range(0, tokens.shape[0], 256):
-        x = torch.tensor(tokens[i:i + 256])
+        x = torch.tensor(tokens[i:i + 256], device="cuda")
         attention_mask = torch.ones_like(x, dtype=torch.bool)
         output = model(x, attention_mask)
         embeddings.append(output["transformer_output"].mean(dim=1).cpu().numpy())

@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "id": "singler-and-seurat-label-transfer-annotation",
+  "title": "SingleR 参考集注释（含群内多数投票）与 Seurat 锚点标签映射（Label Transfer）",
+  "kind": "method",
+  "method_type": "自动化细胞类型注释",
+  "language": "R",
+  "tags": [
+    "SingleR",
+    "FindTransferAnchors",
+    "TransferData",
+    "自动注释",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc5：注释---四种方法.txt（SingleR 参考相关性投票与 Seurat 锚点迁移）",
+    "author_attribution": "本地教学脚本（sc5：注释---四种方法.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc5：注释---四种方法.txt",
+      "sha256": "fb30cf015e3de26fb8dfbd4b8ef2936b43efe6c5b79f19855eb1cce408e57063",
+      "lines": [
+        1,
+        264
+      ],
+      "role": "提取 SingleR 与 Seurat FindTransferAnchors/TransferData 双路径自动化注释"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/query_seurat.rds",
+      "object": "Seurat",
+      "requirements": "含 RNA data 层、PCA 及 seurat_clusters",
+      "evidence": "源码待注释单细胞 Seurat"
+    },
+    {
+      "path": "Data/reference_seurat.rds",
+      "object": "Seurat",
+      "requirements": "含 >=30 维 PCA 与 celltype 标注列的参考 Seurat",
+      "evidence": "源码锚点映射参考"
+    },
+    {
+      "path": "Data/reference_singleR_se.rds",
+      "object": "SummarizedExperiment",
+      "requirements": "含 logcounts 与 label.main 的 SingleR 参考谱",
+      "evidence": "避免脚本内部联网下载 celldex"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "SingleR",
+      "tested_version": "2.12.0",
+      "source_version": null
+    },
+    {
+      "name": "SummarizedExperiment",
+      "tested_version": "1.40.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；不依赖运行时外网下载参考库。"
+  ],
+  "outputs": [
+    {
+      "path": "results/annotated_query_seurat.rds",
+      "content": "写入 SingleR_cell_label、SingleR_cluster_label 与 predicted.id 的 Seurat 对象"
+    },
+    {
+      "path": "results/singler_cell_scores.csv",
+      "content": "逐细胞 SingleR 打分明细"
+    },
+    {
+      "path": "results/singler_cluster_votes.csv",
+      "content": "按 seurat_clusters 汇总的 SingleR 多数投票映射表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "单细胞级 SingleR + dplyr 亚群多数投票",
+      "basis": "源码原用 clusters= 参数会在 SingleR 2.12 隐式依赖未安装 Suggest 包 scrapper；逐细胞后聚合等效且更透明"
+    },
+    {
+      "setting": "FindTransferAnchors(reference.reduction='pca', dims=1:30) + TransferData",
+      "basis": "Seurat 官方参考映射流"
+    }
+  ],
+  "adaptation": [
+    "改为读取本地 SummarizedExperiment 参考对象以避免在线拉取失败。",
+    "以逐细胞 SingleR 注释结合 dplyr 群内多数投票绕开 SingleR 2.12 对可选包 scrapper 的硬依赖。"
+  ],
+  "limitations": [
+    "自动注释精度高度受参考集与查询组织来源一致性制约，需叠加经典 Marker DotPlot 复核。"
+  ],
+  "code_sha256": {
+    "analysis.R": "ae5ad6b4eed64b540397a7e20f05dd42c2146f1b8a898cf88869c38dcc3e678d"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, SingleR 2.12.0, Seurat 5.5.0) + synthetic 240-cell ref/query",
+      "date": "2026-11-14",
+      "notes": "已完成 --vanilla 独立运行并验证 SingleR 多数投票与 TransferData（100% 映射准确率）全部产出。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

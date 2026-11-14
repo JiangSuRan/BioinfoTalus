@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "id": "squidpy-spatial-stats-and-image-overlay",
+  "title": "Squidpy 空间聚落分布、邻域富集、距离共现与 Ripley L 空间聚集联图",
+  "kind": "plot",
+  "plot_type": "空间组学图谱",
+  "language": "Python",
+  "tags": [
+    "Squidpy",
+    "空间邻域富集",
+    "空间共现",
+    "RipleyL",
+    "空间中心性",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "8.squidpy.md & BayesSpace Merfish.md（spatial_scatter, nhood_enrichment, co_occurrence, ripley L, centrality）",
+    "author_attribution": "本地教学脚本（BayesSpace Merfish.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "BayesSpace Merfish.md",
+      "sha256": "11302f05d335b2ef0d38df5ec4321dbf1eaa9c8d4e18f0c90dcc6f907c7b6db2",
+      "lines": [
+        86,
+        465
+      ],
+      "role": "提取空间邻域富集、中心性得分、共现与 Ripley L 可视化流程"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "8.squidpy.md",
+      "sha256": "c1eda292b4a4652516b3e16cce4b1493dd47498ed00b8ed99759fc11a4168f3c",
+      "lines": [
+        1,
+        340
+      ],
+      "role": "补充 spatial_scatter 空间表型叠加绘图语法"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/spatial_squidpy_stats.h5ad",
+      "object": "AnnData",
+      "requirements": "含 obsm['spatial'] 与 obs['celltype'] 分类列",
+      "evidence": "源码 MERFISH/Visium 空间 AnnData"
+    }
+  ],
+  "packages": [
+    {
+      "name": "matplotlib",
+      "tested_version": "3.6.3",
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": "1.9.3",
+      "source_version": null
+    },
+    {
+      "name": "squidpy",
+      "tested_version": "1.3.1",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；obs['celltype'] 为 categorical。"
+  ],
+  "outputs": [
+    {
+      "path": "results/squidpy_spatial_statistics_suite.pdf",
+      "content": "空间分布散点与 Ripley L 曲线双联矢量图"
+    },
+    {
+      "path": "results/squidpy_nhood_enrichment.png",
+      "content": "空间邻域富集 Z-score 独立聚类热图（300 dpi PNG）"
+    },
+    {
+      "path": "results/squidpy_co_occurrence.pdf",
+      "content": "按参考细胞类型分层的空间共现条件概率曲线图"
+    },
+    {
+      "path": "results/squidpy_centrality_scores.pdf",
+      "content": "空间拓扑图度/接近/聚类中心性统计图"
+    }
+  ],
+  "adaptation": [
+    "针对 Squidpy 1.3.1 与 seaborn 0.13.2 传入 ax 参数的兼容冲突及 Windows 多进程卡死问题，显式关闭 show_progress_bar；并将使用 imshow 与 make_axes_locatable 的邻域富集热图单独以 300 dpi PNG 导出，避免多子图裁切与 Matplotlib PDF 后端 imshow 失真。"
+  ],
+  "code_sha256": {
+    "plot.py": "7728ee2494c3bb31b05bcc6a3e72d70f7a94de48eaf865e771940900844e7853"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "Python (scma conda env: squidpy 1.3.1, scanpy 1.9.3, matplotlib 3.6.3) + synthetic 180-spot AnnData",
+      "date": "2026-11-14",
+      "notes": "3 份矢量 PDF 与 1 份 300 dpi 邻域富集 PNG 均已成功生成并完成逐图视觉检查。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

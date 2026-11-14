@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "pheatmap-celltype-group-spearman-corr",
+  "title": "亚群×实验分组平均表达谱 Spearman 相关性聚类热图（pheatmap + viridis）",
+  "kind": "plot",
+  "plot_type": "相关性热图",
+  "language": "R",
+  "tags": [
+    "相关性热图",
+    "Spearman相关",
+    "平均表达谱",
+    "pheatmap",
+    "viridis",
+    "亚群相似性"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "d:/books/sc7：比例图和细胞亚群变化.txt（亚群×分组平均表达 Spearman 相关性热图，305–313 行）",
+    "author_attribution": "本地教学脚本（sc7：比例图和细胞亚群变化）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_books",
+      "path": "sc7：比例图和细胞亚群变化.txt",
+      "sha256": null,
+      "lines": [
+        305,
+        313
+      ],
+      "role": "平均表达谱 Spearman 相关性矩阵计算与 viridis pheatmap 绘制"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/celltype_group_avg_expr.rds",
+      "object": "matrix",
+      "requirements": "基因×（亚群_分组）数值平均表达矩阵，行名为基因，列名为亚群-分组组合",
+      "evidence": "源码 AverageExpression(scRNA_harmony, add.ident = 'group.3')[[1]] %>% as.matrix()"
+    }
+  ],
+  "packages": [
+    {
+      "name": "pheatmap",
+      "tested_version": "1.0.13",
+      "source_version": null
+    },
+    {
+      "name": "viridis",
+      "tested_version": "0.6.5",
+      "source_version": null
+    },
+    {
+      "name": "grid",
+      "tested_version": "4.5.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；上游已按亚群×分组聚合平均表达谱。"
+  ],
+  "outputs": [
+    {
+      "path": "results/celltype_group_spearman_corr_heatmap.pdf",
+      "content": "亚群×实验分组间转录组 Spearman 相关系数矩阵聚类热图"
+    }
+  ],
+  "adaptation": [
+    "源码 psych::corr.test(exp, exp, method = 'spearman') 仅使用了相关系数 r，改为完全等价的 base stats::cor(..., method = 'spearman', use = 'pairwise.complete.obs')，减少额外依赖。",
+    "将直接交互出图补充为标准 pdf() + grid::grid.draw(p$gtable) + dev.off() 落盘保存。"
+  ],
+  "code_sha256": {
+    "plot.R": "58f7a4ccd37b3459e0dcac56e9445170aaa33a43d39f274676deb22903b95ae2"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验聚类树与色条范围；不代表真实队列验证。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

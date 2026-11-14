@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "id": "stardist-visiumhd-nuclei-segmentation",
+  "title": "StarDist H&E 细胞核深度学习分割与 Visium HD 亚细胞转录本多边形归箱聚合",
+  "kind": "method",
+  "method_type": "空间多组学预处理",
+  "language": "Python",
+  "tags": [
+    "StarDist",
+    "细胞核分割",
+    "VisiumHD",
+    "GeoPandas",
+    "空间连接",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "24 细胞切割.txt（StarDist2D 2D_versatile_he 分块核实例分割 + geopandas 多边形转录本归箱）",
+    "author_attribution": "本地教学脚本（24 细胞切割.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "24 细胞切割.txt",
+      "sha256": "9b9a4711469a2de26b7a328a61b538c26bc42bc6a3b96174a91c01d3a03e9227",
+      "lines": [
+        1,
+        635
+      ],
+      "role": "提取 H&E 切片细胞核星凸多边形预测及转录本分子空间连接构建单细胞矩阵"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/tissue_hires_image.tiff",
+      "object": "TIFF",
+      "requirements": "高分辨率 H&E 亮场全视野组织切片图",
+      "evidence": "源码 tifffile 加载全视野切片"
+    },
+    {
+      "path": "Data/detected_transcripts.parquet",
+      "object": "Parquet",
+      "requirements": "含 x_pixel, y_pixel 与 feature_name 列的亚细胞分子定位表",
+      "evidence": "源码高分辨转录本坐标表"
+    }
+  ],
+  "packages": [
+    {
+      "name": "csbdeep",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "geopandas",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "shapely",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "stardist",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "tifffile",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 stardist/csbdeep/tifffile，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/stardist_nuclei_polygons.geojson",
+      "content": "供空间可视化叠加的分割细胞核矢量化 GeoJSON 多边形"
+    },
+    {
+      "path": "results/stardist_segmented_cells.h5ad",
+      "content": "由核多边形归箱汇总得到的真单细胞分辨计数 AnnData 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "StarDist2D('2D_versatile_he') + predict_instances_big(block_size=4096, min_overlap=128) + gpd.sjoin(predicate='within')",
+      "basis": "大图分块滑动预测结合带重叠边界融合防止大视野组织切片显存溢出"
+    }
+  ],
+  "adaptation": [
+    "整理并修复多边形顶点行列轴次序（coords[1], coords[0] 对应 x, y），导出兼容下游 Scanpy/Squidpy 分析的标准单细胞 h5ad。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 stardist 包）；未囊括胞质区域可能低估高胞质分布 mRNA。"
+  ],
+  "code_sha256": {
+    "analysis.py": "93572c7cc02ab2179c3a0973c01a0196e755c6415072974e9a289b941e857408"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

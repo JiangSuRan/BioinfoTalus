@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-kde-raster-umap-density",
+  "title": "暗背景等细胞下采样 UMAP 二维核密度分布图",
+  "kind": "plot",
+  "plot_type": "单细胞降维图",
+  "language": "R",
+  "tags": [
+    "UMAP密度图",
+    "stat_density_2d",
+    "核密度",
+    "viridis",
+    "等量下采样",
+    "暗背景"
+  ],
+  "paper": {
+    "repository": "https://github.com/ma-jq/B.git",
+    "figure": "Fig1/fig1.R（Science 2024 泛癌浸润 B 细胞图谱 Fig S3F 暗底色组织密度 UMAP，719–808 行）",
+    "author_attribution": "Ma et al., Science 2024",
+    "doi": "10.1126/science.adj4857",
+    "revision": "24771bcd52ed8c1c1b23686a8e99de49a54a9717"
+  },
+  "source_files": [
+    {
+      "root_label": "B",
+      "path": "Fig1/fig1.R",
+      "sha256": "85a64e72ff0127df9d062bec102e3615b98740c949407357cc4ec2ce8bd6f8c5",
+      "lines": [
+        719,
+        808
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_umap.rds",
+      "object": "Seurat",
+      "requirements": "含 umap 降维嵌入；meta.data 含 condition 分组列（如组织来源）",
+      "evidence": "源码 Embeddings(tempObj, reduction=\"umap\") 与 group_by(type) %>% slice_sample(n = minNum)"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "viridis",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；各 condition 均需至少数十个细胞以估计稳定二维核密度。"
+  ],
+  "outputs": [
+    {
+      "path": "results/umap_kde_density_dark.pdf",
+      "content": "等细胞下采样后的分条件暗背景 magma 核密度+白色细胞散点叠加 UMAP 图"
+    }
+  ],
+  "adaptation": [
+    "将源码按组织循环多文件输出整理为单面板 facet_wrap(~ condition) 并列对比并内联黑色主题配置（取消辅助函数 theme_black）；将旧语法 ..density.. 更新为 ggplot2 4.0 标准的 after_stat(density)。"
+  ],
+  "code_sha256": {
+    "plot.R": "508d695b59d7d151b839cbc7e851fba57c5fef0ee654fa24bd7bc26af1818ee0"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

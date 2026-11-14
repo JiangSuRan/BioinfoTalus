@@ -73,7 +73,7 @@
   ],
   "prerequisites": [
     "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
-    "数据已按 nicheformer 预处理约定（token 词表、计数中位数）准备；GPU 可加速推理。"
+    "数据已按 nicheformer 预处理约定（token 词表、计数中位数）准备；需在 CUDA GPU 上运行前向推理。"
   ],
   "outputs": [
     {
@@ -93,7 +93,8 @@
   ],
   "adaptation": [
     "源入口脚本仅是 config 驱动的集群任务（get_embeddings_organ(config)），核心实现在 _embeddings.py（Merlin 分布式数据 + Lightning trainer）；模板改写为单机线性版：直接 token 化 h5ad、load_from_checkpoint、torch.no_grad 分批前向。",
-    "移除 wandb sweep 配置、Merlin 数据模块、集群路径常量与 tqdm 输出；输出为 obsm['X_nicheformer'] 落盘 h5ad。"
+    "移除 wandb sweep 配置、Merlin 数据模块、集群路径常量与 tqdm 输出；输出为 obsm['X_nicheformer'] 落盘 h5ad。",
+    "模型（.cuda()）与分批输入张量（device='cuda'）固定迁移至 CUDA GPU 进行零样本前向推理。"
   ],
   "limitations": [
     "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
@@ -101,13 +102,13 @@
     "模型词表限 4096 基因，未覆盖基因信息丢失；空间数据未携带 niche token 时不利用其空间预训练分支。"
   ],
   "code_sha256": {
-    "analysis.py": "a75ab34d257b5f2385cfdc1200772f54a5e3cc5cb0fe11314c588441ac4f759b"
+    "analysis.py": "5d866964ca57eb66406ca120746d06913ed9b1839257ea2e16530ebab0fe825e"
   },
   "validation": {
     "syntax": {
       "status": "passed",
-      "environment": "python parse check",
-      "date": "2026-11-06"
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
     },
     "synthetic_run": null,
     "reference_comparison": null,

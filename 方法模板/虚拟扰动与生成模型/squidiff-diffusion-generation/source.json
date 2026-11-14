@@ -68,7 +68,8 @@
   ],
   "prerequisites": [
     "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
-    "扩散模型已在目标数据（或 LINCS/sci-Plex 预训练）上训练完成；条件编码器与训练一致。"
+    "扩散模型已在目标数据（或 LINCS/sci-Plex 预训练）上训练完成；条件编码器与训练一致。",
+    "需在 CUDA GPU 上运行扩散采样（batch_size=64, use_fp16=True）。"
   ],
   "outputs": [
     {
@@ -93,7 +94,7 @@
   "adaptation": [
     "将 sampler 类的 __init__（模型加载）与 pred（条件采样）两段拆包为线性脚本；parse_args 的命令行参数改为字面配置。",
     "移除 stochastic_encode/get_diffused_data 调试方法、r2/pearson 评估与 print 日志；输出新增 npy 落盘。",
-    "设备与 fp16 转换保留 dist_util 约定。"
+    "仅保留 GPU 扩散采样参数（batch_size=64, use_fp16=True）；设备分布仍沿用 dist_util 约定。"
   ],
   "limitations": [
     "仅完成本机 Python 语法解析核验，未在真实研究数据或合成数据上执行端到端运行验证。",
@@ -101,13 +102,13 @@
     "条件向量超出训练条件分布（未见药物结构）时生成质量下降；采样方差取决于扩散步数与随机种子，应多样本汇总。"
   ],
   "code_sha256": {
-    "analysis.py": "e25a9d3c791a04c62be6f7068d553c9900e0ba88e98df9892f68f8ef158ce430"
+    "analysis.py": "2690dec8db81ebddb3ceb2d23f9409af9b2bba4e7e7be50248aa998f26d15c39"
   },
   "validation": {
     "syntax": {
       "status": "passed",
-      "environment": "python parse check",
-      "date": "2026-11-06"
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
     },
     "synthetic_run": null,
     "reference_comparison": null,

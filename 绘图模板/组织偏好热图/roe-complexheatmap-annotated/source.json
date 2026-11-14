@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "roe-complexheatmap-annotated",
+  "title": "单细胞亚群组织偏好 Ro/e 观测期望比热图",
+  "kind": "plot",
+  "plot_type": "组织偏好热图",
+  "language": "R",
+  "tags": [
+    "Ro/e",
+    "组织偏好",
+    "ComplexHeatmap",
+    "卡方期望比",
+    "亚群富集"
+  ],
+  "paper": {
+    "repository": "https://github.com/yuyang3/pan-B.git",
+    "figure": "Figure4.R（Cell 2024 泛癌 B 细胞 Figure 4A Ro/e 组织偏好热图，545–598 行）",
+    "author_attribution": "Yang et al., Cell 2024",
+    "doi": "10.1016/j.cell.2024.06.038",
+    "revision": "2f6c871f39de571ba134efa68c7636cefb482fe9"
+  },
+  "source_files": [
+    {
+      "root_label": "pan-B",
+      "path": "Figure4.R",
+      "sha256": "60d78ae76df3217786974d5ac4ee91c2e134d624792449536a7cc8d829ce65f3",
+      "lines": [
+        516,
+        598
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cell_tissue_metadata.rds",
+      "object": "data.frame",
+      "requirements": "单细胞元数据，至少含 cell_type（亚群）与 tissue（组织来源，如 Blood/Adjacent/Tumor）两列",
+      "evidence": "源码 table(plot_df[, c('Annotation', 'Tissue')]) 传入 ROIE 计算观测/期望比矩阵"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "circlize",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "grid",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；所有亚群与组织边缘和均大于 0。"
+  ],
+  "outputs": [
+    {
+      "path": "results/roe_tissue_preference_heatmap.pdf",
+      "content": "格子内标注精确 Ro/e 数值的组织富集热图"
+    }
+  ],
+  "adaptation": [
+    "将源码双重嵌套循环 divMatrix + ROIE 化简为向量化外积计算 outer(rowSums(obs), colSums(obs)) / sum(obs)，数学定义严格等价，同时移除硬编码组织名筛选。"
+  ],
+  "code_sha256": {
+    "plot.R": "9dc3dd412627fde2cde72304f9b3b2b981d80eb55838e79918648ae570a0630d"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "id": "ischia-spatial-niche-cooccurrence-lr",
+  "title": "ISCHIA 空间组成生态位（Composition Cluster）聚类、细胞共现与富集配体-受体分析",
+  "kind": "method",
+  "method_type": "空间生态位与微环境",
+  "language": "R",
+  "tags": [
+    "ISCHIA",
+    "空间生态位",
+    "细胞共现",
+    "配体受体",
+    "反卷积下游"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "15 生态位.md（Composition.cluster, spatial.celltype.cooccurence, Enriched.LRs）",
+    "author_attribution": "本地教学脚本（15 生态位.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "15 生态位.md",
+      "sha256": "3ed1dfa8b31af58090990c6515d9d136b842e7af6e4a8cd03fca9abbee9e53a8",
+      "lines": [
+        1,
+        113
+      ],
+      "role": "提取基于反卷积比例的空间生态位聚类与生态位特异性配体-受体检出"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_deconvolved.rds",
+      "object": "Seurat",
+      "requirements": "含空间表达与 orig.ident 条件列",
+      "evidence": "源码 Seurat 对象"
+    },
+    {
+      "path": "Data/deconv_weights_matrix.rds",
+      "object": "matrix",
+      "requirements": "Spot x 细胞类型反卷积权重矩阵",
+      "evidence": "源码 RCTD/CARD 反卷积权重矩阵"
+    },
+    {
+      "path": "Data/lr_pairs_human.csv",
+      "object": "CSV",
+      "requirements": "含 ligand 与 receptor 两列",
+      "evidence": "源码配体受体库"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ISCHIA",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 ISCHIA，仅完成 R 语法解析检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ischia_niche_seurat.rds",
+      "content": "写入 Composition Cluster 标签的空间 Seurat 对象"
+    },
+    {
+      "path": "results/ischia_cc4_enriched_celltypes.csv",
+      "content": "目标生态位富集细胞类型统计"
+    },
+    {
+      "path": "results/ischia_enriched_lrs.csv",
+      "content": "特定空间生态位内共现显著配体-受体表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "Composition.cluster(k=6) + COOCCUR.Threshold=0.2",
+      "basis": "来源代码预设与文献生态位阈值"
+    }
+  ],
+  "adaptation": [
+    "以相对文件路径承接上游 RCTD 反卷积权重矩阵，明确保存生态位注释及富集 LR 表。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 ISCHIA 包）；生态位聚类结果依赖上游反卷积精度。"
+  ],
+  "code_sha256": {
+    "analysis.R": "0fbfc09be6215c9f13a86a4b810e9d77160604daf492692c8029ea3096c68450"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

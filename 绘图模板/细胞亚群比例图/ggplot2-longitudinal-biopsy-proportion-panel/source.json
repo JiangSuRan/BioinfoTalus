@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-longitudinal-biopsy-proportion-panel",
+  "title": "单例纵向多活检亚群堆叠比例、绝对细胞数折线与归一化分簇柱图组合面板",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "纵向追踪",
+    "多时点活检",
+    "ggpubr",
+    "折线图",
+    "堆叠图"
+  ],
+  "paper": {
+    "repository": "https://github.com/czbiohub-sf/scell_lung_adenocarcinoma.git",
+    "figure": "scripts/IM05_Immune_cells_across_pats_with_multiple_biopsies.Rmd（Cell 2020 NSCLC 单患者多次连续活检免疫亚群动态演化四联面板，86–128 行）",
+    "author_attribution": "Maynard et al., Cell 2020",
+    "doi": "10.1016/j.cell.2020.07.017",
+    "revision": "de138c79bcfc2fa3a28c8a039a28ab560da78099"
+  },
+  "source_files": [
+    {
+      "root_label": "scell_lung_adenocarcinoma",
+      "path": "scripts/IM05_Immune_cells_across_pats_with_multiple_biopsies.Rmd",
+      "sha256": "abdc528672d4cebff383987843ed26a39ccb7bec4295ac3695fc8e63ca5843df",
+      "lines": [
+        86,
+        128
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/patient_longitudinal_metadata.rds",
+      "object": "data.frame",
+      "requirements": "单患者纵向多时点单细胞元数据，含有序 timepoint（因子或按出现序）与 cell_type 两列",
+      "evidence": "源码按 biopsy_date + immune_subtype_annotation 构建堆叠柱图 p、计数折线图 o、行归一化柱图 o2 与总细胞数柱图 q 后以 ggarrange 拼图"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "forcats",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggpubr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scales",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；timepoint 列需预先设为按活检时间排序的因子或按时间顺序存储。"
+  ],
+  "outputs": [
+    {
+      "path": "results/longitudinal_biopsy_proportion_panel.pdf",
+      "content": "纵贯多时点活检亚群比例堆叠、细胞数折线、亚群内时点归一化与总细胞数 2×2 组合面板"
+    }
+  ],
+  "adaptation": [
+    "移除 Rmd 中硬编码患者循环 TH226/TH266 与未安装的 rcompanion 成对卡方散点子图，保留核心四联时序演变视图并以 common.legend = TRUE 对齐图例，使用 forcats::as_factor 保持已有时间点因子序。"
+  ],
+  "code_sha256": {
+    "plot.R": "13c535c49b0edfbfd5091779d4f0aec387e09b8e4ae6a69af181509a78eef23e"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

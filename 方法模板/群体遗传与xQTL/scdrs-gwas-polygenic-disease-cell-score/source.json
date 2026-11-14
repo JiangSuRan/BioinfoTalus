@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "id": "scdrs-gwas-polygenic-disease-cell-score",
+  "title": "scDRS 将 GWAS 多基因风险基因集映射到单细胞尺度估算疾病关联得分与异质性检验",
+  "kind": "method",
+  "method_type": "群体遗传与xQTL",
+  "language": "Python",
+  "tags": [
+    "scDRS",
+    "GWAS",
+    "多基因风险评分",
+    "单细胞疾病关联",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps26.scDRS.html（preprocess, score_cell 与 downstream_group_analysis 亚群异质性评估）",
+    "author_attribution": "本地教学脚本（ps26.scDRS.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps26.scDRS.html",
+      "sha256": "67610a1a9a74074e25539262b5e1ed854a5b76d04248db0feffa811e6709cd8f",
+      "lines": [
+        1,
+        45146
+      ],
+      "role": "提取协变量回归、均值-方差匹配对照组置换检验与细胞群关联异质性分析"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_preprocessed.h5ad",
+      "object": "AnnData",
+      "requirements": "归一化表达谱且 obs 含 cell_type 与 X_pca",
+      "evidence": "源码单细胞输入"
+    },
+    {
+      "path": "Data/cell_covariates.tsv",
+      "object": "TSV",
+      "requirements": "以细胞条码为索引的技术协变量矩阵（如测序深度、基因数）",
+      "evidence": "scDRS 官方 preprocess(cov=) 协变量"
+    },
+    {
+      "path": "Data/trait_magma.gs",
+      "object": "scDRS GS",
+      "requirements": "MAGMA 等上游转化出的疾病多基因风险权重基因集（.gs）",
+      "evidence": "源码 scdrs.util.load_gs"
+    }
+  ],
+  "packages": [
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scdrs",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 scdrs，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scdrs_cell_scores.csv",
+      "content": "逐细胞标准化多基因风险关联得分 norm_score 与实证 P 值"
+    },
+    {
+      "path": "results/scdrs_group_association_heterogeneity.csv",
+      "content": "细胞类型尺度总体关联强度及亚群内异质性统计检验结果"
+    },
+    {
+      "path": "results/scdrs_scored.h5ad",
+      "content": "写入单细胞疾病关联评分的 AnnData 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "ctrl_match_key='mean_var', n_ctrl=1000, weight_opt='vs'",
+      "basis": "来源标准设定，按基因均值-方差匹配 1000 套零假设控制基因消除高表达偏向"
+    }
+  ],
+  "adaptation": [
+    "依照实测 scdrs 文档补全 cov 协变量与 sc.pp.neighbors 前置构建，确保 downstream_group_analysis 可正确评估异质性。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 scdrs 包）；需预先将 GWAS 汇总结果通过 MAGMA 转为基因集输入。"
+  ],
+  "code_sha256": {
+    "analysis.py": "151ac31e92ecccda5e8b5c26ec84b24a104f80ad287ae6c89b674abe3a29ed35"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

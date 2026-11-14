@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "id": "ppi-perturbation-debiasing-inference",
+  "title": "预测驱动推断 (PPI) 生成扰动去偏差均值、诚实标准误与差异基因检验",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "PPI去偏差",
+    "预测驱动推断",
+    "置信区间校准",
+    "虚拟扰动评估",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/EperLuo/dbDiffusion",
+    "figure": "Sec 4.3 / Fig 4 (cpu_03_去偏差推断与评估.ipynb)",
+    "author_attribution": "本地教学脚本 (xnqc/cpu_03)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_03_去偏差推断与评估.ipynb",
+      "sha256": "07552e83bb0dced904e7b5e7af3b378225afe418d72e1bdc30c6fb24bd7d0988",
+      "lines": [
+        1,
+        957
+      ],
+      "role": "PPI 均值偏差校正、cal_PPI_sd 诚实标准误估计与 Bonferroni Z 检验"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本整合入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/perturb_lognorm.h5ad 与 Data/cluster_neighbors.csv",
+      "object": "AnnData + 同簇参考扰动清单",
+      "requirements": "obs['perturbation'] 含对照、目标扰动及参考邻居真实单细胞表达",
+      "evidence": "源码 group_stats 与 cluster_neighbors 读取推断"
+    },
+    {
+      "path": "Data/generated/{pert}_generated.npy",
+      "object": "生成细胞表达矩阵",
+      "requirements": "覆盖目标扰动与每个参考邻居，列顺序与 adata.var_names 一致",
+      "evidence": "源码 <pert>_generated.npy 读取推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "anndata",
+      "tested_version": "0.11.4",
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": "2.2.6",
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": "2.3.3",
+      "source_version": null
+    },
+    {
+      "name": "scipy",
+      "tested_version": "1.15.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data/ 与 results/ 目录已存在；可配合任何单细胞生成模型输出的表达矩阵。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ppi_gene_summary.csv",
+      "content": "逐基因朴素均值、PPI 去偏差均值、校准标准误、Z 统计量与 p 值（可直接喂给评估绘图模板）"
+    },
+    {
+      "path": "results/ppi_neighbor_bias.csv",
+      "content": "各同簇邻居扰动的系统偏差向量 (obs_mean - gen_mean)"
+    },
+    {
+      "path": "results/ppi_metrics_summary.csv",
+      "content": "去偏差前后 Pearson r、95% CI 重叠覆盖率及显著基因计数汇总"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "ppi_mean = naive_mean + mean_k(obs_k - gen_k)",
+      "basis": "来源 cpu_03 / 论文 Sec 4.3；利用同簇邻居真实-生成系统偏差均值纠正生成偏移"
+    },
+    {
+      "setting": "ppi_se = sqrt(sum_k(s^2/n_k + t^2)) / K",
+      "basis": "来源 ppi_se() 设定；纳入组间均值方差 t^2，修正仅靠大量生成细胞计算的窄 SE 过度自信问题"
+    }
+  ],
+  "adaptation": [
+    "线性化提取 cpu_03 核心统计学推断段并导出与下游绘图模板直接衔接的标准 CSV 契约。",
+    "利用带系统偏差的 80 基因 × 5 邻居合成数据进行完整运行验证：Top 基因效应相关性从 0.870 提升至 0.994，95% 置信区间覆盖率从 42.5% 校准至 100%。"
+  ],
+  "limitations": [
+    "依赖「同一扰动簇内生成器犯同类系统性偏差」的关键假设（需结合 ppi_neighbor_bias 两两相关性诊断核实）。"
+  ],
+  "code_sha256": {
+    "analysis.py": "e3112f3cf07cc9be9325df7ccf22156eff97b8de0aeafb6951c65f6eef457c5c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "D:\\conda\\envs\\omicverse\\python.exe (scanpy 1.11.5, anndata 0.11.4, numpy 2.2.6, pandas 2.3.3, scipy 1.15.3, matplotlib 3.10.9, networkx 3.4.2, leidenalg 0.12.0)",
+      "date": "2026-11-14",
+      "summary": "80基因×5同簇邻居含系统偏差合成数据端到端跑通；pearson_naive_top=0.870->pearson_ppi_top=0.994，ci95_overlap=0.425->1.000，检出33个Bonferroni显著基因"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

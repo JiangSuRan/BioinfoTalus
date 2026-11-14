@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "celltypist-automated-annotation-majority-voting",
+  "title": "CellTypist 预训练参考模型单细胞自动化注释与 Majority Voting 聚类校正",
+  "kind": "method",
+  "method_type": "自动化细胞类型注释",
+  "language": "Python",
+  "tags": [
+    "CellTypist",
+    "自动化注释",
+    "MajorityVoting",
+    "Scanpy",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps9. CellTypist：细胞亚群的注释.html（log1p 1e4 归一化后模型加载及 majority_voting 推断）",
+    "author_attribution": "本地教学脚本（ps9. CellTypist：细胞亚群的注释.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps9. CellTypist：细胞亚群的注释.html",
+      "sha256": "b1b593a857b6d0add025cc5d2082ba695764cd5d95ade7eab9e8951f7dd53c5a",
+      "lines": [
+        1,
+        45306
+      ],
+      "role": "提取 CellTypist 标准化要求、预训练逻辑回归权重推理与邻域多数投票校正"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_counts.h5ad",
+      "object": "AnnData",
+      "requirements": "原始 UMI counts（含 obs['leiden'] 或留空自动分群）",
+      "evidence": "源码要求未 log1p 化前的原始/标准化状态明确"
+    },
+    {
+      "path": "Data/Immune_All_Low.pkl",
+      "object": "CellTypist Model",
+      "requirements": "离线下载好的 CellTypist 权重 pkl 文件",
+      "evidence": "避免运行时联网拉取"
+    }
+  ],
+  "packages": [
+    {
+      "name": "celltypist",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 celltypist，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/celltypist_annotated.h5ad",
+      "content": "写入 predicted_labels、majority_voting 与 conf_score 的 AnnData 对象"
+    },
+    {
+      "path": "results/celltypist_predictions.csv",
+      "content": "细胞注释标签与模型置信度导出表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "normalize_total(1e4) + log1p + annotate(majority_voting=True, over_clustering='leiden')",
+      "basis": "CellTypist 模型严格训练于 1e4 对数空间，开启邻域过聚类多数投票以抑制单个技术噪声细胞误判"
+    }
+  ],
+  "adaptation": [
+    "改为加载本地模型文件以保证离线可复现性，保留完整投票与概率得分字段导出。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 celltypist 包）；跨组织/跨物种迁移需选用匹配参考权重并配合人工标记复核。"
+  ],
+  "code_sha256": {
+    "analysis.py": "f3ce435ca1942aee303d18b75c1c32545aa8cafa9dc07543491d1ce53412bc5b"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

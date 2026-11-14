@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "id": "cytotrace2-potency-scoring",
+  "title": "CytoTRACE2 单细胞分化潜能跨组织预测与得分写回 Seurat",
+  "kind": "method",
+  "method_type": "轨迹与拟时序",
+  "language": "R",
+  "tags": [
+    "CytoTRACE2",
+    "分化潜能",
+    "干性评分",
+    "Seurat",
+    "轨迹根确定"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc15：CytoTRACE v2 单细胞分化潜力预测工具学习 .txt（26–36 行 CytoTRACE2 核心预测）",
+    "author_attribution": "本地教学脚本（sc15：CytoTRACE v2 单细胞分化潜力预测工具学习 .txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc15：CytoTRACE v2 单细胞分化潜力预测工具学习 .txt",
+      "sha256": "ccb8d18474a835d934bc35a807572e581e1a675f1c0c142dda2f8fbb441eea59",
+      "lines": [
+        26,
+        36
+      ],
+      "role": "提取 raw counts 调用 CytoTRACE2::cytotrace2 输出绝对/相对发育潜能评分及潜能分级"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本精炼适配，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含 RNA assay 原始 counts 矩阵",
+      "evidence": "源码 GetAssayData(sc.epi, layer = 'counts')"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "CytoTRACE2",
+      "tested_version": "1.1.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；人类或小鼠基因符号与 CytoTRACE2 species 设置对应。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cytotrace2_result.rds",
+      "content": "包含 CytoTRACE2_Score、CytoTRACE2_Potency 与 CytoTRACE2_Relative 的单细胞打分表"
+    },
+    {
+      "path": "results/seurat_with_cytotrace2.rds",
+      "content": "已按细胞条码对齐写入潜能得分与分级的 Seurat 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "counts 层作为输入且指定 species = 'human'",
+      "basis": "CytoTRACE2 深度学习模型基于跨组织基因计数模式预测绝对潜能，需传入未对数化的原始 counts 并匹配对应物种 模型"
+    }
+  ],
+  "adaptation": [
+    "移除源码随机下采样 1000 细胞限制；显式关闭并行默认配置或保持轻量化运行以确保本地单核环境稳定，并按 colnames 交集将结果精确合并回 Seurat 元数据。"
+  ],
+  "limitations": [
+    "模型主要面向人类与小鼠常规转录组；非典型低检测深度细胞可能影响邻域平滑得分。",
+    "未包含源码尾部基于 destiny::DiffusionMap 的三维扩散图步骤（destiny 可按需独立衔接）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "3a96888b5095fd607c84fa81dbc11866325887c128ff79a6338e3f270e3c489c"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 RDS/TSV 产物，结构与数值校验正常；不代表真实队列数据验证。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

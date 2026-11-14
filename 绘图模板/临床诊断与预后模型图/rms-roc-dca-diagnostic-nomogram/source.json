@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "id": "rms-roc-dca-diagnostic-nomogram",
+  "title": "多基因诊断 Logistic 列线图、校准曲线、联合 ROC 与决策曲线（DCA）",
+  "kind": "plot",
+  "plot_type": "临床诊断与预后模型图",
+  "language": "R",
+  "tags": [
+    "rms",
+    "列线图",
+    "校准曲线",
+    "ROC",
+    "DCA",
+    "诊断模型"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "m10.R（多基因联合诊断列线图、Bootstrap 校准曲线、pROC 联合 ROC 与净获益 DCA）",
+    "author_attribution": "本地教学脚本（m10.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "m10.R",
+      "sha256": "d17239ddbe3a23703b8ce4586c9f3d27e8e65e11818238b245ce2627506541cb",
+      "lines": [
+        1,
+        457
+      ],
+      "role": "提取多基因诊断逻辑回归列线图、校准、ROC 及净获益 DCA 计算绘图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/expr_matrix.rds",
+      "object": "matrix",
+      "requirements": "行名为基因、列名为样本的表达矩阵",
+      "evidence": "源码读入标准化表达矩阵并按样本交集对齐"
+    },
+    {
+      "path": "Data/sample_group.rds",
+      "object": "data.frame",
+      "requirements": "含 Sample 与 Group（Control/Treat）列",
+      "evidence": "源码二分类结局标签定义"
+    },
+    {
+      "path": "Data/hub_genes.txt",
+      "object": "character",
+      "requirements": "每行一个诊断候选基因名",
+      "evidence": "源码关键标志物列表"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "reshape2",
+      "tested_version": "1.4.5",
+      "source_version": null
+    },
+    {
+      "name": "rms",
+      "tested_version": "8.1.1",
+      "source_version": null
+    },
+    {
+      "name": "pROC",
+      "tested_version": "1.19.0.1",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标基因数不宜过多以免 lrm 过拟合。"
+  ],
+  "outputs": [
+    {
+      "path": "results/diagnostic_nomogram.pdf",
+      "content": "rms 多基因联合诊断 Logistic 回归列线图"
+    },
+    {
+      "path": "results/diagnostic_calibration.pdf",
+      "content": "500 次 Bootstrap 重抽样校准曲线"
+    },
+    {
+      "path": "results/diagnostic_roc_dca_panel.pdf",
+      "content": "单基因与联合列线图模型的 ROC 曲线及净获益决策曲线（DCA）"
+    }
+  ],
+  "adaptation": [
+    "去除源码硬编码路径与交互设备输出，统一改为 Data/ 到 results/ 的显式落盘，并将列线图与校准曲线分开独立画布以免 rms::plot.nomogram 重置布局导致半幅留白。",
+    "以标准 Vickers & Elkin 净获益公式和 ggplot2 重写 DCA 曲线，消除缺失包 rmda 依赖并保持与 pROC/patchwork 面板对齐。"
+  ],
+  "code_sha256": {
+    "plot.R": "b2608d2934626dca563baa56143f19f107ad77097831aa858e05cede4b61030a"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla) + synthetic 85 samples x 30 genes",
+      "date": "2026-11-14",
+      "notes": "三份输出 PDF 均已生成并通过 fitz 渲染 PNG 视觉核验。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

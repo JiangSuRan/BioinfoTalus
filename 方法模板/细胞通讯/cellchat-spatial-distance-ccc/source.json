@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "id": "cellchat-spatial-distance-ccc",
+  "title": "CellChat v2 空间距离约束细胞通讯推断与空间信号分布可视化",
+  "kind": "method",
+  "method_type": "细胞通讯",
+  "language": "R",
+  "tags": [
+    "CellChat",
+    "空间转录组",
+    "距离约束",
+    "细胞通讯",
+    "Visium"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "Cellchat.txt（datatype='spatial', spatial.factors 物理尺度换算与 distance.use 通讯推断）",
+    "author_attribution": "本地教学脚本（Cellchat.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "Cellchat.txt",
+      "sha256": "eed7e44cc1a83d748079c138fa9d581968cd55158d06ea0653347848afde6bc6",
+      "lines": [
+        35,
+        178
+      ],
+      "role": "提取基于 Visium 物理空间距离约束的 CellChat v2 配体-受体通讯推断"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_annotated.rds",
+      "object": "Seurat",
+      "requirements": "含 Spatial data 层、Idents 细胞类型标签、orig.ident 与空间坐标",
+      "evidence": "源码 Visium Seurat 对象"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "CellChat",
+      "tested_version": "2.2.0.9001",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；确保 spot 尺度与 pixel/micron 换算比值匹配真实测序平台。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cellchat_spatial_ccc.rds",
+      "content": "完成空间距离加权细胞通讯网络的 CellChat 对象"
+    },
+    {
+      "path": "results/cellchat_spatial_lr_pairs.csv",
+      "content": "显著空间邻近配体-受体通讯明细表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "spatial.factors = data.frame(ratio=..., tol=...) + computeCommunProb(distance.use=TRUE, interaction.range=250)",
+      "basis": "依据已安装 CellChat 2.2.0.9001 签名校正参数名，限制远距离假阳性旁分泌互作"
+    },
+    {
+      "setting": "identifyOverExpressedGenes(cellchat, do.fast = FALSE) + samples = factor(visium_obj$orig.ident)",
+      "basis": "无需可选 GitHub 包 presto 即可运行标准 Wilcoxon 检验并正确注入样本标识"
+    }
+  ],
+  "adaptation": [
+    "依据 CellChat 2.2 实测签名将旧教程 scale.factors 修正为 spatial.factors，开启 do.fast = FALSE 并采用 LayerData 兼容 Seurat v5。"
+  ],
+  "limitations": [
+    "conversion_factor 与 scale.distance 需按实际空间平台像素分辨率换算，使 CellChat 要求之最小缩放距离落入 [1, 2]。"
+  ],
+  "code_sha256": {
+    "analysis.R": "a47b319683849b4c3e570f7f69b29511e82e9d53bb86590886543f539140d677"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, CellChat 2.2.0.9001, Seurat 5.5.0) + synthetic 90-spot Visium grid",
+      "date": "2026-11-14",
+      "notes": "已完成 --vanilla 独立运行并成功检出 24 对空间约束显著配体-受体互作。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

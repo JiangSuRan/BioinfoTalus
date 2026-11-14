@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "id": "seurat-visiumhd-sketch-banksy-binning",
+  "title": "Visium HD 高分辨率多尺度分箱加载、LeverageScore Sketch 降采样映射与 Banksy 空间域聚类",
+  "kind": "method",
+  "method_type": "空间组学预处理",
+  "language": "R",
+  "tags": [
+    "VisiumHD",
+    "SketchData",
+    "LeverageScore",
+    "ProjectData",
+    "RunBanksy"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "k21. Visium HD.md（8um/16um 加载、5 万细胞 LeverageScore Sketch 降维投影及 Banksy 空间聚类）",
+    "author_attribution": "本地教学脚本（k21. Visium HD.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "k21. Visium HD.md",
+      "sha256": "cc2da84508e3499a45556980fab938a121c9842a7df0e36294b15ea79a7423f4",
+      "lines": [
+        1,
+        571
+      ],
+      "role": "提取超大规模 Visium HD 亚细胞分箱的 Sketch 加速聚类与 Banksy 空间平滑流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_hd_out",
+      "object": "目录",
+      "requirements": "10x Visium HD SpaceRanger 输出目录（含 binned_outputs）",
+      "evidence": "源码 Load10X_Spatial(bin.size=c(8,16))"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "SeuratWrappers",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Banksy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 Banksy，仅完成 R 语法解析检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/visiumhd_sketch_banksy.rds",
+      "content": "含 Spatial.008um、sketch、BANKSY 及聚类投影的 Visium HD Seurat v5 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "SketchData(ncells=50000, method='LeverageScore') + ProjectData",
+      "basis": "Seurat v5 官方针对数十万级 HD bin 的几何杠杆抽样与全量快速映射方案"
+    },
+    {
+      "setting": "RunBanksy(lambda=0.2, k_geom=50)",
+      "basis": "融合局部微环境邻域平均表达（lambda=0.2）划定精细空间结构域"
+    }
+  ],
+  "adaptation": [
+    "合并双尺度分箱加载、Sketch 投影及 Banksy 空间聚类，移除本地实验切片硬编码路径。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 Banksy / SeuratWrappers）。"
+  ],
+  "code_sha256": {
+    "analysis.R": "d2ce94eef55687dd49aaacd0a2380235559dfa00bdf52cadaa8ff5291d6158f7"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

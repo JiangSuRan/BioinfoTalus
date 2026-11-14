@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-cytotrace2-potency-umap",
+  "title": "CytoTRACE2 分化潜能光谱 UMAP 与表型潜能箱线联图",
+  "kind": "plot",
+  "plot_type": "单细胞降维图",
+  "language": "R",
+  "tags": [
+    "CytoTRACE2",
+    "分化潜能",
+    "UMAP",
+    "光谱渐变",
+    "ggplot2"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc15：CytoTRACE v2 单细胞分化潜力预测工具学习 .txt（34–81 行 plotData 面板与自定义光谱连续 UMAP）",
+    "author_attribution": "本地教学脚本（sc15：CytoTRACE v2 单细胞分化潜力预测工具学习 .txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc15：CytoTRACE v2 单细胞分化潜力预测工具学习 .txt",
+      "sha256": "ccb8d18474a835d934bc35a807572e581e1a675f1c0c142dda2f8fbb441eea59",
+      "lines": [
+        34,
+        81
+      ],
+      "role": "绘制 CytoTRACE2::plotData 原生箱线-降维图及自定义高分化到低分化光谱色带连续 UMAP"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含 umap 降维与 celltype 元数据",
+      "evidence": "源码 sc.epi@reductions$umap@cell.embeddings 与 celltype.3"
+    },
+    {
+      "path": "Data/cytotrace2_result.rds",
+      "object": "data.frame",
+      "requirements": "CytoTRACE2::cytotrace2 输出结果，行名为细胞条码且含 CytoTRACE2_Relative 等列",
+      "evidence": "源码 merge(ggplotdata, cytotrace2_result, by = 0)"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "CytoTRACE2",
+      "tested_version": "1.1.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；Seurat 对象 UMAP 坐标与 CytoTRACE2 结果条码匹配。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cytotrace2_potency_umap_panel.pdf",
+      "content": "CytoTRACE2_Relative 光谱连续 UMAP、表型潜能 UMAP 与亚群分化箱线图"
+    }
+  ],
+  "adaptation": [
+    "将源码以行名隐式 merge(..., by = 0) 改为显式按细胞条码交集对齐并保留坐标顺序，防止字符顺序错位或静默丢行。",
+    "精简并合并 CytoTRACE2::plotData 生成的表型箱线图与自定义红-黄-绿-紫（高分化->低分化）连续光谱 UMAP。"
+  ],
+  "code_sha256": {
+    "plot.R": "34868841ef7f02cdc40b49618f6bf504c4df829b7d5a03eee54d3870d938a125"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

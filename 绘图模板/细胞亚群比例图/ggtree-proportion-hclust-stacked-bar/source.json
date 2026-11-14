@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "id": "ggtree-proportion-hclust-stacked-bar",
+  "title": "亚群构成层次聚类树（ggtree）与样本量标注堆叠比例对齐图",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "ggtree",
+    "层次聚类",
+    "堆叠柱状图",
+    "癌种分层",
+    "patchwork"
+  ],
+  "paper": {
+    "repository": "https://github.com/yuyang3/pan-B.git",
+    "figure": "Figure2.R（Cell 2024 泛癌 B 细胞 Fig 2E 按亚群构成比平均连接层次聚类分层与堆叠比例条形图，541–605 行）",
+    "author_attribution": "Yang et al., Cell 2024",
+    "doi": "10.1016/j.cell.2024.06.038",
+    "revision": "2f6c871f39de571ba134efa68c7636cefb482fe9"
+  },
+  "source_files": [
+    {
+      "root_label": "pan-B",
+      "path": "Figure2.R",
+      "sha256": "430a475456d202c3b89b1dee1815ead7ea46312fad86caba2bf1cc54450479c0",
+      "lines": [
+        541,
+        605
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cohort_subset_metadata.rds",
+      "object": "data.frame",
+      "requirements": "含 cohort（队列/分组）、sample_id（患者/样本 ID）与 cell_type（亚群）三列",
+      "evidence": "源码按 Cancer 统计 sample_n 与各 Annotation 百分比矩阵后计算欧氏距离与平均连接 hclust 并对齐柱状图因子顺序"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "tidyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "cowplot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggtree",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；cohort 不少于 3 个以形成有意义的聚类树。"
+  ],
+  "outputs": [
+    {
+      "path": "results/hclust_subset_proportion_bar.pdf",
+      "content": "队列构成比聚类树与按叶节点序精确对齐的堆叠比例条形图"
+    }
+  ],
+  "adaptation": [
+    "用 tidyr::pivot_wider 替代 spread 并以 patchwork 横向拼接 ggtree 与水平堆叠柱状图；直接读取 p_tree$data 的实际叶节点 y 坐标顺序对齐堆叠柱状图，避免 ggtree ladderize 默认重排导致的树-柱错位。"
+  ],
+  "code_sha256": {
+    "plot.R": "e4ef7f8c4a0529ecfc06cf52b47c5d48dc40f8d07fb2c4ed24082971ffd19ded"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

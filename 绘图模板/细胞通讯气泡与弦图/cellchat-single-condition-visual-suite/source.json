@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "cellchat-single-condition-visual-suite",
+  "title": "单条件 CellChat 全景可视化套组（互作圈图、热图、L-R 气泡图与信号角色散点热图）",
+  "kind": "plot",
+  "plot_type": "细胞通讯气泡与弦图",
+  "language": "R",
+  "tags": [
+    "CellChat",
+    "细胞通讯",
+    "netVisual_circle",
+    "netVisual_bubble",
+    "信号角色",
+    "细胞互作"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc11：细胞互作 CellChat.txt（104–243 行单条件 CellChat 核心多维度可视化）",
+    "author_attribution": "本地教学脚本（sc11：细胞互作 CellChat.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc11：细胞互作 CellChat.txt",
+      "sha256": "88a29cdca87d78f09ff4b9c6d09fee4cddacb5a86233a40eb4a05f7191b3a91d",
+      "lines": [
+        104,
+        243
+      ],
+      "role": "单样本 CellChat 全局数量/强度网络图、单通路热图与弦图、L-R 气泡图及信号发送-接收角色中心性图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cellchat_obj.rds",
+      "object": "CellChat",
+      "requirements": "已执行 aggregateNet 与 netAnalysis_computeCentrality 的单条件 CellChat 对象",
+      "evidence": "源码 netVisual_circle / netVisual_heatmap / netVisual_bubble / netAnalysis_signalingRole_*"
+    }
+  ],
+  "packages": [
+    {
+      "name": "CellChat",
+      "tested_version": "2.2.0.9001",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    },
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": "2.25.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；cellchat_obj 含至少 1 条富集信号通路。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cellchat_single_network_overview.pdf",
+      "content": "细胞互作次数与权重全景圈图、聚焦通路弦图与热图及 L-R 贡献条形图"
+    },
+    {
+      "path": "results/cellchat_single_bubble_and_roles.pdf",
+      "content": "发送-接收亚群 L-R 气泡图、信号角色 2D 散点与传出/传入热图"
+    }
+  ],
+  "adaptation": [
+    "自动读取 cellchat@netP$pathways 首条显著通路并按总群数自适应源/靶索引，避免源码固定指定 'MK'/'CCL' 或越界亚群序号。",
+    "使用 invisible() 包裹 netVisual_circle 与 netVisual_aggregate，抑制 recordedplot 自动重放导致的多图排版与画布缩放异常；整理输出为两份自包含矢量 PDF。"
+  ],
+  "code_sha256": {
+    "plot.R": "a7e145ac888709e60a87b9b7249690577d5bf970270e184b70fda4ca3b5abf78"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

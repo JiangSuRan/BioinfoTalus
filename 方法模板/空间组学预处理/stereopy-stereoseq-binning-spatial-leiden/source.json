@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "id": "stereopy-stereoseq-binning-spatial-leiden",
+  "title": "Stereopy Stereo-seq 芯片 bin 分箱加载、空间质控、空间邻域聚类与标志基因识别",
+  "kind": "method",
+  "method_type": "空间组学预处理",
+  "language": "Python",
+  "tags": [
+    "Stereopy",
+    "Stereo-seq",
+    "GEF分箱",
+    "空间邻域聚类",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "Xenium Stereo.md（L211-378 read_gef, cal_qc, spatial_neighbors, leiden, find_marker_genes）",
+    "author_attribution": "本地教学脚本（Xenium Stereo.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "Xenium Stereo.md",
+      "sha256": "dd3c1938c7d44a2178a6f87a0b9cec8c6d8bdcaa8d5d43f2c3a2d4c58d84e4be",
+      "lines": [
+        211,
+        378
+      ],
+      "role": "提取华大 Stereo-seq 纳米芯片 GEF 分箱质控及标准化空转分析流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/stereoseq_tissue.gef",
+      "object": "GEF",
+      "requirements": "SAW 流程产出的空间特征表达文件",
+      "evidence": "源码 st.io.read_gef"
+    }
+  ],
+  "packages": [
+    {
+      "name": "stereo",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 stereopy（stereo），仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/stereopy_analyzed.h5ad",
+      "content": "保存原始检查点、PCA、空间邻域及标志基因统计结果的 AnnData 兼容 h5ad"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "read_gef(bin_size=50) + raw_checkpoint + spatial_neighbors + leiden(resolution=0.6)",
+      "basis": "bin50 相当于约 25 um 单细胞拟尺度视野兼顾信噪比"
+    }
+  ],
+  "adaptation": [
+    "删去依赖交互 UI 与示例网址下载步骤，保留端到端立体芯片至 h5ad 转换闭环。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 stereopy 包）；多物种芯片高深度读数时需调整过滤阈值。"
+  ],
+  "code_sha256": {
+    "analysis.py": "fd76352929884336157b5988b09c75afddb09b79df9bf4c3c679095e585aff40"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

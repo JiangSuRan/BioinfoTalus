@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "celcomen-spatial-bystander-perturbation",
+  "title": "Celcomen CCE/SCE 特定供体细胞类型虚拟敲除与邻域旁观者细胞空间差异响应",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "Celcomen",
+    "SCE反事实采样",
+    "旁观者效应",
+    "空间转录组",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/tantrayaslab/celcomen",
+    "figure": "cpu_07_定向敲除看邻近特定细胞类型.ipynb",
+    "author_attribution": "本地教学脚本 (xnqc/cpu_07_定向敲除)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_07_定向敲除看邻近特定细胞类型.ipynb",
+      "sha256": "9136370b86f6042425e0f4f0ef808295c3d7a298f1d9bf04fa950728c7d1a674",
+      "lines": [
+        1,
+        1151
+      ],
+      "role": "CCE 交互矩阵训练、供体类型 A 敲除、完整 SCE 能量 SGD 采样与受体 B 邻域差分析"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本整合入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/spatial_tumor.h5ad",
+      "object": "空间转录组 AnnData",
+      "requirements": "X 为 log-归一化表达，obsm['spatial'] 为微米二维坐标，obs['cell_type'] 含供体 A 与受体 B 标签",
+      "evidence": "源码 run_cce_inference、setup_AB_perturbation 与 run_sce_generation 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "celcomen",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch_geometric",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "需安装 celcomen 与 torch_geometric；SCE 迭代耗时随基因数呈平方级增长（建议筛选 <= 1000 高变基因）。",
+    "本机未安装 celcomen / torch_geometric，仅完成 Python 语法校验；脚本已固定 CUDA GPU 执行（device='cuda'）；绘图流剥离至 spatial-bystander-perturbation-decay-plots。"
+  ],
+  "outputs": [
+    {
+      "path": "results/celcomen_bystander_de.csv",
+      "content": "受体 B 细胞在近端 (<30um) 与远端 (>=30um) 的反事实差异变化及通用全近邻对照"
+    },
+    {
+      "path": "results/celcomen_bystander_zones.csv",
+      "content": "逐细胞空间坐标、供体/受体邻域标签、到最近被敲 A 距离与平均表达改变量"
+    },
+    {
+      "path": "results/celcomen_g2g_inter.npy 与 results/celcomen_sce_output.npy",
+      "content": "学习所得胞间基因调控矩阵与反事实终止态表达谱"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "distance < 15um 建边、CCE (lr=2e-2, 200 epochs) + SCE SGD (lr=1e-3, 50 epochs, zmft=0.1)",
+      "basis": "来源 cpu_07 设定；补全已有 celcomen-spatial-causal-gnn 缺失的 SCE 反事实优化循环与细胞类型特异空间读出"
+    },
+    {
+      "setting": "de_B = diff[B_near].mean(0) - diff[B_far].mean(0)",
+      "basis": "分离供体周围 30um 旁观者特异效应，排除非特异性组织背景"
+    }
+  ],
+  "adaptation": [
+    "固定 device='cuda' 并直接将输入矩阵、坐标与图边迁至 GPU 上完成 L2 归一化与 calc_sphex，避免 CPU/GPU 混算；移除教学标记基因回退与可视化函数（由绘图模板承接）。"
+  ],
+  "limitations": [
+    "仅完成 py_compile 语法解析核验，未在本机执行 Celcomen 空间图训练。"
+  ],
+  "code_sha256": {
+    "analysis.py": "7c9086b112ab14611bcff188c94787d443c737cc4a9e827b30c1a8f7aed3ec4e"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

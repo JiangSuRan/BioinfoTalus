@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "milor-nhood-groups-mixed-beeswarm",
+  "title": "Milo 混合邻域过滤与邻域社区分组蜂群图",
+  "kind": "plot",
+  "plot_type": "差异丰度图",
+  "language": "R",
+  "tags": [
+    "miloR",
+    "Mixed过滤",
+    "groupNhoods",
+    "邻域分组",
+    "beeswarm",
+    "差异丰度"
+  ],
+  "paper": {
+    "repository": "https://github.com/MarioniLab/miloR.git",
+    "figure": "vignettes/milo_gastrulation.Rmd（官方 Mixed 纯度过滤与 groupNhoods 社区识别可视化，234–251 与 330–335 行）",
+    "author_attribution": "Dann et al., Nature Biotechnology 2022",
+    "doi": "10.1038/s41587-021-01033-z",
+    "revision": "4ecad8927609d906520f36c54cb24f96e79655ee"
+  },
+  "source_files": [
+    {
+      "root_label": "miloR",
+      "path": "vignettes/milo_gastrulation.Rmd",
+      "sha256": "dec5e86c3eef3e19a01b21000e5183b7ed733ec7792a9460ee92455039000dd3",
+      "lines": [
+        217,
+        335
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": "GPL-3.0",
+    "note": "来源于 GPL-3.0 开源仓库。"
+  },
+  "inputs": [
+    {
+      "path": "Data/milo_object.rds",
+      "object": "Milo",
+      "requirements": "已完成 buildNhoodGraph 与 UMAP 降维；colData 含 cell_type 列",
+      "evidence": "源码 annotateNhoods(embryo_milo, da_results, coldata_col=\"celltype\") 与 plotNhoodGroups(..., layout=\"umap\")"
+    },
+    {
+      "path": "Data/milo_da_results.rds",
+      "object": "data.frame",
+      "requirements": "testNhoods 返回表，含 logFC 与 SpatialFDR 列",
+      "evidence": "源码 groupNhoods 与 plotDAbeeswarm 输入要求"
+    }
+  ],
+  "packages": [
+    {
+      "name": "miloR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；上游已运行 miloR::buildNhoodGraph 与 testNhoods。"
+  ],
+  "outputs": [
+    {
+      "path": "results/milo_mixed_filtered_beeswarm.pdf",
+      "content": "混合邻域归类为 Mixed 后的亚群差异丰度蜂群图"
+    },
+    {
+      "path": "results/milo_nhood_groups_panel.pdf",
+      "content": "groupNhoods 邻域社区 UMAP 空间分布与分组蜂群双联图"
+    }
+  ],
+  "adaptation": [
+    "提取官方教程中纯度阈值过滤（celltype_fraction < 0.7）与邻域聚类分组（groupNhoods）两大标准视觉校验步骤，去除教程文字与重复试验参数注释。"
+  ],
+  "code_sha256": {
+    "plot.R": "c65ea55be03fe8543a141cc37c7b5648698d95e099c617b0ff836b3abaa04430"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

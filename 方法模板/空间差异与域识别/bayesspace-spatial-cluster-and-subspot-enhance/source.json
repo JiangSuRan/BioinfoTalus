@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "bayesspace-spatial-cluster-and-subspot-enhance",
+  "title": "BayesSpace Visium 空间域贝叶斯 MRF 聚类与亚 Spot 分辨率增强",
+  "kind": "method",
+  "method_type": "空间差异与域识别",
+  "language": "R",
+  "tags": [
+    "BayesSpace",
+    "空间聚类",
+    "亚Spot增强",
+    "MRF",
+    "Visium"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "BayesSpace Merfish.md（L1-83 qTune 选簇数、spatialCluster 与 spatialEnhance 亚斑点增强）",
+    "author_attribution": "本地教学脚本（BayesSpace Merfish.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "BayesSpace Merfish.md",
+      "sha256": "11302f05d335b2ef0d38df5ec4321dbf1eaa9c8d4e18f0c90dcc6f907c7b6db2",
+      "lines": [
+        1,
+        83
+      ],
+      "role": "提取 BayesSpace 从 SpaceRanger 读取至 sub-spot 基因增强全流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_spaceranger_out",
+      "object": "目录",
+      "requirements": "10x SpaceRanger 输出目录",
+      "evidence": "源码 readVisium 目录读取"
+    },
+    {
+      "path": "Data/spatial_marker_genes.txt",
+      "object": "character",
+      "requirements": "待亚 Spot 增强的特征基因清单",
+      "evidence": "源码 enhanceFeatures feature_names"
+    }
+  ],
+  "packages": [
+    {
+      "name": "SingleCellExperiment",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "BayesSpace",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 BayesSpace，仅完成 R 语法解析检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/bayesspace_spot_clustered.rds",
+      "content": "Spot 级空间聚簇 SingleCellExperiment 对象"
+    },
+    {
+      "path": "results/bayesspace_subspot_enhanced.rds",
+      "content": "每 Spot 拆分为 6 亚 Spot 的高分辨率增强对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "platform='Visium', model='t', qTune(qs=2:10)",
+      "basis": "来源代码预设，六边形阵列 MRF 邻域平滑结合厚尾 t 误差"
+    }
+  ],
+  "adaptation": [
+    "规范目录路径为相对 Data/visium_spaceranger_out 并抽离绘图至下游需求，保留核心推断产出。"
+  ],
+  "limitations": [
+    "未在本地运行合成测试（缺 BayesSpace 包）；MCMC 迭代数大时耗时较长。"
+  ],
+  "code_sha256": {
+    "analysis.R": "384aed2b1d10edc92c24ec0fb079f0f62a69554296503b71179e31936b5ba08e"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

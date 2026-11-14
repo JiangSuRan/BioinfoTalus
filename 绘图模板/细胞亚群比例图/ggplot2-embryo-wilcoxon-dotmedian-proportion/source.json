@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-embryo-wilcoxon-dotmedian-proportion",
+  "title": "样本级亚群比例散点、中位数横线与成对 Wilcoxon 检验显著性图",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "个体散点",
+    "中位数横线",
+    "Wilcoxon检验",
+    "ggsignif",
+    "分组比较"
+  ],
+  "paper": {
+    "repository": "https://github.com/lilab2022/human_embryo.git",
+    "figure": "fig1.R / fig1s.R（Cell 2023 Fig 1E / Fig 2G 多时间窗口单个胚胎样本亚群占比散点、中位短横线与 Wilcoxon 检验显著性图，229–259 与 66–82 行）",
+    "author_attribution": "Wang et al., Cell 2023",
+    "doi": "10.1016/j.cell.2023.08.019",
+    "revision": "74a824b1d7dac0a9533126d410dd09413057c459"
+  },
+  "source_files": [
+    {
+      "root_label": "human_embryo",
+      "path": "fig1.R",
+      "sha256": "2f24aa5c7f4941047a8bfe712dc27ae2f978e2268696def9532463486cbf36e1",
+      "lines": [
+        212,
+        259
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sample_period_metadata.rds",
+      "object": "data.frame",
+      "requirements": "含 sample_id（独立生物学个体）、period（有序分组/时间窗因子或按出现序）与 cell_type（亚群）三列",
+      "evidence": "源码逐个胚胎按 period 计算 prop.table 比例并提取各组 median(ratio) 与 x_start/x_end 横线坐标"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "forcats",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggsignif",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；每组至少含 3 个独立生物样本以支持 Wilcoxon 检验。"
+  ],
+  "outputs": [
+    {
+      "path": "results/sample_proportion_wilcoxon_dotmedian.pdf",
+      "content": "展示样本级亚群比例分布、黑色中位数横杠及成对非参数检验星号的分面散点图"
+    }
+  ],
+  "adaptation": [
+    "源脚本调用外部私有文件 Funcs_signif_fig2.R 中的 plt_Frac_signif，本模板改用 ggplot2 + geom_segment + ggsignif::geom_signif 直接重建相同统计检验与图形映射，并扩大 y 轴顶部留白（expand upper=0.22）防止显著性括号遮挡分面标题。"
+  ],
+  "code_sha256": {
+    "plot.R": "a1a5449c6525fc7f9497a6418c021cd970d9bd0c8ed8270a37809fe751288713"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

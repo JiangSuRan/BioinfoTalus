@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "id": "metaflux-singlecell-flux-balance",
+  "title": "METAFlux 基于亚群均值表达与微环境比例的肿瘤代谢通量平衡（FBA）预测",
+  "kind": "method",
+  "method_type": "代谢通量建模",
+  "language": "R",
+  "tags": [
+    "METAFlux",
+    "代谢通量",
+    "FBA",
+    "MRAS",
+    "代谢微环境",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc26：METAFlux代谢单细胞.txt（15–47 行群水平均值反应活性与共同营养池代谢通量估计）",
+    "author_attribution": "本地教学脚本（sc26：METAFlux代谢单细胞.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc26：METAFlux代谢单细胞.txt",
+      "sha256": "44e9815d8579ad6676f0fa4504c21d19788c3ac7706e4285be92672d32a8b7f3",
+      "lines": [
+        15,
+        47
+      ],
+      "role": "聚合各细胞群平均表达计算 MRAS 代谢反应分，并耦合微环境比例约束求解单细胞 FBA 代谢通量"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本精炼适配，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含标准化的 RNA 表达及精确注释 celltype 列的人类单细胞 Seurat 对象",
+      "evidence": "源码 AverageExpression(sc_test_example, group.by = 'celltype') -> calculate_reaction_score -> compute_sc_flux"
+    }
+  ],
+  "packages": [
+    {
+      "name": "METAFlux",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标环境已安装 METAFlux，人类基因符号与 human_gem 模型匹配。"
+  ],
+  "outputs": [
+    {
+      "path": "results/metaflux_scores.rds",
+      "content": "各细胞亚群代谢反应活性评分（MRAS）矩阵"
+    },
+    {
+      "path": "results/metaflux_sc_flux.rds",
+      "content": "代谢反应 × 亚群的 FBA 平衡通量估计矩阵"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "在共用血液微环境约束 human_blood 下依据真实亚群构成占比求解 compute_sc_flux",
+      "basis": "模拟微环境细胞共同竞争有限培养基养分时的协同/竞争稳态代谢通量"
+    }
+  ],
+  "adaptation": [
+    "修复源码比例拼凑与硬编码群数故障：原脚本固定 num_cell = 7 且手工写死 fraction[4] = 0.1; fraction[5] = 0.1；现由 prop.table 实时计算各亚群真实占比并精确归一化（总和为 1）。",
+    "确保 AverageExpression 返回矩阵列顺序与 proportions 向量名严格一致。"
+  ],
+  "limitations": [
+    "依赖人体全基因组代谢网络 human_gem 与特定培养基假设（human_blood），样本非人源时需先同源基因转换且警惕培养基微环境偏差。"
+  ],
+  "code_sha256": {
+    "analysis.R": "2d890b37e3083355217860c5283a879eec8713131ef1cf1149303211443d6ada"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

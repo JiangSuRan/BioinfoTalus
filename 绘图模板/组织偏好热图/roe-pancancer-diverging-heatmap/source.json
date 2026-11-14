@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "id": "roe-pancancer-diverging-heatmap",
+  "title": "泛癌队列焦点组织 Ro/e 发散色阶热图",
+  "kind": "plot",
+  "plot_type": "组织偏好热图",
+  "language": "R",
+  "tags": [
+    "Ro/e",
+    "泛癌",
+    "发散色阶",
+    "ComplexHeatmap",
+    "组织偏好"
+  ],
+  "paper": {
+    "repository": "https://github.com/yuyang3/pan-B.git",
+    "figure": "Figure4.R（Cell 2024 Figure S5I 跨癌种焦点亚群肿瘤相对癌旁 Ro/e 热图，600–674 行）",
+    "author_attribution": "Yang et al., Cell 2024",
+    "doi": "10.1016/j.cell.2024.06.038",
+    "revision": "2f6c871f39de571ba134efa68c7636cefb482fe9"
+  },
+  "source_files": [
+    {
+      "root_label": "pan-B",
+      "path": "Figure4.R",
+      "sha256": "60d78ae76df3217786974d5ac4ee91c2e134d624792449536a7cc8d829ce65f3",
+      "lines": [
+        600,
+        674
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/pancancer_cell_tissue_metadata.rds",
+      "object": "data.frame",
+      "requirements": "含 cohort（癌种/研究队列）、sample_id、cell_type 与二分类或含 Target/Reference 的 tissue_group 列",
+      "evidence": "源码按 Cancer 循环检查 N/T 成对存在后分别计算 ROIE 并取 Tumor 列横向展开为队列×亚群矩阵"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "tidyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "circlize",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "grid",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；每个待展示队列须同时包含目标组织（Target）与对照细胞。"
+  ],
+  "outputs": [
+    {
+      "path": "results/roe_pancancer_diverging_heatmap.pdf",
+      "content": "跨队列焦点组织 Ro/e 水平图例发散色阶热图"
+    }
+  ],
+  "adaptation": [
+    "将 Cancer/Tissue_short=\"T\" 泛化为 cohort/tissue_group=\"Target\"，用 tidyr::pivot_wider 替代已弃用的 spread，并将硬编码亚群过滤改为全亚群展示。"
+  ],
+  "code_sha256": {
+    "plot.R": "6b06266d38c96335b2517bf6a5cc750f3670058594b46038b65fb2873befef35"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

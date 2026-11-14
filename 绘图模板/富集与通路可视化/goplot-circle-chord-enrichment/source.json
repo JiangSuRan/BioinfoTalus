@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "id": "goplot-circle-chord-enrichment",
+  "title": "GO 通路富集圆环图与基因 logFC 弦图（GOplot GOCircle + GOChord）",
+  "kind": "plot",
+  "plot_type": "富集与通路可视化",
+  "language": "R",
+  "tags": [
+    "GOplot",
+    "GOCircle",
+    "GOChord",
+    "通路富集",
+    "logFC",
+    "弦图"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc9：通路富集  .txt（138–171 行 GOplot 环形柱图与弦图）",
+    "author_attribution": "本地教学脚本（sc9：通路富集  .txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc9：通路富集  .txt",
+      "sha256": "c60c45755e37ef6ab8c78b0ef7521d6b07e31a472639ca8d2a567abf5827727e",
+      "lines": [
+        138,
+        171
+      ],
+      "role": "将 enrichGO 结果与差异基因 logFC 整合并绘出 GOCircle 与 GOChord 图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/enrich_go_bp.rds",
+      "object": "enrichResult",
+      "requirements": "clusterProfiler::enrichGO 输出对象（含 ID、Description、p.adjust、geneID 列）",
+      "evidence": "源码 erich.go.BP@result[, c(1,2,8,11)]"
+    },
+    {
+      "path": "Data/deg_table.rds",
+      "object": "data.frame",
+      "requirements": "行名为基因符号且含 avg_log2FC 列的差异分析表",
+      "evidence": "源码 deg[g1, ] 构造 ID/logFC 映射表"
+    }
+  ],
+  "packages": [
+    {
+      "name": "GOplot",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "stringr",
+      "tested_version": "1.6.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标环境已安装 GOplot 包，且 enrich_go_bp 前 3 条词条均映射至差异基因表。"
+  ],
+  "outputs": [
+    {
+      "path": "results/goplot_circle_chord.pdf",
+      "content": "GO 富集 z-score 圆环图与通路-基因调控弦图（双页 PDF）"
+    }
+  ],
+  "adaptation": [
+    "按列名显式提取 ID/Description/p.adjust/geneID，消除硬编码列下标 [c(1,2,8,11)] 因 enrichResult 版本微调导致的错列风险。",
+    "使用 unique() 去重跨通路重叠基因后再匹配 diff 表，并统一输出双页矢量 PDF。"
+  ],
+  "code_sha256": {
+    "plot.R": "7b65c7828f2ed29d5c821b75b79117d247bff43fbab5862b01312596ebc68f87"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

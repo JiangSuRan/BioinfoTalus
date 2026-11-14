@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "milor-rasterized-nhood-umap",
+  "title": "大规模图谱 Milo 邻域差异丰度栅格化 UMAP 组合图",
+  "kind": "plot",
+  "plot_type": "差异丰度图",
+  "language": "R",
+  "tags": [
+    "miloR",
+    "ggrastr",
+    "栅格化",
+    "百万细胞",
+    "邻域图",
+    "差异丰度"
+  ],
+  "paper": {
+    "repository": "https://github.com/MarioniLab/hbca.git",
+    "figure": "code/analysis/06_milo/06c_milo_plotting_1.R（HBCA 百万细胞尺度 Milo 邻域 UMAP 栅格化双联图，46–68 行）",
+    "author_attribution": "Reed et al., Nature Genetics 2024",
+    "doi": "10.1038/s41588-024-01688-9",
+    "revision": "de6824fca1605a75c140ea0c4d3cc412aec234e2"
+  },
+  "source_files": [
+    {
+      "root_label": "hbca",
+      "path": "code/analysis/06_milo/06c_milo_plotting_1.R",
+      "sha256": "a13f41da72d672f6ec425a25c98616c9e27e2fb5b6a4bbb4112f0128b7313b43",
+      "lines": [
+        46,
+        98
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/milo_object.rds",
+      "object": "Milo",
+      "requirements": "含 UMAP 降维与 colData$cell_type；若十万级邻域可调高 overlap 参数",
+      "evidence": "源码 plotReducedDim(..., dimred=\"UMAP\", text_by=\"level2\") 与 buildNhoodGraph(..., overlap=20) 用法"
+    },
+    {
+      "path": "Data/milo_da_results.rds",
+      "object": "data.frame",
+      "requirements": "testNhoods 输出，含 logFC 与 SpatialFDR",
+      "evidence": "源码 plotNhoodGraphDA(milo, da_out, res_column='logFC', alpha=0.1, node_stroke=0)"
+    }
+  ],
+  "packages": [
+    {
+      "name": "miloR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scater",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggrastr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；输入 Milo 对象已完成 makeNhoods 与 testNhoods。"
+  ],
+  "outputs": [
+    {
+      "path": "results/milo_rasterized_umap_nhood.pdf",
+      "content": "散点与邻域边经 500 dpi 栅格化、坐标轴保持矢量的 UMAP+Milo 并排组合图"
+    }
+  ],
+  "adaptation": [
+    "移除 HBCA 私有 optparse 循环与自定义 32 位整数规避补丁函数 edited.buildNhoodGraph（改回标准 miloR::buildNhoodGraph(..., overlap = 20)），保留核心 GeomPoint + GeomEdgeSegment 栅格化策略与双联排版。"
+  ],
+  "code_sha256": {
+    "plot.R": "112175d010ab36d5eed2cc5554d50233133f7e72c66e8da63d03afe087c42a7e"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

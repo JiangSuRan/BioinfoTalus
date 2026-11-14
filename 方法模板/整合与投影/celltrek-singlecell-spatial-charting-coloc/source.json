@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "id": "celltrek-singlecell-spatial-charting-coloc",
+  "title": "CellTrek 单细胞空间反投射精确定位（Charting）与空间共定位/邻近距离分析",
+  "kind": "method",
+  "method_type": "整合与投影",
+  "language": "R",
+  "tags": [
+    "CellTrek",
+    "单细胞空间映射",
+    "SColoc",
+    "kdist",
+    "KL散度"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "k12 RCTD CellTrek.md（L728-1014 traint, celltrek, scoloc, kdist）",
+    "author_attribution": "本地教学脚本（k12 RCTD CellTrek.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "k12 RCTD CellTrek.md",
+      "sha256": "9e96e146076f6e4a5e5f322dc262833168607401d42abea8e62f7365214c7c4d",
+      "lines": [
+        728,
+        1014
+      ],
+      "role": "提取 CellTrek 单细胞空间坐标重构与细胞群共定位量化"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/visium_spatial.rds",
+      "object": "Seurat",
+      "requirements": "含 Spatial assay 的 Visium Seurat 对象",
+      "evidence": "源码 st_data"
+    },
+    {
+      "path": "Data/scrna_reference.rds",
+      "object": "Seurat",
+      "requirements": "含 RNA assay 与 celltype 标注列的参考 scRNA",
+      "evidence": "源码 sc_data"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "CellTrek",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 CellTrek，仅完成 R 语法解析检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/celltrek_mapped_seurat.rds",
+      "content": "反投射至二维组织坐标后的单细胞 Seurat 对象"
+    },
+    {
+      "path": "results/celltrek_scoloc.rds",
+      "content": "基于 KL 散度的细胞群空间共定位图对象"
+    },
+    {
+      "path": "results/celltrek_kdist.csv",
+      "content": "目标细胞群至参考细胞群的 k 近邻物理距离表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "dist_thresh=0.55, top_spot=5, scoloc(use_method='KL')",
+      "basis": "来源代码默认参数组合"
+    }
+  ],
+  "adaptation": [
+    "仅保留无冗余图形弹窗的精炼重映射及空间拓扑量化步骤，输出标准化文件。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 CellTrek 包）；高度缺失单细胞参考亚群时将发生空白或错位投影。"
+  ],
+  "code_sha256": {
+    "analysis.R": "bed3275b480df15bc77d55660e859b18b966d16adccdb02277be8f2d59a3f767"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

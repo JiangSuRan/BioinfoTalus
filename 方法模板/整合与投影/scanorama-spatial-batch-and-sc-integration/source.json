@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "id": "scanorama-spatial-batch-and-sc-integration",
+  "title": "Scanorama 多切片空间转录组全景批次矫正与 scRNA-seq 余弦距离标签迁移",
+  "kind": "method",
+  "method_type": "整合与投影",
+  "language": "Python",
+  "tags": [
+    "Scanorama",
+    "多切片整合",
+    "批次矫正",
+    "标签迁移",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "空转七：空转多个样本数据整合&与scRNA-seq联合分析--scanorama.txt（correct_scanpy 与最近邻余弦迁移）",
+    "author_attribution": "本地教学脚本（空转七：空转多个样本数据整合&与scRNA-seq联合分析--scanorama.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "空转七：空转多个样本数据整合&与scRNA-seq联合分析--scanorama.txt",
+      "sha256": "cca5cb438155d57d16b2a1b9bb42fdb76bd594f349ce3319994df974a45b83c0",
+      "lines": [
+        1,
+        263
+      ],
+      "role": "提取跨样本空间切片与 scRNA 参考联合全景拼接及余弦最近邻标签分配"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_reference.h5ad",
+      "object": "AnnData",
+      "requirements": "含 cell_type 标注且已完成对数归一化与基因对齐",
+      "evidence": "源码 scRNA 参考"
+    },
+    {
+      "path": "Data/visium_slice1.h5ad",
+      "object": "AnnData",
+      "requirements": "切片 1 空间 AnnData",
+      "evidence": "源码切片输入"
+    },
+    {
+      "path": "Data/visium_slice2.h5ad",
+      "object": "AnnData",
+      "requirements": "切片 2 空间 AnnData",
+      "evidence": "源码切片输入"
+    }
+  ],
+  "packages": [
+    {
+      "name": "numpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanorama",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scipy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 scanorama，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scanorama_integrated_sc_spatial.h5ad",
+      "content": "含 X_scanorama 整合嵌入、UMAP 与 Leiden 的合并对象"
+    },
+    {
+      "path": "results/scanorama_spatial_transferred.h5ad",
+      "content": "写入 predicted_celltype 的多切片空间对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "correct_scanpy(return_dimred=True) + sc.concat(uns_merge='unique') + cosine cdist",
+      "basis": "来源代码与 AnnData 0.9+ 规范（以 sc.concat 替代已废弃 AnnData.concatenate）"
+    }
+  ],
+  "adaptation": [
+    "将过时 AnnData.concatenate 升级为 scanpy sc.concat(..., uns_merge='unique') 并用矢量化 cdist 最近邻加速标签迁移。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 scanorama 包）；单一 Spot 物理混合多种细胞时最近邻硬分类无法反映混杂比例。"
+  ],
+  "code_sha256": {
+    "analysis.py": "d09f5f8fdaac254193681f3599c029cb69a82e80718890a0e4a4e81fe75dd5f2"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "id": "phate-magic-diffusion-imputation-embedding",
+  "title": "PHATE 多尺度信息几何降维与 MAGIC 马尔可夫亲和图稀疏基因表达去噪插补",
+  "kind": "method",
+  "method_type": "亚群与层级聚类",
+  "language": "Python",
+  "tags": [
+    "PHATE",
+    "MAGIC",
+    "扩散降维",
+    "表达插补",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps17.PHATE.html & ps21.MAGIC.html（MAGIC 扩散插补 layer + PHATE 全局局部兼顾低维嵌入）",
+    "author_attribution": "本地教学脚本（ps17.PHATE.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps17.PHATE.html",
+      "sha256": "6546336aba35f8a93ca65fbad890b2432e4623a1411927650e051e65a2a4990d",
+      "lines": [
+        1,
+        45279
+      ],
+      "role": "提取 PHATE 信息散度流形嵌入参数"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "ps21.MAGIC.html",
+      "sha256": "eb775d1b63bda97e12595924d48dafb1839a54da62efcc639c278c902d8d4894",
+      "lines": [
+        1,
+        45299
+      ],
+      "role": "提取 MAGIC 扩散算子去 Dropout 稀疏插补并保留原始数据不覆盖 adata.X"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_preprocessed.h5ad",
+      "object": "AnnData",
+      "requirements": "归一化对数表达矩阵 AnnData",
+      "evidence": "源码预处理对象"
+    }
+  ],
+  "packages": [
+    {
+      "name": "magic",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "phate",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 phate/magic，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/phate_magic_denoised.h5ad",
+      "content": "新增 layers['MAGIC_imputed'] 与 obsm['X_phate'] 的 AnnData 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "MAGIC(knn=5, t='auto') 写入 layers['MAGIC_imputed']；PHATE(knn=5, decay=40, t='auto') 写入 obsm['X_phate']",
+      "basis": "分别来自两套扩散几何学工具最佳实践，避免直接覆写原始 adata.X"
+    }
+  ],
+  "adaptation": [
+    "合并源自扩散流形理论的 PHATE 嵌入与 MAGIC 插补，显式写入独立层与 obsm 避免污染原始定量。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 phate/magic 包）；MAGIC 平滑可能高估基因-基因相关性，不宜直接用于下游独立参数检验。"
+  ],
+  "code_sha256": {
+    "analysis.py": "ab3b68c136a26cb1b20e213c929cb51a774e4a75a40506a9259f62503c7399bf"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

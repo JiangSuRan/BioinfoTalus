@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "id": "palantir-pseudotime-entropy-fate",
+  "title": "Palantir 扩散多尺度流形拟时序、分化熵（Entropy）与终端命运概率推断",
+  "kind": "method",
+  "method_type": "轨迹与拟时序",
+  "language": "Python",
+  "tags": [
+    "Palantir",
+    "拟时序",
+    "分化熵",
+    "命运概率",
+    "扩散映射",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps16.Palantir.html（run_diffusion_maps, determine_multiscale_space, run_palantir）",
+    "author_attribution": "本地教学脚本（ps16.Palantir.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps16.Palantir.html",
+      "sha256": "10d06ea42ec3af6341f099a7dd5eea42e184cb2444e67efb33f8a76d02ab962c",
+      "lines": [
+        1,
+        45424
+      ],
+      "role": "提取扩散流形构建、MAGIC 插补预处理及早期干祖细胞发起的概率轨迹建模"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_preprocessed.h5ad",
+      "object": "AnnData",
+      "requirements": "含 PCA（X_pca）及 obs['cell_type'] 含起始群 HSC",
+      "evidence": "源码单细胞预处理对象"
+    }
+  ],
+  "packages": [
+    {
+      "name": "palantir",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 palantir，仅完成 Python 语法检查；须核实起始群标签与样本一致性。"
+  ],
+  "outputs": [
+    {
+      "path": "results/palantir_trajectory.h5ad",
+      "content": "写入 palantir_pseudotime、palantir_entropy 与 branch_probs 的 AnnData 对象"
+    },
+    {
+      "path": "results/palantir_branch_probabilities.csv",
+      "content": "单细胞向各终末分化分支吸收概率表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "run_diffusion_maps(n_components=5) + determine_multiscale_space + run_palantir(num_waypoints=1200)",
+      "basis": "借助马尔可夫吸收态模型克服线性分支假设，量化细胞多向潜能熵值"
+    }
+  ],
+  "adaptation": [
+    "整理分散笔记本块为连续无冗余导出流并将分化概率矩阵落盘。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 palantir 包）；高度受选定 early_cell 细胞根位置敏感。"
+  ],
+  "code_sha256": {
+    "analysis.py": "0b755a3f0424884f5847974b8bc9802da8bf46230c6d4085a16344b6fcf1284f"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

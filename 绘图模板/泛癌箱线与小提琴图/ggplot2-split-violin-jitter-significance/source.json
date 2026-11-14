@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-split-violin-jitter-significance",
+  "title": "分裂小提琴图展示病例与对照组多基因表达分布及显著性检验",
+  "kind": "plot",
+  "plot_type": "泛癌箱线与小提琴图",
+  "language": "R",
+  "tags": [
+    "GeomSplitViolin",
+    "分裂小提琴图",
+    "Wilcoxon检验",
+    "多基因比较",
+    "ggplot2"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "m11.R（自定义 GeomSplitViolin 分裂小提琴、内嵌箱线图与 Wilcoxon 显著性比较）",
+    "author_attribution": "本地教学脚本（m11.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "m11.R",
+      "sha256": "c2090a5de55d937e7abc4f8616829938bbc5f7c4eeaed82048d553169bb3d412",
+      "lines": [
+        1,
+        309
+      ],
+      "role": "提取自定义 GeomSplitViolin 几何对象与多基因病例-对照分布比较图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/expr_matrix.rds",
+      "object": "matrix",
+      "requirements": "基因 x 样本表达矩阵",
+      "evidence": "源码多基因表达分布比较"
+    },
+    {
+      "path": "Data/sample_group.rds",
+      "object": "data.frame",
+      "requirements": "含 Sample 与 Group（Control/Treat）列",
+      "evidence": "源码分组映射"
+    },
+    {
+      "path": "Data/target_genes.txt",
+      "object": "character",
+      "requirements": "待比较基因清单",
+      "evidence": "源码目标基因集合"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "reshape2",
+      "tested_version": "1.4.5",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "ggpubr",
+      "tested_version": "0.6.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；Group 为二分组（Control/Treat）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/split_violin_gene_expression.pdf",
+      "content": "病例与对照左右半侧对称分裂小提琴及 Wilcoxon 检验图"
+    }
+  ],
+  "adaptation": [
+    "修复 ggplot2 4.0 ggproto linewidth 参数与 AnnotationDbi/dplyr 同名冲突，避免 select 遮蔽。",
+    "将宽表转长表及因子排序统一采用 dplyr + melt 线性管道。"
+  ],
+  "code_sha256": {
+    "plot.R": "4401e496f64a07efbe4acf49c3eb807a6c4cdd2d792ca631f8fa25c5c6ce82a8"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla) + synthetic 85 samples x 6 genes",
+      "date": "2026-11-14",
+      "notes": "已运行并渲染 PNG 核验左右半小提琴与星号标注。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

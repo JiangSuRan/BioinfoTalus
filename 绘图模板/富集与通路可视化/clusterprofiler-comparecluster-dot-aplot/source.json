@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "clusterprofiler-comparecluster-dot-aplot",
+  "title": "多亚群 compareCluster 富集网络图与顶部细胞计数对齐气泡图（aplot + enrichplot）",
+  "kind": "plot",
+  "plot_type": "富集与通路可视化",
+  "language": "R",
+  "tags": [
+    "compareCluster",
+    "enrichplot",
+    "aplot",
+    "emapplot",
+    "dotplot",
+    "多亚群富集"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc9：多个细胞类型富集占比.txt（74–91 行 emapplot/dotplot + 117–142 行 aplot 顶部细胞计数叠加气泡图）",
+    "author_attribution": "本地教学脚本（sc9：多个细胞类型富集占比.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc9：多个细胞类型富集占比.txt",
+      "sha256": "6f62b7767c5b83eb57930b8bee43ae277cf34018034f1501c57e02c9dc26af72",
+      "lines": [
+        74,
+        142
+      ],
+      "role": "绘制亚群间 GO/KEGG 富集相似网络、自定义双色渐变点图及顶部叠加亚群细胞数的对齐复合图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/compare_cluster_go.rds",
+      "object": "compareClusterResult",
+      "requirements": "clusterProfiler::compareCluster 输出对象（Cluster 名与 counts_df 一致）",
+      "evidence": "源码 xx / kk <- compareCluster(...)"
+    },
+    {
+      "path": "Data/cluster_counts.rds",
+      "object": "data.frame",
+      "requirements": "含 cluster 与 n_cells 两列的各亚群细胞数量统计表",
+      "evidence": "源码 sc_dim_count 提供每群细胞数作为 insert_top 顶栏"
+    }
+  ],
+  "packages": [
+    {
+      "name": "DOSE",
+      "tested_version": "4.4.0",
+      "source_version": null
+    },
+    {
+      "name": "enrichplot",
+      "tested_version": "1.30.5",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "aplot",
+      "tested_version": "0.2.9",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；compareCluster 结果包含有效富集条目（>= 2 个亚群或词条）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/comparecluster_emapplot.pdf",
+      "content": "亚群间 GO 词条相似性网络图"
+    },
+    {
+      "path": "results/comparecluster_dot_topcount.pdf",
+      "content": "顶部对齐各亚群细胞数柱状图的富集气泡图"
+    }
+  ],
+  "adaptation": [
+    "以预计算的 cluster_counts.rds（标准 ggplot2 geom_col）替代未广泛安装的 ggsc::sc_dim_count，并通过 aplot::insert_top 实现 X 轴精确对齐。",
+    "保留 pairwise_termsim + emapplot 网络拓扑与双色渐变 dotplot，并将换行计数簇标签清理为纯净簇名后再做对齐。"
+  ],
+  "code_sha256": {
+    "plot.R": "c5d72fc6d51dbb9a47e615b9fecab6b7e34516013fe55fa2c2416925fa3a8e81"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

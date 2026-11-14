@@ -73,7 +73,7 @@
   ],
   "prerequisites": [
     "从项目根运行，Data 与 results 目录已存在；路径在实际适配时就地替换。",
-    "scPRINT 检查点已下载；GPU 显存按模型规模评估（建议 >= 16GB）。"
+    "scPRINT 检查点已下载；需在 CUDA GPU 上运行（建议显存 >= 16GB，脚本已启用 .cuda() 与 FP16 混合精度前向）。"
   ],
   "outputs": [
     {
@@ -97,7 +97,7 @@
   ],
   "adaptation": [
     "将 extract_gene_embeddings 函数拆包为线性脚本，函数体逻辑（model.eval + pred_log_adata=False + Collator/DataLoader + autocast 前向）保留。",
-    "fp16 autocast 简化为 no_grad 推理（CPU 兼容）；逐批 torch.cuda.empty_cache() 删除。",
+    "恢复 CUDA 推理与 torch.autocast('cuda', dtype=torch.float16) 混合精度前向（batch 张量逐批 .cuda() 并转回 float32 均值聚合作细胞表征）；逐批 torch.cuda.empty_cache() 删除。",
     "输出改为基因维均值入 obsm 并落盘 h5ad（源码仅返回数组）。"
   ],
   "limitations": [
@@ -106,13 +106,13 @@
     "模型词表未覆盖基因被静默丢弃；不同 scPRINT 版本检查点嵌入空间不可直接混用。"
   ],
   "code_sha256": {
-    "analysis.py": "3c60635ada2311b9c313902e187f989b93f867273a809e3f465aa095c5826cb2"
+    "analysis.py": "b4665719e5f7d627986e4493e98db4453daf3274aa6f258c16bc0c94b5ba4694"
   },
   "validation": {
     "syntax": {
       "status": "passed",
-      "environment": "python parse check",
-      "date": "2026-11-06"
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
     },
     "synthetic_run": null,
     "reference_comparison": null,

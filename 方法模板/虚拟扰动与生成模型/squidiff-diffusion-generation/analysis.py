@@ -13,8 +13,8 @@ default_args = model_and_diffusion_defaults()
 default_args.update(
     {
         "schedule_sampler": "uniform",
-        "batch_size": 16,
-        "use_fp16": False,
+        "batch_size": 64,
+        "use_fp16": True,
         "gene_size": 5000,
         "output_dim": 512,
         "num_layers": 3,

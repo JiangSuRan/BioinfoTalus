@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "id": "giotto-spatial-network-binspect-hmrf",
+  "title": "Giotto 空间邻近网络构建、BinSpect 空间可变基因检测与 HMRF 空间域分割",
+  "kind": "method",
+  "method_type": "空间差异与域识别",
+  "language": "R",
+  "tags": [
+    "Giotto",
+    "BinSpect",
+    "HMRF",
+    "空间域分割",
+    "Delaunay网络"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "k11 gitto.md（Delaunay 空间网络、binSpect、detectSpatialCorFeats 与 doHMRF）",
+    "author_attribution": "本地教学脚本（k11 gitto.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "k11 gitto.md",
+      "sha256": "dfe64c8d54d7f31dc26f50927585ade03f4a1c4019da32d6b2a51e880bb5d550",
+      "lines": [
+        1,
+        1859
+      ],
+      "role": "提取 Giotto 空间物理网络构建、二值空间自相关检出及隐马尔可夫随机场分域"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/giotto_object.rds",
+      "object": "Giotto",
+      "requirements": "已初始化原始计数与空间位置的 Giotto 对象",
+      "evidence": "源码 giotto 实例"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Giotto",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 Giotto，仅完成 R 语法解析检查（doHMRF 需配置 smfishHmrf Python 后端）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/giotto_hmrf_analyzed.rds",
+      "content": "写入 Leiden 与多 beta HMRF 域注释的 Giotto 对象"
+    },
+    {
+      "path": "results/giotto_binspect_svgs.csv",
+      "content": "BinSpect-kmeans 显著空间可变基因排名表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "Delaunay_network + binSpect + doHMRF(k=6, betas=c(0,10,3))",
+      "basis": "来源代码核心管线参数"
+    }
+  ],
+  "adaptation": [
+    "跳过交互式 X11 绘图，标准化为可复现的矩阵预处理-空间网络-HMRF 线性管道。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 Giotto 及 smfishHmrf 环境）；HMRF 依赖外部 Python 依赖环境。"
+  ],
+  "code_sha256": {
+    "analysis.R": "4538fa5884b99ce1fbaa6336d03968137a7873c249804c69460a73f7f46a8a78"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

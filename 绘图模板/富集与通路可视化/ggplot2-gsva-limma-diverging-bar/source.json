@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-gsva-limma-diverging-bar",
+  "title": "GSVA 通路差异 limma t 值双向发散条形图（零轴反侧黑灰阈值标签 + ggprism）",
+  "kind": "plot",
+  "plot_type": "富集与通路可视化",
+  "language": "R",
+  "tags": [
+    "GSVA",
+    "limma",
+    "发散条形图",
+    "ggprism",
+    "通路差异",
+    "ggplot2"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc9：gsva打分.txt（116–170 行 GSVA + limma t 值双向发散柱状图）",
+    "author_attribution": "本地教学脚本（sc9：gsva打分.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc9：gsva打分.txt",
+      "sha256": "d62ebeca078585a3a4f180f500cab23dffe1cd78fa04e3a4d93d726ff8ee34ca",
+      "lines": [
+        116,
+        170
+      ],
+      "role": "对 limma 差异检验 t 值分方向排序，并在柱状图反侧按显著性阈值绘制黑/灰通路标签"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/gsva_limma_diff.rds",
+      "object": "data.frame",
+      "requirements": "limma::topTable 结果数据框，行名为通路名且含 t 统计量列",
+      "evidence": "源码 dat_plot <- data.frame(id = row.names(Diff), t = Diff$t)"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "stringr",
+      "tested_version": "1.6.0",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "ggprism",
+      "tested_version": "1.0.7",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；输入通路集合同时包含正负向 t 值或非空条目。"
+  ],
+  "outputs": [
+    {
+      "path": "results/gsva_diverging_bar.pdf",
+      "content": "带显著性方向标签的 GSVA 差异发散条形图"
+    }
+  ],
+  "adaptation": [
+    "修复源码索引越界漏洞：当 t < -1 与 t < 0 行数相等时 (low1+1):low0 会触发逆序切片错误，改用 dplyr::filter 条件子集与动态标签颜色映射。",
+    "将废弃 size = 0.5 线宽参数更新为 linewidth = 0.5，并将 guides(fill = F) 改为 guides(fill = 'none')。"
+  ],
+  "code_sha256": {
+    "plot.R": "a276f7df7a36735ef400d5b2db81c1a123fb245b12fff5568304ab1bc660a254"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

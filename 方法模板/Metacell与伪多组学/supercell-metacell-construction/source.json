@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "id": "supercell-metacell-construction",
+  "title": "SuperCell 大规模单细胞图粗粒化 Metacell 构建、纯度评估与样本加权 Seurat 转换",
+  "kind": "method",
+  "method_type": "Metacell与伪多组学",
+  "language": "R",
+  "tags": [
+    "SuperCell",
+    "Metacell",
+    "SCimplify",
+    "样本加权PCA",
+    "百万细胞降维",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc25：Metacell 百万细胞数分析方法.txt（15–119 行图粗粒化 + 157–230 行转入 Seurat 对象与加权 PCA）",
+    "author_attribution": "本地教学脚本（sc25：Metacell 百万细胞数分析方法.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc25：Metacell 百万细胞数分析方法.txt",
+      "sha256": "03832a498148b4ff02d083561555bfcf0d8c71f150fcac471617724f0f62a18e",
+      "lines": [
+        15,
+        230
+      ],
+      "role": "构建单细胞 kNN 图粗粒化至 gamma=20 Metacell、评估亚群纯度并回写加权 PCA 到 Seurat"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本精炼适配，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含 RNA 原始/标准化表达及 celltype 注释列的大规模单细胞对象",
+      "evidence": "源码 GE <- GetAssayData(..., slot = 'counts') -> SCimplify"
+    }
+  ],
+  "packages": [
+    {
+      "name": "SuperCell",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "Matrix",
+      "tested_version": "1.7.5",
+      "source_version": null
+    },
+    {
+      "name": "igraph",
+      "tested_version": "2.3.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标环境已安装 SuperCell。"
+  ],
+  "outputs": [
+    {
+      "path": "results/supercell_obj.rds",
+      "content": "SuperCell 图粗粒化对象（含成员映射、纯度与 JACARD 分配）"
+    },
+    {
+      "path": "results/metacell_seurat.rds",
+      "content": "挂载样本加权 PCA 与 SuperCell 邻接图的 Metacell Seurat 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "SCimplify(gamma = 20, k.knn = 5, n.var.genes = 1000) + supercell_purity(method = 'entropy')",
+      "basis": "每 20 个转录相似细胞聚为 1 个元细胞以压缩计算规模，并利用熵纯度监控跨亚群混合度"
+    },
+    {
+      "setting": "supercell_prcomp(..., supercell_size = meta$size)",
+      "basis": "按元细胞所含真实单细胞数目赋权执行 PCA，避免大小悬殊的元细胞在降维中权等同权导致偏差"
+    }
+  ],
+  "adaptation": [
+    "修复源码空指针故障：原脚本第 175 行 meta 列名为 size，而第 195 行误引用 meta$supercell_size（结果为 NULL），现更正为 supercell_size = meta$size。",
+    "移除源码随机抽取 4000 细胞的硬编码及重复画图段，并将 slot 写法更新为 Seurat v5 GetAssayData(layer = 'counts')。"
+  ],
+  "limitations": [
+    "粗粒化比例 gamma 越大稀疏极稀有细胞群体越易被吞并；针对稀有亚群建议调低 gamma 或提高采样。"
+  ],
+  "code_sha256": {
+    "analysis.R": "625fc851590656d4efeb4345092940f54258fa09dc14fd4d979f0c12cea08573"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

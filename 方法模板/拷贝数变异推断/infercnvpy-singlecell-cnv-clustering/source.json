@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "id": "infercnvpy-singlecell-cnv-clustering",
+  "title": "inferCNVpy 基因组滑动窗口拷贝数变异推断与非整倍体恶变亚群聚类",
+  "kind": "method",
+  "method_type": "拷贝数变异推断",
+  "language": "Python",
+  "tags": [
+    "inferCNVpy",
+    "拷贝数变异",
+    "滑动窗口CNV",
+    "恶性细胞识别",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps20.inferCNVpy.html（infercnv, pca, neighbors, leiden, umap, cnv_score）",
+    "author_attribution": "本地教学脚本（ps20.inferCNVpy.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps20.inferCNVpy.html",
+      "sha256": "32d1c7303720dacd31feec6fd044586cde99118455a8cfb91bbd0ee9ef2cab44",
+      "lines": [
+        1,
+        45043
+      ],
+      "role": "提取基于二倍体对照参考群的 Python 端全基因组 CNV 滑动推断流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_with_genomic_pos.h5ad",
+      "object": "AnnData",
+      "requirements": "var 须包含 chromosome, start, end 坐标且 obs['cell_type'] 含 T_cells/Fibroblasts 二倍体对照群",
+      "evidence": "源码参考基因组位置注入后对象"
+    }
+  ],
+  "packages": [
+    {
+      "name": "infercnvpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 infercnvpy，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/infercnvpy_scored.h5ad",
+      "content": "含 X_cnv、cnv_leiden 与 cnv_score（直接配合 infercnvpy 可视化模板）"
+    },
+    {
+      "path": "results/infercnvpy_cell_scores.csv",
+      "content": "逐细胞 CNV 评分及 CNV 亚簇归纳表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "infercnv(reference_cat=['T_cells','Fibroblasts'], window_size=250, step=1)",
+      "basis": "官方大队列加速版滑动窗口平滑方案，弥补 R 版 inferCNV 耗时高、内存爆炸限制"
+    }
+  ],
+  "adaptation": [
+    "规整输入预处理前置约定，确保产出对象结构直接适配配套 infercnvpy 绘图模板。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 infercnvpy 包）；参考群如混入少量非整倍体污染将显著抬升假阴性基线。"
+  ],
+  "code_sha256": {
+    "analysis.py": "9a2f03aa7398e24f15f3caa43f01e69b3aed6dbc1fba9875d6271832b27b9da8"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "scvelo-phase-stream-paga-velocity-suite",
+  "title": "scVelo 四联 RNA 速率可视化（剪切比例/UMAP 速率流线/相图与 PAGA 速度摘要图）",
+  "kind": "plot",
+  "plot_type": "拟时序轨迹图",
+  "language": "Python",
+  "tags": [
+    "scVelo",
+    "RNA速率流线",
+    "PAGA",
+    "相图",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc29：scvelo和PAGA轨迹.txt & ps18.scvelo.html（四联速率诊断图组合）",
+    "author_attribution": "本地教学脚本（sc29：scvelo和PAGA轨迹.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc29：scvelo和PAGA轨迹.txt",
+      "sha256": "422f0c7d3dc8f4420be62eb05f91729b4ffe4cb482d8cec4e97b93d04ae1fccb",
+      "lines": [
+        1,
+        31
+      ],
+      "role": "提取速率流线、相图与速度定向 PAGA 绘图组合"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "ps18.scvelo.html",
+      "sha256": "b159c274571370dde2784a226728fe53414b53c05a100da635aa7b45b7945860",
+      "lines": [
+        1,
+        45881
+      ],
+      "role": "补全 proportions、driver_gene 相图及潜时间参数"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scvelo_dynamical_fitted.h5ad",
+      "object": "AnnData",
+      "requirements": "已运行 scvelo dynamical 模型（含 velocity_umap, fit_likelihood 与 paga）",
+      "evidence": "与已有 scvelo-dynamical-rna-velocity 衔接"
+    }
+  ],
+  "packages": [
+    {
+      "name": "matplotlib",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scvelo",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 scvelo，仅完成语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scvelo_velocity_paga_suite.pdf",
+      "content": "剪接比例、UMAP 速率流线图、驱动基因相图与定向 PAGA 转移图"
+    }
+  ],
+  "adaptation": [
+    "合并多散点交互展示为 2x2 matplotlib 子图面板并用 savefig 显式保存高分辨率矢量 PDF。"
+  ],
+  "code_sha256": {
+    "plot.py": "098d68838195004a62e69f2e39fe383912c60d3a4faf0d44b7f58f7876e56271"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

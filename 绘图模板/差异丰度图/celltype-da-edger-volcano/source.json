@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "id": "celltype-da-edger-volcano",
+  "title": "Pseudobulk 亚群差异丰度火山图",
+  "kind": "plot",
+  "plot_type": "差异丰度图",
+  "language": "R",
+  "tags": [
+    "差异丰度",
+    "edgeR",
+    "火山图",
+    "ggrepel",
+    "ggplot2",
+    "亚群检验"
+  ],
+  "paper": {
+    "repository": "https://github.com/MarioniLab/hbca.git",
+    "figure": "code/figures/differential_abundance/da_classic.R（HBCA edgeR 伪批量细胞亚群差异丰度火山图 volcano2，104–120 行）",
+    "author_attribution": "Reed et al., Nature Genetics 2024",
+    "doi": "10.1038/s41588-024-01688-9",
+    "revision": "de6824fca1605a75c140ea0c4d3cc412aec234e2"
+  },
+  "source_files": [
+    {
+      "root_label": "hbca",
+      "path": "code/figures/differential_abundance/da_classic.R",
+      "sha256": "fff848a20214d511894a343a974af164797d61c02022ad02fcaf722f0c94be0d",
+      "lines": [
+        104,
+        120
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/celltype_da_results.csv",
+      "object": "data.frame",
+      "requirements": "含 cell_type、logFC、FDR 列（通常来自 edgeR::glmQLFTest 或同类伪批量计数检验输出）",
+      "evidence": "源码 DAIs 数据框列名 logFC、FDR 与 celltype 标签列"
+    }
+  ],
+  "packages": [
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggrepel",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；FDR 无零值（若有极小 p 值需先截断下界）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/celltype_da_volcano.pdf",
+      "content": "标注显著变迁亚群的 log2FC vs -log10(FDR) 火山图"
+    }
+  ],
+  "adaptation": [
+    "保留源码 ggplot2 + ggrepel（FDR < 0.1 自动避让标签）高可扩展方案，去除未安装依赖 EnhancedVolcano 及 HBCA 专属色表，方便直接适配任意单细胞亚群配色。"
+  ],
+  "code_sha256": {
+    "plot.R": "c0cf7698a7beda5f30a4e6e3ef26d22571f896aff28153d5f6ca271f6bdea4a2"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

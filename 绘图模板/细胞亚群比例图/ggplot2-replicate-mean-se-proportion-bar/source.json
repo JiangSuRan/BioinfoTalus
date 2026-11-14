@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-replicate-mean-se-proportion-bar",
+  "title": "生物学重复亚群占比均值±标准误误差棒与样本散点分面柱状图",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "均值标准误",
+    "stat_summary",
+    "生物学重复",
+    "分面柱状图",
+    "样本散点"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "d:/books/sc7：比例图和细胞亚群变化.txt（多重复样本 mean±SE 比例分面柱图，78–107 行）",
+    "author_attribution": "本地教学脚本（sc7：比例图和细胞亚群变化）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_books",
+      "path": "sc7：比例图和细胞亚群变化.txt",
+      "sha256": null,
+      "lines": [
+        78,
+        107
+      ],
+      "role": "样本级亚群比例计算与 stat_summary 均值±标准误柱状散点分面图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/replicate_celltype_metadata.rds",
+      "object": "data.frame",
+      "requirements": "单细胞元数据，含 sample（生物学重复样本 ID）、group（实验分组）、cell_type（细胞亚群）三列",
+      "evidence": "源码 table(celltype.3, orig.ident) 归一化样本比例并按 group×celltype 分面汇总"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "forcats",
+      "tested_version": "1.0.1",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；每个 sample 唯一对应一个 group。"
+  ],
+  "outputs": [
+    {
+      "path": "results/replicate_mean_se_proportion_bar.pdf",
+      "content": "按细胞亚群分面的分组均值±标准误柱状图及单样本散点图"
+    }
+  ],
+  "adaptation": [
+    "将硬编码 x4$group = rep(c('c','c','t','t'), 7) 及错位列名赋值替换为基于 sample→group 映射表的显式连接，并保留 table/prop.table 的零计数样本保护语义。",
+    "使用 ggplot2::mean_se 替代手写 top/bottom 辅助函数。"
+  ],
+  "code_sha256": {
+    "plot.R": "6f7e0c910513c26815dd1fdfd6c87a3fb1d51726760f4136dd8e54f1f795c927"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验分面、柱高、误差棒与单样本散点重叠无误；不代表真实队列验证。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

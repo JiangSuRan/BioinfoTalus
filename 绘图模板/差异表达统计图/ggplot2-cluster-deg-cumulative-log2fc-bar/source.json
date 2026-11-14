@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-cluster-deg-cumulative-log2fc-bar",
+  "title": "单细胞多亚群差异基因双向累计 log2FC 与上/下调数目统计条形图",
+  "kind": "plot",
+  "plot_type": "差异表达统计图",
+  "language": "R",
+  "tags": [
+    "单细胞差异基因",
+    "累计log2FC",
+    "双向条形图",
+    "FindAllMarkers",
+    "ggplot2"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc8：差异基因.txt（按亚群统计显著上下调基因累计 log2FC 双向柱状图）",
+    "author_attribution": "本地教学脚本（sc8：差异基因.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc8：差异基因.txt",
+      "sha256": "aa96791bdfc40a99826c53b7900d6b305ee09af276a6f1f8433684ad837bf158",
+      "lines": [
+        1,
+        86
+      ],
+      "role": "提取单细胞各亚群显著上下调基因累计 log2FC 排序双向柱状图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cluster_markers.rds",
+      "object": "data.frame",
+      "requirements": "FindAllMarkers 输出表，含 cluster, avg_log2FC, p_val_adj 列",
+      "evidence": "源码 Seurat FindAllMarkers 结果框"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "forcats",
+      "tested_version": "1.0.1",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cluster_deg_cumulative_log2fc.pdf",
+      "content": "按净累计效应排序的多亚群双向累计 log2FC 与显著基因数标注条形图"
+    }
+  ],
+  "adaptation": [
+    "补充上下调基因数文本标签及零轴分割线，按净累计 log2FC 自动排序各亚群。"
+  ],
+  "code_sha256": {
+    "plot.R": "de76f3a9a4e04893f590846c0d62b7918e44f4b00ea3cd0effe8a5f98586bc6a"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla) + synthetic 7 clusters differential expression table",
+      "date": "2026-11-14",
+      "notes": "已运行并渲染 PNG 核验条形方向排序与数目标签。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

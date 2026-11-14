@@ -1,71 +1,77 @@
-## dbDiffusion VAE 潜空间 classifier-free 引导扩散单细胞生成采样
-import os
+## dbDiffusion VAE 潜空间 classifier-free 引导扩散采样、表达解码与真实扰动评估
+import sys
 
 import numpy as np
-import torch as th
+import pandas as pd
+import scanpy as sc
+import scipy.sparse as sp
+from scipy.stats import pearsonr
+import torch
 
-import sys
 sys.path.append("functions/diffusion/classifier_free_v3_no_saver")
-from guided_diffusion import dist_util, logger
-from guided_diffusion.script_util_classifier_free_v3_acc import (
+from VAE.VAE_model import VAE
+from guided_diffusion.script_util_classifier_free_v3 import (
     create_model_and_diffusion,
     model_and_diffusion_defaults,
-    args_to_dict,
 )
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-device = th.device("cuda" if th.cuda.is_available() else "cpu")
+device = torch.device("cuda")
+torch.manual_seed(0)
 
-# 固定随机种子
-random_seed = 1234
-np.random.seed(random_seed)
-th.manual_seed(random_seed)
+adata = sc.read_h5ad("Data/perturb_lognorm.h5ad")
+emb_dict = np.load("Data/emb_dict.npy", allow_pickle=True).item()
+target_pert = "ZC3H13"
+ctrl_label = "non-targeting"
 
-# 类别（细胞态/亚群）嵌入：VAE 编码后的潜向量，复制为批次维度
-class_emb_for_one_class = np.load("Data/class_emb_target.npy")
-pert_name_for_one_class = "target_state"
-folder_path = "results/"
-neighbor = "ref"
+vae = VAE(num_genes=adata.n_vars, device=str(device), hidden_dim=128)
+vae.load_state_dict(torch.load("Data/model/vae.pt", map_location=device, weights_only=False))
+vae.to(device).eval()
 
-args_defaults = model_and_diffusion_defaults()
-args_defaults.update(
-    {
-        "num_samples": 30000,
-        "batch_size": 10000,
-        "eta": 1.5,
-        "all_mask": False,
-        "model_path": "Data/model/trained_Unet_fullLoop800000_v3.pt",
-        "sample_dir": f"{folder_path}/{neighbor}_v3_eta1.5_30000gen.npz",
-    }
-)
-args = args_defaults
+cfg = model_and_diffusion_defaults()
+cfg["input_dim"] = 128
+cfg["class_input_dim"] = len(emb_dict[target_pert])
+cfg["eta"] = 1.5
+cfg["all_mask"] = False
 
-class_emb = th.from_numpy(class_emb_for_one_class)
-class_emb_to_use = class_emb.unsqueeze(0).repeat(args["batch_size"], 1).to(th.float32).to(dist_util.dev())
-args["class_input_dim"] = class_emb_to_use.shape[1]
+model, diffusion = create_model_and_diffusion(**cfg)
+model.load_state_dict(torch.load("Data/model/trained_Unet_fullLoop800000_v3.pt", map_location=device, weights_only=False))
+model.to(device).eval()
 
-dist_util.setup_dist()
-logger.configure(dir="results/sample_logs")
+# classifier-free 采样内部复制条件拼接会限制单批容量，按 100 细胞分批累计采样潜向量后统一 VAE 解码
+n_samples = 5000
+safe_batch = 100
+emb_vec = np.asarray(emb_dict[target_pert], dtype=np.float32)
+latent_chunks = []
+got = 0
+while got < n_samples:
+    b = min(safe_batch, n_samples - got)
+    cond = torch.from_numpy(emb_vec).unsqueeze(0).repeat(b, 1).to(device)
+    with torch.no_grad():
+        sample, _ = diffusion.p_sample_loop(model, (b, 128), cond, clip_denoised=False, model_kwargs={})
+    latent_chunks.append(sample.cpu().numpy())
+    got += b
 
-model, diffusion = create_model_and_diffusion(**args_to_dict(args, model_and_diffusion_defaults().keys()))
-model.load_state_dict(dist_util.load_state_dict(args["model_path"], map_location="cpu"))
-model.to(dist_util.dev())
-model.eval()
+latent = np.concatenate(latent_chunks, axis=0)
+decoded_chunks = []
+for i in range(0, len(latent), 256):
+    z = torch.tensor(latent[i:i + 256], dtype=torch.float32, device=device)
+    with torch.no_grad():
+        decoded_chunks.append(vae.forward(z, return_decoded=True).cpu().numpy())
 
-# DDIM 采样（加速版）：以类别嵌入条件生成 VAE 潜空间样本
-all_cells = []
-while len(all_cells) * args["batch_size"] < args["num_samples"]:
-    sample_fn = diffusion.p_sample_loop if not args["use_ddim"] else diffusion.ddim_sample_loop
-    sample, traj = sample_fn(
-        model,
-        (args["batch_size"], args["input_dim"]),
-        class_emb_to_use,
-        clip_denoised=args["clip_denoised"],
-        model_kwargs={},
-        start_time=diffusion.betas.shape[0],
-        accel_flag=True,
-    )
-    all_cells.append(sample.cpu().numpy())
+gen_expr = np.concatenate(decoded_chunks, axis=0)
+np.save("results/ZC3H13_generated.npy", gen_expr)
 
-arr = np.concatenate(all_cells, axis=0)
-np.savez(args["sample_dir"], cell_gen=arr)
+X = adata.X.toarray() if sp.issparse(adata.X) else np.asarray(adata.X)
+labels = adata.obs["perturbation"].astype(str).to_numpy()
+ctrl_mean = X[labels == ctrl_label].mean(axis=0)
+real_mean = X[labels == target_pert].mean(axis=0)
+gen_mean = gen_expr.mean(axis=0)
+
+r_mean = pearsonr(real_mean, gen_mean)[0]
+r_eff = pearsonr(real_mean - ctrl_mean, gen_mean - ctrl_mean)[0]
+pd.DataFrame([{
+    "target": target_pert,
+    "n_generated": gen_expr.shape[0],
+    "pearson_mean_expr": float(r_mean),
+    "pearson_effect_size": float(r_eff),
+}]).to_csv("results/dbdiffusion_eval_metrics.csv", index=False)

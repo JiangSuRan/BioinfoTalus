@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "id": "milor-nhood-graph-and-beeswarm-boxplot",
+  "title": "Milo 邻域差异丰度 UMAP 图与亚群蜂群箱线组合图",
+  "kind": "plot",
+  "plot_type": "差异丰度图",
+  "language": "R",
+  "tags": [
+    "miloR",
+    "差异丰度",
+    "beeswarm",
+    "箱线图",
+    "邻域图",
+    "亚群可视化"
+  ],
+  "paper": {
+    "repository": "https://github.com/KeiNishim/MPA_scRNAseq.git",
+    "figure": "scripts/Fig.2_3 Monocyte milo.R（Fig 2C 邻域差异丰度 UMAP 与 Fig 2D 蜂群+箱线叠加图，40–54 行）",
+    "author_attribution": "Nishide et al., Nature Communications 2023",
+    "doi": "10.1038/s41467-023-41328-0",
+    "revision": "b525076ebd886e7ff95ef8c2118e04020432415f"
+  },
+  "source_files": [
+    {
+      "root_label": "MPA_scRNAseq",
+      "path": "scripts/Fig.2_3 Monocyte milo.R",
+      "sha256": "c1cb08927cdc91cca50dd8f337f49cb9f2ce61cefde9f8020c4d522bfa6832da",
+      "lines": [
+        40,
+        54
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/milo_object.rds",
+      "object": "Milo",
+      "requirements": "已完成 buildNhoodGraph 与 UMAP 降维；colData 含 cell_type 亚群注释列",
+      "evidence": "源码 plotNhoodGraphDA(traj_milo, da_results, layout=\"UMAP\") 与 annotateNhoods(..., coldata_col=\"seurat_clusters\") 用法"
+    },
+    {
+      "path": "Data/milo_da_results.rds",
+      "object": "data.frame",
+      "requirements": "testNhoods 返回的邻域检验结果表，含 logFC、SpatialFDR、Nhood 列",
+      "evidence": "源码 Fig 2C/2D 传入 testNhoods 输出表 da_results"
+    }
+  ],
+  "packages": [
+    {
+      "name": "miloR",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；上游已运行 miloR::buildNhoodGraph 与 miloR::testNhoods。"
+  ],
+  "outputs": [
+    {
+      "path": "results/milo_nhood_umap.pdf",
+      "content": "Milo 邻域空间差异丰度 UMAP 网络图"
+    },
+    {
+      "path": "results/milo_da_beeswarm.pdf",
+      "content": "叠加中位四分位箱线图与零线参考的亚群差异丰度蜂群图"
+    }
+  ],
+  "adaptation": [
+    "将源脚本 seurat_clusters 与单核/CD8 硬编码因子水平泛化为 cell_type 列，移除交互式打印、循环外均值统计与 Seurat 预处理。",
+    "输出统一写入 results/ 目录的 PDF 文件，保持红白蓝对称色阶、无离群点箱线叠加与虚线零基线。"
+  ],
+  "code_sha256": {
+    "plot.R": "40c05238a25d091e34e6a40ed54e28c02a3aa3952cd7e606724b2baa44ac01d9"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

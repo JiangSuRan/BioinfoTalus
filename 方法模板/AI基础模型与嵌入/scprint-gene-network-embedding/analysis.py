@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from scprint import scPrint
 
-model = scPrint.load_from_checkpoint("Data/scprint_checkpoint.ckpt")
+model = scPrint.load_from_checkpoint("Data/scprint_checkpoint.ckpt").cuda()
 adata = sc.read_h5ad("Data/cells.h5ad")
 
 model.eval()
@@ -28,17 +28,17 @@ col = Collator(
 )
 dataloader = DataLoader(adataset, collate_fn=col, batch_size=64, num_workers=8, shuffle=False)
 
-# 前向推断取 gene_embedding 输出 (n_cells, n_genes, d_model)，基因维取均值聚合为细胞级表征
+# GPU FP16 前向推断取 gene_embedding 输出 (n_cells, n_genes, d_model)，基因维取均值聚合为细胞级表征
 all_embeddings = []
-with torch.no_grad():
+with torch.no_grad(), torch.autocast("cuda", dtype=torch.float16):
     for batch in dataloader:
         output = model(
-            gene_pos=batch["genes"],
-            expression=batch["x"],
-            req_depth=batch["depth"],
+            gene_pos=batch["genes"].cuda(),
+            expression=batch["x"].cuda(),
+            req_depth=batch["depth"].cuda(),
             get_gene_emb=True,
         )
-        all_embeddings.append(output["gene_embedding"].cpu().numpy())
+        all_embeddings.append(output["gene_embedding"].float().cpu().numpy())
 
 embeddings = np.concatenate(all_embeddings, axis=0)
 adata.obsm["X_scprint"] = embeddings.mean(axis=1)

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "slingshot-lineage-curve-and-pseudotime-density",
+  "title": "Slingshot 降维多谱系曲线拟合与拟时序亚群密度分布联图",
+  "kind": "plot",
+  "plot_type": "拟时序轨迹图",
+  "language": "R",
+  "tags": [
+    "Slingshot",
+    "拟时序曲线",
+    "UMAP",
+    "密度图",
+    "多谱系分支"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "p13：轨迹分析-slingshot  .txt（UMAP 轨迹主曲线与 Lineage1..K 亚群拟时序密度比较图）",
+    "author_attribution": "本地教学脚本（p13：轨迹分析-slingshot  .txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "p13：轨迹分析-slingshot  .txt",
+      "sha256": "fca0f7668ba82f50074b084fce3d229e302cec2d30afb0bdb5fa356ae553711d",
+      "lines": [
+        1,
+        140
+      ],
+      "role": "提取 Slingshot 降维平滑曲线叠加散点图与亚群伪时间密度分布比较"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/slingshot_sce.rds",
+      "object": "SingleCellExperiment",
+      "requirements": "含 Slingshot 计算结果、celltype 列与 UMAP 降维",
+      "evidence": "与已有 slingshot-multilineage-pseudotime 产出无缝衔接"
+    }
+  ],
+  "packages": [
+    {
+      "name": "SingleCellExperiment",
+      "tested_version": "1.32.0",
+      "source_version": null
+    },
+    {
+      "name": "slingshot",
+      "tested_version": "2.7.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "reshape2",
+      "tested_version": "1.4.5",
+      "source_version": null
+    },
+    {
+      "name": "RColorBrewer",
+      "tested_version": "1.1.3",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；输入 SCE 已执行 slingshot() 并保留 UMAP。"
+  ],
+  "outputs": [
+    {
+      "path": "results/slingshot_curves_and_density.pdf",
+      "content": "UMAP 多分支轨迹主曲线与各谱系拟时序核密度联图"
+    }
+  ],
+  "adaptation": [
+    "修复 slingCurves(..., as.df = TRUE) 沿用原始降维列名而非固定 Dim1/Dim2 导致的映射报错，统一显式重命名。",
+    "改用纯 ggplot2 geom_density + facet_wrap 替代本地未安装 dittoSeq::dittoPlot 的多谱系密度图。"
+  ],
+  "code_sha256": {
+    "plot.R": "30e21185c1be99e623dbac410a63e2a04e505121dc471ff55623a06af9594637"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla) + synthetic 240 cells bifurcating Slingshot SCE",
+      "date": "2026-11-14",
+      "notes": "修复 slingCurves 列名问题后通过运行并完成 PNG 视觉检查。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

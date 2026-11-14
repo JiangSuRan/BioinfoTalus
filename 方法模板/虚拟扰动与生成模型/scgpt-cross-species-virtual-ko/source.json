@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "id": "scgpt-cross-species-virtual-ko",
+  "title": "scGPT 跨物种小鼠同源基因投影与零样本虚拟基因敲除细胞影响排序",
+  "kind": "method",
+  "method_type": "虚拟扰动与生成模型",
+  "language": "Python",
+  "tags": [
+    "scGPT",
+    "跨物种映射",
+    "小鼠同源基因",
+    "零样本虚拟敲除",
+    "Token消融",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/bowang-lab/scGPT",
+    "figure": "cpu_07_小鼠虚拟敲除(1).ipynb + gpu_07_小鼠虚拟敲除_GPU(1).ipynb",
+    "author_attribution": "本地教学脚本 (xnqc/cpu_07_小鼠, gpu_07_小鼠)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_07_小鼠虚拟敲除(1).ipynb",
+      "sha256": "9f3c54f7d72474ffceb273a20bf95d3816873f5544ecefc3299ae7fc48084737",
+      "lines": [
+        1,
+        628
+      ],
+      "role": "小鼠→人类同源映射、单次分箱 Token 缓存与删去目标基因 Token 零样本虚拟敲除"
+    },
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/gpu_07_小鼠虚拟敲除_GPU(1).ipynb",
+      "sha256": "bbd00f8f4d6c2b700f5e86a43998d3e20a765189de7b0462cca9ba5e8f826f5f",
+      "lines": [
+        1,
+        631
+      ],
+      "role": "CUDA 加速大细胞量版本（与 CPU 版仅设备及细胞上限差异）"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本合并去重入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/mouse_cells.h5ad 与 Data/mouse_to_human_orthologs.tsv",
+      "object": "小鼠 AnnData 与小鼠-人类同源表",
+      "requirements": "adata.obs 含 cell_type；同源表前两列为小鼠符号与人类符号",
+      "evidence": "源码 load_orthologs 与 map_to_human 推断"
+    },
+    {
+      "path": "Data/scgpt_human/{vocab.json, args.json, best_model.pt}",
+      "object": "人类预训练 scGPT 权重",
+      "requirements": "TransformerModel 架构参数与检查点匹配",
+      "evidence": "源码 load_scgpt_human 推断"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scgpt",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "torch",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "需安装 scgpt（支持 FlashAttention）并在 CUDA GPU 上运行，提供人类预训练模型目录与同源基因映射表；本机仅完成 Python 语法校验。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scgpt_mouse_ko_cell_shifts.csv",
+      "content": "逐细胞虚拟敲除 <cls> 表征 L2 偏移量及所属细胞类型"
+    },
+    {
+      "path": "results/scgpt_mouse_ko_ranking.tsv",
+      "content": "多候选小鼠基因平均敲除扰动影响强度排序表"
+    },
+    {
+      "path": "results/scgpt_mouse_ko_umap.h5ad",
+      "content": "带 X_scGPT 嵌入与首基因 ko_shift 的 UMAP AnnData"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "预缓存分箱 tokens (n_bins=51, max_len=1200) 后删掉 drop_gene_id 重新编码",
+      "basis": "来源 build_tokens/encode_cells 设计；固定非零分箱边界确保基线与敲除仅差该基因本身"
+    },
+    {
+      "setting": "全量细胞 CUDA 推理（batch_size=128, use_fast_transformer=True, torch.autocast FP16）",
+      "basis": "移除 cpu_07 教学降采样上限（300/800）及 Wqkv.->in_proj_ CPU 兼容分支，在 GPU 上按 128 细胞分批混合精度前向"
+    }
+  ],
+  "adaptation": [
+    "精简为仅 GPU 版本，移除 CPU 兼容分支与教学细胞数上限，保留同源映射、单次分箱缓存、Token 消融与细胞类型 KO 偏移统计输出，并对接 ko-forward-reverse-benchmark-plots。"
+  ],
+  "limitations": [
+    "仅完成 py_compile 语法解析核验，未在本机执行 scGPT 模型编码；大写兜底对部分复杂同源多对多基因可能遗漏。"
+  ],
+  "code_sha256": {
+    "analysis.py": "0063029ffadcc1381b98934c015ff30d461edea30558e163a6d296e33f1a00d4"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

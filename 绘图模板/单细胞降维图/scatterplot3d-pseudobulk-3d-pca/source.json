@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "id": "scatterplot3d-pseudobulk-3d-pca",
+  "title": "Pseudobulk 样本×亚群平均表达三维 PCA 散点图（scatterplot3d + 三面网格）",
+  "kind": "plot",
+  "plot_type": "单细胞降维图",
+  "language": "R",
+  "tags": [
+    "3D PCA",
+    "scatterplot3d",
+    "addgrids3d",
+    "Pseudobulk",
+    "亚群降维",
+    "三维散点图"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "d:/books/sc7：比例图和细胞亚群变化_三维PCA.txt（Pseudobulk 3D PCA，24–60 行）与 d:/books/huage.3D.plot.R（addgrids3d，30–124 行）",
+    "author_attribution": "本地教学脚本（sc7：比例图和细胞亚群变化）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_books",
+      "path": "sc7：比例图和细胞亚群变化_三维PCA.txt",
+      "sha256": null,
+      "lines": [
+        24,
+        60
+      ],
+      "role": "Pseudobulk PCA 计算与 scatterplot3d 主绘图"
+    },
+    {
+      "root_label": "local_books",
+      "path": "huage.3D.plot.R",
+      "sha256": "2ce9d6171d9a3e670638569135f7213e84f97ef977b53f640b5473ba8aea0007",
+      "lines": [
+        30,
+        124
+      ],
+      "role": "addgrids3d 三面坐标网格辅助绘制函数"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/pseudobulk_avg_expr.rds",
+      "object": "matrix",
+      "requirements": "基因×（样本_亚群）数值矩阵，列名与 pseudobulk_pca_meta$id 对应",
+      "evidence": "源码 AverageExpression(sc.imm, add.ident='new.celltype.2')$RNA 提取后传入 prcomp(t(x))"
+    },
+    {
+      "path": "Data/pseudobulk_pca_meta.rds",
+      "object": "data.frame",
+      "requirements": "样本×亚群组合元信息表，至少含 id、group（决定点形）、cell_type（决定颜色）三列",
+      "evidence": "替代源码硬编码 rep('GF', 9) 与 strsplit 推断分组/亚群"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "forcats",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scatterplot3d",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；上游已通过 Seurat::AggregateExpression 或 AverageExpression 按样本×亚群聚合平均表达量。"
+  ],
+  "outputs": [
+    {
+      "path": "results/pseudobulk_3d_pca.pdf",
+      "content": "按实验分组编码点形、按细胞亚群着色并带 xy/xz/yz 背景网格的三维 PCA 散点图"
+    }
+  ],
+  "adaptation": [
+    "将外接 source('huage.3D.plot.R') 的 addgrids3d 内联并修复 R 4.x 中 grid 向量长度大于 1 时 grid == TRUE 触发逻辑长度报错的问题（改为 identical(grid, TRUE)）。",
+    "将硬编码 rep('GF', 9) 等固定行数向量替换为基于 pseudobulk_pca_meta 的名称查表映射（shape_palette / color_palette）。"
+  ],
+  "code_sha256": {
+    "plot.R": "f97438430e14951fd0c9e2fc2e8046271f8040667560aacc52eb6a974c02aa51"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

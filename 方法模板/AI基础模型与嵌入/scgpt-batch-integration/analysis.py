@@ -56,15 +56,19 @@ tokenized = tokenize_and_pad_batch(
     pad_value=-2,
 )
 
-# 加载预训练 Transformer，取 <cls> token 输出作为细胞嵌入
-model = scgpt.load_pretrained(model_dir, arch_args={"n_interval": 51})
+# 加载预训练 Transformer，分批迁移 GPU 并以 FP16 推理取 <cls> token 输出作为细胞嵌入
+model = scgpt.load_pretrained(model_dir, arch_args={"n_interval": 51}).to("cuda")
 model.eval()
 
 src = torch.tensor(tokenized["genes"], dtype=torch.int64)
 values = torch.tensor(tokenized["values"], dtype=torch.float32)
-src_key_padding_mask = src.eq(vocab["<pad>"])
-with torch.no_grad():
-    output_dict = model(src, values, src_key_padding_mask=src_key_padding_mask, CLS=True)
-    adata.obsm["X_scGPT"] = output_dict["cell_embs"].cpu().numpy()
+embs = []
+with torch.no_grad(), torch.autocast("cuda", dtype=torch.float16):
+    for i in range(0, src.shape[0], 64):
+        s = src[i:i + 64].to("cuda")
+        v = values[i:i + 64].to("cuda")
+        output_dict = model(s, v, src_key_padding_mask=s.eq(vocab["<pad>"]), CLS=True)
+        embs.append(output_dict["cell_embs"].float().cpu().numpy())
 
+adata.obsm["X_scGPT"] = np.concatenate(embs, axis=0)
 adata.write_h5ad("results/scgpt_integrated.h5ad")

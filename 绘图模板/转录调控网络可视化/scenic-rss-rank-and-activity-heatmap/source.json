@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "scenic-rss-rank-and-activity-heatmap",
+  "title": "SCENIC 调控子特异性 RSS 排名散点与 Regulon 活性分组热图",
+  "kind": "plot",
+  "plot_type": "转录调控网络可视化",
+  "language": "R",
+  "tags": [
+    "SCENIC",
+    "RSS",
+    "Regulon",
+    "ggrepel",
+    "ComplexHeatmap",
+    "转录因子"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc13单细胞转录调控网络分析SCENIC_画图  .txt（61–92 行 RSS 排名散点 + 113–126 行细胞平均活性 Z-score 热图）",
+    "author_attribution": "本地教学脚本（sc13单细胞转录调控网络分析SCENIC_画图  .txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc13单细胞转录调控网络分析SCENIC_画图  .txt",
+      "sha256": "dc5ea48db39ed5bdea05f2be9a0d59d61a3f5edd605d5ff4a594d8995f245167",
+      "lines": [
+        61,
+        126
+      ],
+      "role": "跨细胞类型绘制 Top 特异性 TF 的 RSS 排名斜率图及分组平均 Regulon 活性 ComplexHeatmap"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/rss_matrix.rds",
+      "object": "matrix",
+      "requirements": "行名为 Regulon、列名为 celltype 的 SCENIC 调控子特异性指数（RSS）矩阵",
+      "evidence": "源码 B_rss <- as.data.frame(rss)"
+    },
+    {
+      "path": "Data/regulon_auc.rds",
+      "object": "matrix",
+      "requirements": "行为 Regulon、列为细胞条码的 AUC 活性矩阵",
+      "evidence": "源码 getAUC(regulonAUC)"
+    },
+    {
+      "path": "Data/cell_meta.rds",
+      "object": "data.frame",
+      "requirements": "行名为细胞条码、含 celltype 列的元数据框",
+      "evidence": "源码 cellInfo[colnames(regulonAUC), 'celltype.3']"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "ggrepel",
+      "tested_version": "0.9.8",
+      "source_version": null
+    },
+    {
+      "name": "cowplot",
+      "tested_version": "1.2.0",
+      "source_version": null
+    },
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": "2.25.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；Regulon AUC 列名与 cell_meta 行名对齐。"
+  ],
+  "outputs": [
+    {
+      "path": "results/scenic_rss_rank_panels.pdf",
+      "content": "各细胞类型 Top 特异性 Regulon RSS 排序注释多联图"
+    },
+    {
+      "path": "results/scenic_regulon_activity_heatmap.pdf",
+      "content": "细胞类型平均 Regulon 活性行方向 Z-score 聚类热图"
+    }
+  ],
+  "adaptation": [
+    "将源码固定取前 3 个面板 rssRanklist[[1..3]] 与前 6/80 行硬编码切片改为动态 length/min(6, nrow) 边界计算，防止 Regulon 或亚群数偏少时报错或引入 NA。",
+    "直接基于上游导出的矩阵绘制，解除对未装 SCENIC 主包的运行绑定；在行均值聚合前自动过滤零方差行以确保 scale 不产生 NaN。"
+  ],
+  "code_sha256": {
+    "plot.R": "aa0b28a4366c0635d340de5dbc11b61f73cc96340e92789771b7c5dc6cc9bcfc"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "id": "gseapy-diverging-enrichment-map-suite",
+  "title": "GSEApy 富集气泡图、发散 NES 条形图与通路 Jaccard 重叠网络图",
+  "kind": "plot",
+  "plot_type": "富集与通路可视化",
+  "language": "Python",
+  "tags": [
+    "GSEApy",
+    "富集气泡图",
+    "EnrichmentMap",
+    "Jaccard网络",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "ps12.GSEApy：python中的通路富集.html（dotplot 与 networkx Jaccard 重叠网络图）",
+    "author_attribution": "本地教学脚本（ps12.GSEApy：python中的通路富集.html）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "ps12.GSEApy：python中的通路富集.html",
+      "sha256": "c4e0ea27478c80293fdc23565abdb1078d38e8e81059ad786db948e60688f39f",
+      "lines": [
+        1,
+        45265
+      ],
+      "role": "提取 GSEApy 富集点图与基于 Jaccard 系数的功能网络图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/gseapy_enrichment_results.csv",
+      "object": "CSV",
+      "requirements": "GSEApy Enrichr/Prerank 导出表，含 Term, Gene_set, Adjusted P-value, Overlap/Genes",
+      "evidence": "源码 GSEApy res2d 表"
+    }
+  ],
+  "packages": [
+    {
+      "name": "gseapy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "matplotlib",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "networkx",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 gseapy，仅完成语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/gseapy_enrichment_dotplot.pdf",
+      "content": "Top 15 富集条目 FDR 与覆盖比例气泡图"
+    },
+    {
+      "path": "results/gseapy_enrichment_map_network.pdf",
+      "content": "Kamada-Kawai 布局的通路基因重叠网络图"
+    }
+  ],
+  "adaptation": [
+    "将内联 log10 导入表达式改为向量化 np.log10 并显式导出两幅独立矢量 PDF。"
+  ],
+  "code_sha256": {
+    "plot.py": "d815a10f511e48c0d9eca29b28e4f86275750243e16b571246e678ce83ae0628"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "id": "pheatmap-tissue-subtype-proportion-heatmap",
+  "title": "多器官亚群比例归一度热图（含谱系注释与分块间隔）",
+  "kind": "plot",
+  "plot_type": "组织偏好热图",
+  "language": "R",
+  "tags": [
+    "pheatmap",
+    "器官富集",
+    "亚群比例",
+    "谱系注释",
+    "分段色阶"
+  ],
+  "paper": {
+    "repository": "https://github.com/lilab2022/human_embryo.git",
+    "figure": "fig1.R / fig2.R（Cell 2023 Fig 1F / Fig 2E 多器官×全亚群分布比例热图，270–357 与 220–300 行）",
+    "author_attribution": "Wang et al., Cell 2023",
+    "doi": "10.1016/j.cell.2023.08.019",
+    "revision": "74a824b1d7dac0a9533126d410dd09413057c459"
+  },
+  "source_files": [
+    {
+      "root_label": "human_embryo",
+      "path": "fig1.R",
+      "sha256": "2f24aa5c7f4941047a8bfe712dc27ae2f978e2268696def9532463486cbf36e1",
+      "lines": [
+        268,
+        357
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cell_tissue_lineage_metadata.rds",
+      "object": "data.frame",
+      "requirements": "含 tissue（器官）、subtype（精细亚群）、major（大类谱系）三列",
+      "evidence": "源码按 subtype_order$major 排列列顺序并以 gaps_col 分隔大类、双段色阶 seq(0,0.2)/seq(0.21,0.6) 绘制 pheatmap"
+    }
+  ],
+  "packages": [
+    {
+      "name": "pheatmap",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "grid",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；每个 subtype 至少含 1 个细胞。"
+  ],
+  "outputs": [
+    {
+      "path": "results/tissue_subtype_proportion_heatmap.pdf",
+      "content": "器官（行）× 亚群（列）按亚群总细胞数归一化的分布比例热图"
+    }
+  ],
+  "adaptation": [
+    "将源码双重循环计数改为 table() + sweep() 列归一化，并将硬编码 gaps_col 位置改为依据有序 major 游程自动计算，保留两段白-火砖红-栗红分段色阶与顶部大类注释。"
+  ],
+  "code_sha256": {
+    "plot.R": "b3ec52800402d4b03db5229047f5d2f7111f6c843d8741051737142a4f474c29"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

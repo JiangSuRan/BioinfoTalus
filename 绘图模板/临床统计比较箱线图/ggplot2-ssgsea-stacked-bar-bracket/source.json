@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-ssgsea-stacked-bar-bracket",
+  "title": "样本组排序免疫浸润相对比例堆叠柱状图与分组箱线比较联图",
+  "kind": "plot",
+  "plot_type": "临床统计比较箱线图",
+  "language": "R",
+  "tags": [
+    "ssGSEA",
+    "堆叠比例图",
+    "分组色带",
+    "Wilcoxon检验",
+    "patchwork"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "m13.R（L50-280 Min-Max 归一化免疫组成堆叠柱 + 样本组带 + 差异箱线联图）",
+    "author_attribution": "本地教学脚本（m13.R）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "m13.R",
+      "sha256": "d5c26ed0b641d79226a27ab80728f8c45266af88477cdf23d6b1e5631b8f6422",
+      "lines": [
+        50,
+        280
+      ],
+      "role": "提取 ssGSEA 免疫细胞相对比例堆叠图与组间 Wilcoxon 箱线联图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/ssgsea_immune_scores.rds",
+      "object": "matrix",
+      "requirements": "免疫细胞 x 样本评分矩阵",
+      "evidence": "源码 ssGSEA 输出矩阵"
+    },
+    {
+      "path": "Data/sample_group.rds",
+      "object": "data.frame",
+      "requirements": "含 Sample 与 Group 列",
+      "evidence": "源码分组信息表"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "reshape2",
+      "tested_version": "1.4.5",
+      "source_version": null
+    },
+    {
+      "name": "RColorBrewer",
+      "tested_version": "1.1.3",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "ggpubr",
+      "tested_version": "0.6.3",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/。"
+  ],
+  "outputs": [
+    {
+      "path": "results/immune_stacked_bar_group_boxplot.pdf",
+      "content": "组排序免疫组成堆叠图、分组色带与免疫细胞差异箱线复合图"
+    }
+  ],
+  "adaptation": [
+    "采用单层 patchwork 垂直拼接比例柱、样本分组色带与统计比较箱线图，避免多图层错位。"
+  ],
+  "code_sha256": {
+    "plot.R": "dfd86a69df7d39f33bd737f9599ee25d22d3f11b38b4e310bc4b8c6b4e2e7c47"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla) + synthetic 12 immune cells x 85 samples",
+      "date": "2026-11-14",
+      "notes": "修复 patchwork 嵌套拼图布局错误后运行通过并完成 PNG 核验。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "id": "ppi-perturbation-debias-validation-plots",
+  "title": "生成式扰动 PPI 去偏差置信区间、火山图、邻居偏差一致性与真实预测相关性评估图",
+  "kind": "plot",
+  "plot_type": "虚拟扰动评估图",
+  "language": "Python",
+  "tags": [
+    "PPI评估",
+    "置信区间误差棒",
+    "火山图",
+    "偏差一致性",
+    "虚拟扰动",
+    "Python"
+  ],
+  "paper": {
+    "repository": "https://github.com/EperLuo/dbDiffusion",
+    "figure": "Fig 2 (cpu_02) + Fig 4a/4c/4d (cpu_03)",
+    "author_attribution": "本地教学脚本 (xnqc/cpu_02, cpu_03)",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_02_扩散模型采样与可视化.ipynb",
+      "sha256": "eb5b1fc398f1833da3828349cc1f664dbd7666e212b8b027cdb7c6082de460e7",
+      "lines": [
+        1,
+        1028
+      ],
+      "role": "真实 vs 预测平均表达与效应量双联 y=x Pearson 散点"
+    },
+    {
+      "root_label": "local_xnqc",
+      "path": "xnqc/cpu_03_去偏差推断与评估.ipynb",
+      "sha256": "07552e83bb0dced904e7b5e7af3b378225afe418d72e1bdc30c6fb24bd7d0988",
+      "lines": [
+        1,
+        957
+      ],
+      "role": "观测 vs PPI 95% CI 横向对比条、去偏差火山图、同簇邻居偏差两两散点"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本提取绘图规范入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/ppi_gene_summary.csv 与 Data/ppi_neighbor_bias.csv",
+      "object": "PPI 汇总与偏差表",
+      "requirements": "直接承接 ppi-perturbation-debiasing-inference 模板输出结果",
+      "evidence": "字段精确对应 ppi_gene_summary / ppi_neighbor_bias"
+    }
+  ],
+  "packages": [
+    {
+      "name": "matplotlib",
+      "tested_version": "3.10.9",
+      "source_version": null
+    },
+    {
+      "name": "numpy",
+      "tested_version": "2.2.6",
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": "2.3.3",
+      "source_version": null
+    },
+    {
+      "name": "scipy",
+      "tested_version": "1.15.3",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "从项目根运行，Data/ 与 results/ 目录已存在。"
+  ],
+  "outputs": [
+    {
+      "path": "results/ppi_confidence_intervals.png",
+      "content": "Top 20 效应基因观测与 PPI 去偏差 95% 置信区间对比图"
+    },
+    {
+      "path": "results/ppi_debiased_volcano.png",
+      "content": "Bonferroni 阈值 PPI 去偏差差异表达火山图"
+    },
+    {
+      "path": "results/ppi_bias_consistency.png",
+      "content": "同簇邻居系统偏差向量两两一致性格栅散点图"
+    },
+    {
+      "path": "results/eval_mean_vs_effect_scatter.png",
+      "content": "平均表达及效应量真实 vs 预测双联散点图"
+    }
+  ],
+  "adaptation": [
+    "合并 cpu_02 与 cpu_03 四联生成模型评估图至统一 300 dpi 无弹窗脚本，由真实合成运行结果与视觉审图校验通过。"
+  ],
+  "limitations": [
+    "合成数据与上游 PPI 方法模板严格联跑校验通过。"
+  ],
+  "code_sha256": {
+    "plot.py": "630d0850ddb52786e02c3dae5dc2876423c64956355a0c599aa394280ce993d1"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check (omicverse)",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "D:\\conda\\envs\\omicverse\\python.exe (scanpy 1.11.5, anndata 0.11.4, numpy 2.2.6, pandas 2.3.3, scipy 1.15.3, matplotlib 3.10.9, networkx 3.4.2, leidenalg 0.12.0)",
+      "date": "2026-11-14",
+      "summary": "承接 ppi-perturbation-debiasing-inference 输出跑通并生成4张评估图 (r=0.970~0.997)，视觉审查均清晰无重叠"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

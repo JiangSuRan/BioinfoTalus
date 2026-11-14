@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "screpertoire-clonal-dynamics-and-overlap",
+  "title": "scRepertoire 克隆动态、Morisita 重叠热图、冲积图与有向克隆迁移弦图",
+  "kind": "plot",
+  "plot_type": "免疫组库克隆可视化",
+  "language": "R",
+  "tags": [
+    "scRepertoire",
+    "TCR",
+    "BCR",
+    "clonalHomeostasis",
+    "clonalOverlap",
+    "circlize",
+    "alluvialClones"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc22：单细胞 VDJ--TCR.BCR.txt（43–450 行克隆定量、动态占比、Morisita 重叠、UMAP 等高线、冲积图与弦图）",
+    "author_attribution": "本地教学脚本（sc22：单细胞 VDJ--TCR.BCR.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc22：单细胞 VDJ--TCR.BCR.txt",
+      "sha256": "2b1b8e3274c7063d17db92621c6e7fe6564dcb590e99f69ca47d17ba93972d8f",
+      "lines": [
+        43,
+        450
+      ],
+      "role": "联合展示跨样本唯一克隆计数、克隆稳态占比、Morisita 相似热图及关联转录组后的克隆迁移弦图"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/combined_tcr.rds",
+      "object": "list",
+      "requirements": "combineTCR() 或 combineBCR() 生成的克隆分型列表",
+      "evidence": "源码 combined <- combineTCR(contig_list, ...)"
+    },
+    {
+      "path": "Data/seurat_vdj.rds",
+      "object": "Seurat",
+      "requirements": "已执行 combineExpression() 写入克隆信息的 Seurat 对象（含 umap、orig.ident、seurat_clusters）",
+      "evidence": "源码 scRep_example <- combineExpression(combined, scRNA1, ...)"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scRepertoire",
+      "tested_version": "2.2.1",
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "circlize",
+      "tested_version": "0.4.18",
+      "source_version": null
+    },
+    {
+      "name": "scales",
+      "tested_version": "1.4.0",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；Seurat 对象中存在克隆注释（非全 NA），且样本数 >= 2、聚类数 >= 2。"
+  ],
+  "outputs": [
+    {
+      "path": "results/screpertoire_clonal_suite.pdf",
+      "content": "唯一克隆比例、克隆稳态分布、Morisita 重叠、UMAP 克隆密度与冲积流图合集"
+    },
+    {
+      "path": "results/screpertoire_cluster_chord.pdf",
+      "content": "细胞亚群间克隆共享有向迁移弦图"
+    }
+  ],
+  "adaptation": [
+    "针对 scRepertoire v2.2 规范将遗留 cloneCall = 'gene+nt' 统一改为严格全链标识 cloneCall = 'strict'，并在 clonalOverlay 显式传入 cut.category = 'clonalFrequency'。",
+    "移除硬编码样本名、手动写死氨基酸序列与子集名 'p_1'，全面适配任意样本与聚类水平。"
+  ],
+  "code_sha256": {
+    "plot.R": "837b504f2d88d69cff7d88f2d936a003e6c4e7f13cafe6e041fb4481feb4db4b"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

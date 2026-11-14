@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "id": "screpertoire-vdj-seurat-integration",
+  "title": "scRepertoire 10x TCR 组装整合、克隆扩展分级与 STARTRAC 克隆偏好定量",
+  "kind": "method",
+  "method_type": "组织偏好与克隆动态",
+  "language": "R",
+  "tags": [
+    "scRepertoire",
+    "TCR",
+    "combineTCR",
+    "combineExpression",
+    "StartracDiversity",
+    "clonalBias"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc22：单细胞 VDJ--TCR.BCR.txt（19–40 行 contig 整合 + 350–355 行关联 Seurat + 455–469 行 STARTRAC 与克隆偏好定量）",
+    "author_attribution": "本地教学脚本（sc22：单细胞 VDJ--TCR.BCR.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc22：单细胞 VDJ--TCR.BCR.txt",
+      "sha256": "2b1b8e3274c7063d17db92621c6e7fe6564dcb590e99f69ca47d17ba93972d8f",
+      "lines": [
+        19,
+        40
+      ],
+      "role": "多样本 10x filtered_contig_annotations 读取及 combineTCR 构建配对克隆表"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "sc22：单细胞 VDJ--TCR.BCR.txt",
+      "sha256": "2b1b8e3274c7063d17db92621c6e7fe6564dcb590e99f69ca47d17ba93972d8f",
+      "lines": [
+        350,
+        469
+      ],
+      "role": "combineExpression 回写 Seurat、计算 StartracDiversity（扩增/迁移/转换指数）与 clonalBias"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本精炼适配，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/contig_list.rds",
+      "object": "list",
+      "requirements": "各样本 10x VDJ filtered_contig_annotations.csv 读入后的命名列表（列表名作 samples）",
+      "evidence": "源码 combineTCR(contig_list, samples = ...)"
+    },
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含已完成聚类（seurat_clusters）与组织/样本列（orig.ident），细胞条码与 combineTCR 输出匹配",
+      "evidence": "源码 combineExpression -> StartracDiversity -> clonalBias"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scRepertoire",
+      "tested_version": "2.2.1",
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；Seurat 条码与 VDJ 条码已按样本前缀规范统一。"
+  ],
+  "outputs": [
+    {
+      "path": "results/combined_tcr.rds",
+      "content": "scRepertoire 配对克隆表列表"
+    },
+    {
+      "path": "results/seurat_vdj.rds",
+      "content": "已写入 CTgene/CTaa/CTstrict 与 cloneSize 分级的 Seurat 对象"
+    },
+    {
+      "path": "results/startrac_diversity.tsv",
+      "content": "STARTRAC expa/migr/tran 克隆多样性与偏好导出表"
+    },
+    {
+      "path": "results/clonal_bias.tsv",
+      "content": "跨亚群显著克隆倾斜定量统计表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "combineExpression(proportion = FALSE, cloneSize = c(Single = 1, Small = 5, Medium = 20, Large = 100, Hyperexpanded = 500))",
+      "basis": "源码按绝对细胞计数而非相对比例界定扩展区间，适合细胞通量均衡的多样本对比"
+    },
+    {
+      "setting": "StartracDiversity(exportTable = TRUE) + clonalBias(n.boots = 10)",
+      "basis": "同时评估群内扩增/跨群转换潜力与个别超大克隆对特定表型的偏好占据"
+    }
+  ],
+  "adaptation": [
+    "抽离硬编码磁盘 CSV 路径与样本前缀 gsub('1','2') 手工替换，假定上游样本前缀与 Seurat 条码已对齐或直接通过 sample 参数生成规范条码。",
+    "导出 StartracDiversity 与 clonalBias 数值汇总表（exportTable = TRUE），确保结果可复现与后续统计衔接。"
+  ],
+  "limitations": [
+    "若单细胞 RNA 与 VDJ 样本前缀不匹配，combineExpression 将出现大面积 NA 克隆标签，整合前须核实条码格式。",
+    "当按样本分层调用 clonalBias 时，每个样本须至少包含 1 个细胞频次 >= min.expand 的扩增克隆，否则上游 .get_clono_bg 会触发命名长度不匹配报错。"
+  ],
+  "code_sha256": {
+    "analysis.R": "d2e9193fc04dc42583d08ba7a7ba6e02935a19e9a2b8980c4dd0bcb22805f7f1"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 RDS/TSV 产物，结构与数值校验正常；不代表真实队列数据验证。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

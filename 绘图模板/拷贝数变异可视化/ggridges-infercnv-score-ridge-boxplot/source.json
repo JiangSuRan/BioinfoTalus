@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "id": "ggridges-infercnv-score-ridge-boxplot",
+  "title": "InferCNV 恶性 CNV 评分亚群比较箱线图与尾概率山脊密度图（ggridges + ggpubr）",
+  "kind": "plot",
+  "plot_type": "拷贝数变异可视化",
+  "language": "R",
+  "tags": [
+    "InferCNV",
+    "CNV评分",
+    "ggridges",
+    "ggpubr",
+    "山脊图",
+    "尾概率"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc14-染色体拷贝数变异分析--InferCNV  .txt（73–111 行 CNV 评分计算、排序箱线图及尾概率梯度山脊图）",
+    "author_attribution": "本地教学脚本（sc14-染色体拷贝数变异分析--InferCNV  .txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc14-染色体拷贝数变异分析--InferCNV  .txt",
+      "sha256": "49c0d7231313ad6043a7ef04b68517c8c833bd4bf9d6102db57f27649db1657b",
+      "lines": [
+        73,
+        111
+      ],
+      "role": "从 InferCNV 表达矩阵推导平方和 CNV 负荷分数，并用箱线检验与渐变山脊分布比较良恶性细胞群"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/infercnv_obs_mat.rds",
+      "object": "matrix",
+      "requirements": "基因 × 细胞观测表达矩阵（来自 infercnv.observations.txt）",
+      "evidence": "源码 infercnv.observations.txt 矩阵转为数值矩阵"
+    },
+    {
+      "path": "Data/cell_meta.rds",
+      "object": "data.frame",
+      "requirements": "行名为细胞条码、含 celltype 列的细胞注释框",
+      "evidence": "源码 cellAnnota[row.names(cnv_score), ]"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    },
+    {
+      "name": "scales",
+      "tested_version": "1.4.0",
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": "4.0.3",
+      "source_version": null
+    },
+    {
+      "name": "ggpubr",
+      "tested_version": "0.6.3",
+      "source_version": null
+    },
+    {
+      "name": "ggridges",
+      "tested_version": "0.5.7",
+      "source_version": null
+    },
+    {
+      "name": "viridis",
+      "tested_version": "0.6.5",
+      "source_version": null
+    },
+    {
+      "name": "patchwork",
+      "tested_version": "1.3.2",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；矩阵与细胞注释行名至少存在部分交集，细胞数 > 2。"
+  ],
+  "outputs": [
+    {
+      "path": "results/infercnv_score_box_ridge.pdf",
+      "content": "亚群 CNV 评分全局检验排序箱线图与 ECDF 尾概率梯度山脊图"
+    }
+  ],
+  "adaptation": [
+    "将已废弃的 ggplot2 stat(ecdf) 语法升级为 after_stat(ecdf)，消除版本兼容警告。",
+    "保留原教案将矩阵按样本行标准化缩放到 [-1, 1] 再求细胞平方和的核心 CNV 负荷算法，用 patchwork 联立箱线检验与 ECDF 山脊双图。"
+  ],
+  "code_sha256": {
+    "plot.R": "16a41df480d1aa316b07afcd391b38ed618298a39823f9b4bdac552e5718032a"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据（及包内置示例数据）独立子进程运行通过并输出非空 PDF，经 PNG 转绘人工视觉核验布局、图层对齐与标签可读性；不代表真实队列数据验证或原图复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

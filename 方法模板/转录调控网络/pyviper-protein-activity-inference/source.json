@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "pyviper-protein-activity-inference",
+  "title": "pyVIPER 基于 NaRnEA 与 aREA 调控子富集模型从单细胞表达谱推断主调节蛋白活性",
+  "kind": "method",
+  "method_type": "转录调控网络",
+  "language": "Python",
+  "tags": [
+    "pyVIPER",
+    "NaRnEA",
+    "aREA",
+    "蛋白活性",
+    "主调节因子",
+    "Stouffer",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "27 利用pyVIPER算法来定量蛋白的活性.txt（ges_signature, viper(enrichment='narnea'), stouffer）",
+    "author_attribution": "本地教学脚本（27 利用pyVIPER算法来定量蛋白的活性.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "27 利用pyVIPER算法来定量蛋白的活性.txt",
+      "sha256": "6e594417a3db27d09fe2f9b9bdd5cc7a7cf2772481e30746d48c6bf78b8d8a37",
+      "lines": [
+        1,
+        152
+      ],
+      "role": "提取单细胞 Z-score 表达签名至 NaRnEA 调控活性与 Stouffer 群聚类主调节因子汇总"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_preprocessed.h5ad",
+      "object": "AnnData",
+      "requirements": "含 obs['cell_type'] 且已完成对数归一化的单细胞表达谱",
+      "evidence": "源码单细胞 AnnData"
+    },
+    {
+      "path": "Data/aracne_network.tsv",
+      "object": "ARACNe Regulon",
+      "requirements": "上游互作调控网络文件（Regulator-Target-MI-MoA 三/四列表）",
+      "evidence": "pyVIPER 标准 ARACNe 输入"
+    }
+  ],
+  "packages": [
+    {
+      "name": "anndata",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pandas",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "pyviper",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 viper-in-python，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/pyviper_protein_activity.h5ad",
+      "content": "单细胞调控蛋白活性（NES/PES）矩阵 AnnData"
+    },
+    {
+      "path": "results/pyviper_cluster_master_regulators.csv",
+      "content": "按细胞亚群执行 Stouffer Z 聚合的主调节因子活性表"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "ges_signature(method='zscore') + viper(enrichment='narnea', eset_filter=False) + pp.stouffer",
+      "basis": "NaRnEA 解析非参数富集无需置换模拟且稳健应对单细胞稀疏性"
+    }
+  ],
+  "adaptation": [
+    "加入 filter_targets() 自动对齐有效基因空间并补全作为 R 端 viper-pisces-protein-activity 的 Python 生态双璧方案。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 viper-in-python 包）；调控结果高度依赖所传入背景组织匹配 ARACNe 网络精度。"
+  ],
+  "code_sha256": {
+    "analysis.py": "c957277c35ad85b00ab5dc68b0f3bf047f6e61cd823f97305da1ddfaa012d071"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

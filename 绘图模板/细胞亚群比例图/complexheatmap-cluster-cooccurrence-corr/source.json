@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "complexheatmap-cluster-cooccurrence-corr",
+  "title": "样本间亚群比例共现相关性数值热图（ComplexHeatmap）",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例相关性",
+    "共现网络",
+    "rstatix",
+    "ComplexHeatmap",
+    "Pearson相关",
+    "亚群关系"
+  ],
+  "paper": {
+    "repository": "https://github.com/yuyang3/pan-B.git",
+    "figure": "Figure3.R（Cell 2024 Figure S4F 肿瘤样本内各细胞亚群比例 Pearson 共现相关性数值热图，599–645 行）",
+    "author_attribution": "Yang et al., Cell 2024",
+    "doi": "10.1016/j.cell.2024.06.038",
+    "revision": "2f6c871f39de571ba134efa68c7636cefb482fe9"
+  },
+  "source_files": [
+    {
+      "root_label": "pan-B",
+      "path": "Figure3.R",
+      "sha256": "b6b586e9624be8f1101c818af5730eafe470ba83c84625a97cf1d8e1fcbf1220",
+      "lines": [
+        599,
+        645
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sample_cluster_freq_matrix.rds",
+      "object": "data.frame",
+      "requirements": "行为 sample_id、列为各细胞亚群比例的数值数据框（已设定样本行名或均为数值列）",
+      "evidence": "源码 df.T_freq[, 2:82] 经 rstatix::cor_mat 计算 Pearson 相关系数矩阵并传给 ComplexHeatmap::Heatmap + cell_fun"
+    }
+  ],
+  "packages": [
+    {
+      "name": "rstatix",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ComplexHeatmap",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "circlize",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "grid",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；输入数据框所有列须为亚群比例数值列且零方差列需预先剔除。"
+  ],
+  "outputs": [
+    {
+      "path": "results/cluster_proportion_cooccurrence_corr.pdf",
+      "content": "白边框分隔且每格显示两位小数 Pearson r 的亚群共现相关性热图"
+    }
+  ],
+  "adaptation": [
+    "移除源脚本人工限定两列目标亚群并取前 10 行的特化筛选，改用完整相关性矩阵聚类展示全部亚群共现模块，保留核心红白蓝 colorRamp2 与白边 cell_fun 标注风格。"
+  ],
+  "code_sha256": {
+    "plot.R": "5711b6a921fa5cb942dac7b5d44bdda8bd611b9e106d2d5990c649d621680cbb"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

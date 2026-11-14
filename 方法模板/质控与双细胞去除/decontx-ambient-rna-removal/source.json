@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "id": "decontx-ambient-rna-removal",
+  "title": "DecontX 单细胞环境游离 RNA 污染检测、矫正计数写入与低污染细胞过滤",
+  "kind": "method",
+  "method_type": "质控与双细胞去除",
+  "language": "R",
+  "tags": [
+    "DecontX",
+    "环境RNA污染",
+    "质控",
+    "counts矫正",
+    "Seurat"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc24：DecontX 进行RNA污染检测和矫正.txt（20–48 行环境污染估计与过滤）",
+    "author_attribution": "本地教学脚本（sc24：DecontX 进行RNA污染检测和矫正.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc24：DecontX 进行RNA污染检测和矫正.txt",
+      "sha256": "fb83adea11307a54ef61b2a0c7b8c6150253e86bd025f34db2349777418a0fe1",
+      "lines": [
+        20,
+        48
+      ],
+      "role": "使用 decontX 评估每细胞环境 RNA 渗入比例、写回清洗后矩阵并按阈值过滤高污染液滴"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学脚本精炼适配，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/seurat_obj.rds",
+      "object": "Seurat",
+      "requirements": "含未标准化 RNA 原始 counts 层（理想情况下含初步聚类或直接由 decontX 内置聚类推断）",
+      "evidence": "源码 GetAssayData(scRNA_harmony, assay = 'RNA', slot = 'counts') -> decontX(counts)"
+    }
+  ],
+  "packages": [
+    {
+      "name": "decontX",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；目标环境已安装 Bioconductor 包 decontX。"
+  ],
+  "outputs": [
+    {
+      "path": "results/seurat_decontx_filtered.rds",
+      "content": "追加 Contamination 评分、decontXcounts 矫正 assay 并已完成低污染过滤的 Seurat 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "过滤阈值 Contamination < 0.2 并保留去污染后计数矩阵作为附加 assay",
+      "basis": "剔除被环境背景游离转录本严重淹没的低纯度液滴，同时为后续分析保留校正整数/期望计数"
+    }
+  ],
+  "adaptation": [
+    "修复源码重大疏漏：原教案第 44 行过滤得到 scRNA_harmony.s，但第 48 行 saveRDS 却误存了未过滤的原始 scRNA_harmony；现确保实际写出过滤且包含校正 assay 的对象。",
+    "将 Seurat v4 slot = 'counts' 升级为 LayerData(layer = 'counts')，去除未验证的可视化混杂代码。"
+  ],
+  "limitations": [
+    "未传入外部样本批次 z 参数时默认整对象统一估计环境分布，多批次混样建议分样本运行或传入样本批次向量 z。"
+  ],
+  "code_sha256": {
+    "analysis.R": "9a7881742afdeb8e38d6e024ff9fb3bc1c0c75c9ed5236ff96155e947d6b7bfd"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

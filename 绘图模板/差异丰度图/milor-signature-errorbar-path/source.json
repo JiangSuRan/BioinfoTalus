@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "id": "milor-signature-errorbar-path",
+  "title": "多条件 Milo 差异丰度特征均值±标准差折线误差棒图",
+  "kind": "plot",
+  "plot_type": "差异丰度图",
+  "language": "R",
+  "tags": [
+    "Milo特征",
+    "误差棒",
+    "logFC",
+    "多条件对比",
+    "ggplot2",
+    "亚群变化"
+  ],
+  "paper": {
+    "repository": "https://github.com/MarioniLab/hbca.git",
+    "figure": "code/analysis/06_milo/06e_milo_plotting_3.R（HBCA Fig 4a 跨基因型/年龄/胎次 Milo signature 特征剖面图，163–295 行）",
+    "author_attribution": "Reed et al., Nature Genetics 2024",
+    "doi": "10.1038/s41588-024-01688-9",
+    "revision": "de6824fca1605a75c140ea0c4d3cc412aec234e2"
+  },
+  "source_files": [
+    {
+      "root_label": "hbca",
+      "path": "code/analysis/06_milo/06e_milo_plotting_3.R",
+      "sha256": "a57e1be16e62dcf82ef5048d56df1be06148de03a04b44cb1f18d02b91c68daa",
+      "lines": [
+        163,
+        295
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/milo_multigroup_da.rds",
+      "object": "data.frame",
+      "requirements": "合并多组比较的 Milo 邻域 DA 表，含 contrast、cell_type 与 logFC 列",
+      "evidence": "源码按 level2 汇总 mean(logFC) 与 sd(logFC) 并按 type 分组绘制 geom_point + geom_errorbarh + geom_path"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；表内不同对比组使用统一或可比 logFC 尺度。"
+  ],
+  "outputs": [
+    {
+      "path": "results/milo_signature_errorbar_path.pdf",
+      "content": "多对比组亚群 Milo 效应均值±标准差水平误差棒与剖面连线图"
+    }
+  ],
+  "adaptation": [
+    "将 HBCA 多隔室注释列表合并逻辑抽象为单一长表输入（contrast, cell_type, logFC），移除硬编码颜色与注释代码。",
+    "适配 ggplot2 4.0，将旧版 geom_errorbarh(..., size, width) 替换为标准 geom_errorbar(..., orientation = \"y\", linewidth, width) 并补加 x = 0 虚线参考。"
+  ],
+  "code_sha256": {
+    "plot.R": "7f7050dfdc1f54c09e728533bdd3ec5813049f62a9e5464dd07f1902232721c4"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

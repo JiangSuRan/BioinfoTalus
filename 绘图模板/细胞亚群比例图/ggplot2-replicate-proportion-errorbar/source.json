@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "id": "ggplot2-replicate-proportion-errorbar",
+  "title": "生物学重复样本亚群占比中位数+IQR误差棒及散点显著性分面柱状图",
+  "kind": "plot",
+  "plot_type": "细胞亚群比例图",
+  "language": "R",
+  "tags": [
+    "比例图",
+    "生物学重复",
+    "IQR误差棒",
+    "显著性星号",
+    "分面柱状图",
+    "抖动散点"
+  ],
+  "paper": {
+    "repository": "https://github.com/tfaits/Arlotta_Lab_Chimeroids.git",
+    "figure": "CellType_Proportion_Changes.R（Nature 2024 Chimeroids 各处理组中位数+IQR 误差棒、重复散点与显著性星号分面柱状图，82–153 与 216–245 行）",
+    "author_attribution": "Antón-Bolaños et al., Nature 2024",
+    "doi": "10.1038/s41586-024-07578-8",
+    "revision": "19412bd3b85b5db6ebe92eecf9665592d1640c42"
+  },
+  "source_files": [
+    {
+      "root_label": "Arlotta_Lab_Chimeroids",
+      "path": "CellType_Proportion_Changes.R",
+      "sha256": "f9d2711f3f0d1da0a8965c5b2074865f023a9a1d3766e33f2a2d51a965212623",
+      "lines": [
+        80,
+        245
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sample_treatment_metadata.rds",
+      "object": "data.frame",
+      "requirements": "单细胞元数据，含 sample_id、treatment（实验处理组）与 cell_type（亚群）三列",
+      "evidence": "源码按 Sample_Genotype 计算各 CellType 占总测序细胞百分比并叠加 geom_jitter"
+    },
+    {
+      "path": "Data/celltype_treatment_fdr.rds",
+      "object": "data.frame",
+      "requirements": "含 treatment、cell_type 与 fdr（BH 校正显著性 q 值）列",
+      "evidence": "源码将 glmer.nb LRT BH 校正 q 值映射为 * / ** / *** / **** 后标注于 Q75 上方"
+    }
+  ],
+  "packages": [
+    {
+      "name": "dplyr",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "ggplot2",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；对照组的 fdr 可设为 1（不显示星号）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/replicate_proportion_median_iqr.pdf",
+      "content": "含重复样本散点、中位柱高、四分位距误差棒与 FDR 星号的多亚群分面图"
+    }
+  ],
+  "adaptation": [
+    "将源码 plyr::ddply 自定义汇总函数 data_summary 与手动双循环星号赋值重构为 dplyr 线性管道 + case_when。",
+    "将上游队列特异性混合效应公式 glmer.nb(Batch + Mix) 解耦为通用 Data/celltype_treatment_fdr.rds 显著性输入，便于适配各类重复试验设计。"
+  ],
+  "code_sha256": {
+    "plot.R": "4f72e00d8ec7c5140dc8cda03bc7987de96d7712da47c9440c250367f4d7a000"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 synthetic minimal data",
+      "date": "2026-11-14",
+      "note": "合成最小数据运行通过并输出非空 PDF，经 PNG 转绘人工核验布局、顺序对齐与文字留白；不代表真实队列数据验证或原图外观复现。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

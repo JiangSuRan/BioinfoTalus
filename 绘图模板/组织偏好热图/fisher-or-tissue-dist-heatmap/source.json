@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "id": "fisher-or-tissue-dist-heatmap",
+  "title": "Fisher 精确检验组织富集 Odds Ratio 热图",
+  "kind": "plot",
+  "plot_type": "组织偏好热图",
+  "language": "R",
+  "tags": [
+    "Odds Ratio",
+    "Fisher检验",
+    "sscVis",
+    "组织偏好",
+    "热图"
+  ],
+  "paper": {
+    "repository": "https://github.com/ma-jq/B.git",
+    "figure": "Fig1/fig1.R（Science 2024 泛癌浸润 B 细胞图谱 Fig 1E 各组织亚群 OR 偏好热图，253–361 行）",
+    "author_attribution": "Ma et al., Science 2024",
+    "doi": "10.1126/science.adj4857",
+    "revision": "24771bcd52ed8c1c1b23686a8e99de49a54a9717"
+  },
+  "source_files": [
+    {
+      "root_label": "B",
+      "path": "Fig1/fig1.R",
+      "sha256": "85a64e72ff0127df9d062bec102e3615b98740c949407357cc4ec2ce8bd6f8c5",
+      "lines": [
+        253,
+        361
+      ],
+      "role": "提取的核心可视化流程"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地仓库未附明确开源许可文件或仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/cell_tissue_metadata.rds",
+      "object": "data.frame",
+      "requirements": "含 cell_type（亚群标签）与 tissue（组织分类）两列",
+      "evidence": "源码 do.tissueDist 传入 objN@meta.data$celltype 与 objN@meta.data$type 计算 2×2 Fisher 精确检验 OR"
+    }
+  ],
+  "packages": [
+    {
+      "name": "RColorBrewer",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "sscVis",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；需已安装 sscVis 包（GitHub: Japrin/sscVis）。"
+  ],
+  "outputs": [
+    {
+      "path": "results/tissue_or_dist.pdf",
+      "content": "截断至 OR=2 的 YlGnBu 连续色阶带数值标签组织分布优势比热图"
+    }
+  ],
+  "adaptation": [
+    "提取源脚本 test.dist.table 中的 2×2 列联表 Fisher 精确检验逻辑并用嵌套索引线性改写，去除 plyr/data.table 冗余中间包装，保留 sscVis::plotMatrix.simple(z.hi=2, YlGnBu) 原论文视觉参数。"
+  ],
+  "code_sha256": {
+    "plot.R": "c0d67a8ed57d9414029fbad3f2ad7a994fa373bf1d36bcd7acfb581db4d2ef04"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

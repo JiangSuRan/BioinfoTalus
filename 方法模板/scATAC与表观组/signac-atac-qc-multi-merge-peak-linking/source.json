@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "id": "signac-atac-qc-multi-merge-peak-linking",
+  "title": "Signac scATAC 多样本峰值合并定量、核小体/TSS 质控与 Peak-to-Gene 调控连锁",
+  "kind": "method",
+  "method_type": "scATAC与表观组",
+  "language": "R",
+  "tags": [
+    "Signac",
+    "scATAC-seq",
+    "多样本合并",
+    "NucleosomeSignal",
+    "TSSEnrichment",
+    "GeneActivity"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "sc20.1 & sc20.2（统一 Peak 集重定量合并、核小体/TSS 质控与 GeneActivity 估算）",
+    "author_attribution": "本地教学脚本（sc20：scATAC--单细胞染色质开放性.1.txt）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "sc20：scATAC--单细胞染色质开放性.1.txt",
+      "sha256": "ee1ce7cc88faa7d6db0f62e4cd7190ca196ddf570a282e26931895ea4c65e61d",
+      "lines": [
+        1,
+        274
+      ],
+      "role": "提取质控过滤、TF-IDF/SVD 降维及 GeneActivity"
+    },
+    {
+      "root_label": "local_code_paper",
+      "path": "sc20：scATAC--单细胞染色质开放性.2.txt",
+      "sha256": "84186c7b0603bc8037b9d676d85d27c7c4bd3236affdacd60a65d35ae2ec3195",
+      "lines": [
+        100,
+        218
+      ],
+      "role": "提取多样本 reduce 峰值并集重构与 FeatureMatrix 统一定量"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/sample_a_peaks.bed",
+      "object": "BED",
+      "requirements": "样本 A Peak 区间",
+      "evidence": "源码多样本合并且去重叠峰区"
+    },
+    {
+      "path": "Data/sample_b_peaks.bed",
+      "object": "BED",
+      "requirements": "样本 B Peak 区间",
+      "evidence": "源码多样本合并"
+    },
+    {
+      "path": "Data/sample_a_fragments.tsv.gz",
+      "object": "Tabix Fragments",
+      "requirements": "带 .tbi 索引的碎片文件（sample_a 与 sample_b）",
+      "evidence": "源码 CreateFragmentObject"
+    },
+    {
+      "path": "Data/sample_a_singlecell.csv",
+      "object": "CSV",
+      "requirements": "条码注释表（sample_a 与 sample_b）",
+      "evidence": "源码行名传入 cells"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Seurat",
+      "tested_version": "5.5.0",
+      "source_version": null
+    },
+    {
+      "name": "Signac",
+      "tested_version": "1.17.1",
+      "source_version": null
+    },
+    {
+      "name": "GenomicRanges",
+      "tested_version": "1.62.1",
+      "source_version": null
+    },
+    {
+      "name": "EnsDb.Hsapiens.v86",
+      "tested_version": "2.99.0",
+      "source_version": null
+    },
+    {
+      "name": "dplyr",
+      "tested_version": "1.1.4",
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；fragments.tsv.gz 同目录需存在对应 .tbi 索引。"
+  ],
+  "outputs": [
+    {
+      "path": "results/signac_qc_merged_atac.rds",
+      "content": "含 peaks 与标准化 ACTIVITY assay、LSI 及 UMAP 的合并 Seurat 对象"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "reduce(c(gr_a, gr_b)) 合并 20-10000 bp Peak + FeatureMatrix 重定量",
+      "basis": "防止各样本独立 Call Peak 区间错位导致矩阵合并失真"
+    },
+    {
+      "setting": "ensembldb::exons(EnsDb.Hsapiens.v86) 构建 UCSC 标准染色体注释",
+      "basis": "等价替代 GetGRangesFromEnsDb 并消除额外biovizBase 包依赖"
+    }
+  ],
+  "adaptation": [
+    "用 ensembldb 原生外显子提取替代依赖 biovizBase 的 GetGRangesFromEnsDb，精简双样本示例并统一输出路径。"
+  ],
+  "limitations": [
+    "统一 Peak 集合并后若批次差异明显，仍需衔接 signac-tfidf-svd-harmony 进行 LSI Harmony 去批次；默认 RunSVD 需要 >50 个可变 Peak。"
+  ],
+  "code_sha256": {
+    "analysis.R": "5308467da737eada9111fbaa9da35a08a6acbfdd3c4d76976e02cabefb7cc305"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "Rscript 4.5.3 parse check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": {
+      "status": "passed",
+      "environment": "R 4.5.3 (--vanilla, Signac 1.17.1, Seurat 5.5.0) + synthetic 70-cell x 65-peak scATAC fragments",
+      "date": "2026-11-14",
+      "notes": "已完成双样本 Peak reduce 合并、FeatureMatrix、Nucleosome/TSS 质控、TF-IDF/SVD/UMAP 与 GeneActivity 全流程独立运行验证。"
+    },
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "id": "tangram-singlecell-to-spatial-mapping",
+  "title": "Tangram 空间转录组单细胞映射、基因表达空间填补与细胞类型概率投影",
+  "kind": "method",
+  "method_type": "反卷积与细胞组成",
+  "language": "Python",
+  "tags": [
+    "Tangram",
+    "空间映射",
+    "基因填补",
+    "细胞反卷积",
+    "Python"
+  ],
+  "paper": {
+    "repository": null,
+    "figure": "k9.Python中联合分析.Tangram.cell2location.md（L534-889 pp_adatas, map_cells_to_space, project_cell_annotations, project_genes）",
+    "author_attribution": "本地教学脚本（k9.Python中联合分析.Tangram.cell2location.md）",
+    "doi": null,
+    "revision": null
+  },
+  "source_files": [
+    {
+      "root_label": "local_code_paper",
+      "path": "k9.Python中联合分析.Tangram.cell2location.md",
+      "sha256": "f8f2192b018fd0e8e63b2d940489cb553e441324ab2e638d6b1709eb24868759",
+      "lines": [
+        534,
+        889
+      ],
+      "role": "提取基于训练 Marker 基因的 Tangram 最优细胞-Spot 概率映射与未测基因空间插补"
+    }
+  ],
+  "license": {
+    "identifier": null,
+    "note": "本地教学与文献整合脚本，仅作本地模板入库；不替来源重授权。"
+  },
+  "inputs": [
+    {
+      "path": "Data/scrna_annotated.h5ad",
+      "object": "AnnData",
+      "requirements": "含归一化表达与 obs['cell_type']",
+      "evidence": "源码 scRNA 参考集"
+    },
+    {
+      "path": "Data/visium_spatial.h5ad",
+      "object": "AnnData",
+      "requirements": "标准化后的空间转录组 AnnData",
+      "evidence": "源码空间目标对象"
+    }
+  ],
+  "packages": [
+    {
+      "name": "scanpy",
+      "tested_version": null,
+      "source_version": null
+    },
+    {
+      "name": "tangram",
+      "tested_version": null,
+      "source_version": null
+    }
+  ],
+  "prerequisites": [
+    "运行目录存在 Data/ 与 results/；本机未安装 tangram，仅完成 Python 语法检查。"
+  ],
+  "outputs": [
+    {
+      "path": "results/tangram_cell_to_spot_map.h5ad",
+      "content": "细胞 x Spot 概率映射矩阵 AnnData"
+    },
+    {
+      "path": "results/tangram_spatial_annotated.h5ad",
+      "content": "obsm['tangram_ct_pred'] 写入细胞组成概率的空间 AnnData"
+    },
+    {
+      "path": "results/tangram_imputed_genes.h5ad",
+      "content": "全转录组空间填补表达矩阵"
+    }
+  ],
+  "method_choices": [
+    {
+      "setting": "mode='cells', density_prior='rna_count_based', num_epochs=500",
+      "basis": "来源代码预设，联合细胞级概率传输实现未捕获蛋白或低深度基因空间重建"
+    }
+  ],
+  "adaptation": [
+    "补充基于 Wilcoxon top-40 亚群差异基因自动筛选训练标志集，避免手工硬编码基因清单。"
+  ],
+  "limitations": [
+    "未在本地运行测试（缺 tangram 包）；海量单细胞映射时 GPU 可用可改设 device='cuda:0'。"
+  ],
+  "code_sha256": {
+    "analysis.py": "29e7c949104d590120255d17e96d0dd52db8f12e5c40d5c5690f94ae54876bfd"
+  },
+  "validation": {
+    "syntax": {
+      "status": "passed",
+      "environment": "python py_compile check",
+      "date": "2026-11-14"
+    },
+    "synthetic_run": null,
+    "reference_comparison": null,
+    "real_data": null,
+    "second_dataset": null
+  }
+}
